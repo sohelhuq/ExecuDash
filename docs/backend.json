@@ -562,6 +562,52 @@
         "dpsBalance": { "type": "number" }
       },
       "required": ["bank", "maturityDate", "dpsBalance"]
+    },
+     "Employee": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Employee",
+      "type": "object",
+      "description": "Represents an employee record.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "jobRole": { "type": "string" },
+        "department": { "type": "string" },
+        "contactDetails": { "type": "string" },
+        "joiningDate": { "type": "string", "format": "date" }
+      },
+      "required": ["id", "name", "jobRole", "department"]
+    },
+    "Attendance": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Attendance",
+      "type": "object",
+      "description": "Represents an employee attendance record for a specific day.",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["present", "absent", "leave"] },
+        "checkIn": { "type": "string", "format": "time" },
+        "checkOut": { "type": "string", "format": "time" }
+      },
+      "required": ["id", "employeeId", "date", "status"]
+    },
+    "Payroll": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payroll",
+      "type": "object",
+      "description": "Represents a payroll record for an employee for a specific period.",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "period": { "type": "string", "description": "e.g., 'YYYY-MM'" },
+        "grossSalary": { "type": "number" },
+        "deductions": { "type": "number" },
+        "netSalary": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "paid"] }
+      },
+      "required": ["id", "employeeId", "period", "grossSalary", "netSalary"]
     }
   },
   "auth": {
@@ -774,6 +820,30 @@
           "entityName": "Dps",
           "schema": { "$ref": "#/backend/entities/Dps" },
           "description": "Stores Deposit Pension Scheme (DPS) records."
+        }
+      },
+      {
+        "path": "/employees/{employeeId}",
+        "definition": {
+          "entityName": "Employee",
+          "schema": { "$ref": "#/backend/entities/Employee" },
+          "description": "Stores employee records."
+        }
+      },
+      {
+        "path": "/attendance/{attendanceId}",
+        "definition": {
+          "entityName": "Attendance",
+          "schema": { "$ref": "#/backend/entities/Attendance" },
+          "description": "Stores daily attendance records for employees."
+        }
+      },
+      {
+        "path": "/payroll/{payrollId}",
+        "definition": {
+          "entityName": "Payroll",
+          "schema": { "$ref": "#/backend/entities/Payroll" },
+          "description": "Stores payroll records for employees."
         }
       }
     ],
