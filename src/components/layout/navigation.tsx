@@ -14,6 +14,7 @@ import {
   UserCheck,
   ShieldCheck,
   Wallet,
+  BookCopy,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,6 +32,7 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/accounting', label: 'Accounting', icon: BookCopy },
   { href: '/banking', label: 'Banking', icon: BankIcon },
   { href: '/fdr', label: 'FDR', icon: ShieldCheck },
   { href: '/dps', label: 'DPS', icon: Wallet },
