@@ -18,6 +18,7 @@ import {
   TrendingDown,
   Warehouse,
   FileText,
+  Fuel,
 } from "lucide-react";
 import {
   Bar,
@@ -46,28 +47,28 @@ import { Button } from "../ui/button";
 
 const kpiData = [
   {
-    title: "Total Sales (Today)",
-    value: "৳15,200",
-    change: "+11.2% from yesterday",
+    title: 'Daily Cashflow',
+    value: '৳1,20,500',
+    change: '+5.5% from yesterday',
     icon: DollarSign,
   },
   {
-    title: "Stock Value (Current)",
-    value: "৳850,000",
-    change: "+2.1% from last month",
-    icon: Warehouse,
+    title: 'Weekly Cashflow',
+    value: '৳7,80,000',
+    change: '-1.2% from last week',
+    icon: DollarSign,
+  },
+  {
+    title: 'Monthly Cashflow',
+    value: '৳32,50,000',
+    change: '+8.7% from last month',
+    icon: DollarSign,
   },
   {
     title: "Outstanding Invoices",
     value: "45",
     change: "-3 from last week",
     icon: FileText,
-  },
-  {
-    title: "Inventory Turnover Rate",
-    value: "4.2",
-    change: "+0.5 from last quarter",
-    icon: TrendingUp,
   },
 ];
 
