@@ -13,6 +13,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { NlqInput } from '../dashboard/nlq-input';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Link from 'next/link';
 
 function UserNav() {
   const userAvatar = PlaceHolderImages.find((p) => p.id === 'user-avatar');
@@ -37,10 +38,16 @@ function UserNav() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Profile</DropdownMenuItem>
-        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <Link href="/settings">
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+        </Link>
+        <Link href="/settings">
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+        </Link>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Log out</DropdownMenuItem>
+        <Link href="/">
+          <DropdownMenuItem>Log out</DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );
