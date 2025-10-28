@@ -13,6 +13,7 @@ import {
   Activity,
   Bell,
   LineChart,
+  ChevronRight,
 } from "lucide-react";
 import {
   Bar,
@@ -29,6 +30,10 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { businessUnits } from "@/lib/business-units";
+import Link from "next/link";
+import { Button } from "../ui/button";
 
 const kpiData = [
   {
@@ -94,6 +99,40 @@ export function Dashboard() {
           </Card>
         ))}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Business Units</CardTitle>
+          <CardDescription>Select a business unit to view its detailed financial performance.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Unit Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">View</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {businessUnits.map((unit) => (
+                <TableRow key={unit.id}>
+                  <TableCell className="font-medium">{unit.name}</TableCell>
+                  <TableCell>{unit.description}</TableCell>
+                  <TableCell className="text-right">
+                    <Link href={`/dashboard/${unit.id}`} legacyBehavior>
+                      <Button variant="ghost" size="sm">
+                        Details <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
         <Card className="lg:col-span-4">
           <CardHeader>
