@@ -1,256 +1,44 @@
 {
   "entities": {
-    "Project": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Project",
+    "AttendancePoint": {
+      "title": "Attendance Point",
       "type": "object",
-      "description": "Represents a project within the Firestudio environment.",
+      "description": "Represents points awarded for employee attendance.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the project."
+        "employeeName": {
+          "type": "string"
         },
-        "name": {
+        "inTime": {
           "type": "string",
-          "description": "Name of the project."
+          "format": "time"
         },
-        "description": {
-          "type": "string",
-          "description": "Description of the project's purpose."
+        "points": {
+          "type": "number"
         },
-        "status": {
+        "date": {
           "type": "string",
-          "description": "The current status of the project (e.g., 'setup', 'active', 'completed')."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The date and time the project started.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "The date and time the project ended or is expected to end.",
-          "format": "date-time"
+          "format": "date"
         }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "status"
-      ]
-    },
-    "Module": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Module",
-      "type": "object",
-      "description": "Represents a module within the Firestudio environment, such as 'Attendance' or 'Employee'.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the module."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the module (e.g., 'Attendance', 'Employee')."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the module's functionality."
-        },
-        "projectId": {
-          "type": "string",
-          "description": "Reference to Project. (Relationship: Project 1:N Module)"
-        },
-        "deploymentStatus": {
-          "type": "string",
-          "description": "Status of the module's deployment (e.g., 'deployed', 'pending', 'failed')."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "projectId",
-        "deploymentStatus"
-      ]
-    },
-    "TelegramBot": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "TelegramBot",
-      "type": "object",
-      "description": "Represents the Telegram bot connection details for notifications.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Telegram bot connection."
-        },
-        "botName": {
-          "type": "string",
-          "description": "Name of the Telegram bot."
-        },
-        "token": {
-          "type": "string",
-          "description": "API token for the Telegram bot."
-        },
-        "chatId": {
-          "type": "string",
-          "description": "Chat ID to send notifications to."
-        },
-        "projectId": {
-          "type": "string",
-          "description": "Reference to Project. (Relationship: Project 1:N TelegramBot)"
-        },
-        "status": {
-          "type": "string",
-          "description": "The connection status of the Telegram bot (e.g., 'active', 'inactive')."
-        }
-      },
-      "required": [
-        "id",
-        "botName",
-        "token",
-        "chatId",
-        "projectId",
-        "status"
-      ]
-    },
-    "FinanceDataSync": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FinanceDataSync",
-      "type": "object",
-      "description": "Represents the synchronization process for finance data from Google Sheets to Firestore.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the finance data synchronization process."
-        },
-        "sourceType": {
-          "type": "string",
-          "description": "The type of data source (e.g., 'Google Sheets')."
-        },
-        "sourceDetails": {
-          "type": "string",
-          "description": "Connection details for the data source (e.g., spreadsheet ID, sheet name)."
-        },
-        "destinationType": {
-          "type": "string",
-          "description": "The type of data destination (e.g., 'Firestore')."
-        },
-        "destinationDetails": {
-          "type": "string",
-          "description": "Connection details for the data destination (e.g., Firestore collection path)."
-        },
-        "projectId": {
-          "type": "string",
-          "description": "Reference to Project. (Relationship: Project 1:N FinanceDataSync)"
-        },
-        "syncStatus": {
-          "type": "string",
-          "description": "The current status of the synchronization process (e.g., 'active', 'pending', 'completed', 'failed')."
-        },
-        "lastSyncTime": {
-          "type": "string",
-          "description": "The date and time of the last successful synchronization.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "sourceType",
-        "sourceDetails",
-        "destinationType",
-        "destinationDetails",
-        "projectId",
-        "syncStatus"
-      ]
+      }
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/projects/{projectId}",
+        "path": "/attendance_points/{pointId}",
         "definition": {
-          "entityName": "Project",
+          "entityName": "AttendancePoint",
           "schema": {
-            "$ref": "#/backend/entities/Project"
+            "$ref": "#/backend/entities/AttendancePoint"
           },
-          "description": "Stores project details.  Authorization is typically based on user roles or project ownership (not explicitly modeled here, assuming external auth mechanism manages this).",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "Unique identifier for the project."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/modules/{moduleId}",
-        "definition": {
-          "entityName": "Module",
-          "schema": {
-            "$ref": "#/backend/entities/Module"
-          },
-          "description": "Stores module details associated with a project. Includes denormalized 'projectId' for authorization independence.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "Unique identifier for the project."
-            },
-            {
-              "name": "moduleId",
-              "description": "Unique identifier for the module."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/telegram_bots/{telegramBotId}",
-        "definition": {
-          "entityName": "TelegramBot",
-          "schema": {
-            "$ref": "#/backend/entities/TelegramBot"
-          },
-          "description": "Stores Telegram bot connection details for a project. Includes denormalized 'projectId' for authorization independence.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "Unique identifier for the project."
-            },
-            {
-              "name": "telegramBotId",
-              "description": "Unique identifier for the Telegram bot."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/finance_data_syncs/{financeDataSyncId}",
-        "definition": {
-          "entityName": "FinanceDataSync",
-          "schema": {
-            "$ref": "#/backend/entities/FinanceDataSync"
-          },
-          "description": "Stores finance data synchronization details for a project. Includes denormalized 'projectId' for authorization independence.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "Unique identifier for the project."
-            },
-            {
-              "name": "financeDataSyncId",
-              "description": "Unique identifier for the finance data sync process."
-            }
-          ]
+          "description": "Stores attendance points for employees."
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to support the Firestudio project setup, focusing on projects, modules, Telegram bot notifications, and finance data synchronization from Google Sheets. The structure prioritizes authorization independence through denormalization and structural segregation to ensure secure and scalable operations. All authorization relies solely on `request.auth.uid`. The use of path-based ownership `/projects/{projectId}/modules/{moduleId}` simplifies security rules and improves efficiency for ownership-based access control. A membership map is not required as there is no need for collaborative data.\n\n**Authorization Independence (Denormalization):**\n*   The `projectId` field is included in the Module, TelegramBot, and FinanceDataSync collections. This denormalization allows direct access and querying of these subcollections based on the `projectId` without needing to perform parent document lookups, thus ensuring authorization independence and enabling atomic operations.\n\n**Structural Segregation (Homogeneous Security Posture):**\n*   Each top-level collection and subcollection houses documents with similar security requirements. For instance, all documents within `/projects/{projectId}/modules` share the same access control policies based on the project.\n\n**Access Modeling:**\n*   Path-Based Ownership: The structure `/projects/{projectId}/modules/{moduleId}` and similar paths enforce clear ownership and simplify security rules. This approach is used for modules, Telegram bots, and finance data sync configurations that belong to specific projects.\n\n**QAPs (Rules are not Filters):**\n*   The structure enables secure `list` operations because the security rules can be applied directly to each collection based on the `projectId` and other denormalized fields. This prevents the need to filter data based on client-side logic, enhancing security and performance.\n"
+    ]
   }
 }

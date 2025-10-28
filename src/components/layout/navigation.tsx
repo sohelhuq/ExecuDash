@@ -1,27 +1,20 @@
 'use client';
 import {
   Home,
+  Users,
+  Award,
+  Building,
+  Plane,
+  CreditCard,
+  Bell,
+  Wallet,
+  Briefcase,
+  FileText,
   LineChart,
   Settings,
-  CircleHelp,
-  Briefcase,
-  Users,
-  Bell,
-  TrendingUp,
-  ReceiptText,
-  Building,
-  Landmark as BankIcon,
-  UserCheck,
-  ShieldCheck,
-  Wallet,
-  BookCopy,
-  Boxes,
-  Factory,
-  Workflow,
-  ChevronDown,
-  Fuel,
-  LayoutDashboard,
-  Pill,
+  Star,
+  ChevronRight,
+  Dot,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,111 +23,38 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import * as React from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import type { BusinessUnit } from '@/lib/business-units-types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { Input } from '../ui/input';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home, exactMatch: true },
-  { href: '/accounting', label: 'Accounting', icon: BookCopy },
-  { href: '/banking', label: 'Banking', icon: BankIcon },
-  { href: '/fdr', label: 'FDR', icon: ShieldCheck },
-  { href: '/dps', label: 'DPS', icon: Wallet },
-  { href: '/sales', label: 'Sales Management', icon: Briefcase },
-  { href: '/collections', label: 'Collections', icon: ReceiptText },
-  { href: '/properties', label: 'Properties', icon: Building },
-  { href: '/inventory', label: 'Inventory', icon: Boxes },
-  { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
-  { href: '/hr', label: 'HR Management', icon: Users },
-  { href: '/automations', label: 'Automations', icon: Workflow },
-  { href: '/trends', label: 'Trends', icon: TrendingUp },
-  { href: '/alerts', label: 'Alerts', icon: Bell },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/attendance', label: 'Attendance', icon: Users },
+  { href: '/award', label: 'Award', icon: Award },
+  { href: '/department', label: 'Department', icon: Building },
+  { href: '/employee', label: 'Employee', icon: Users },
+  { href: '/leave', label: 'Leave', icon: Plane },
+  { href: '/loan', label: 'Loan', icon: CreditCard },
+  { href: '/notice-board', label: 'Notice board', icon: Bell },
+  { href: '/payroll', label: 'Payroll', icon: Wallet },
+  { href: '/procurement', label: 'Procurement', icon: Briefcase },
+  { href: '/project-management', label: 'Project management', icon: FileText },
+  { href: '/recruitment', label: 'Recruitment', icon: Users },
+  { href: '/reports', label: 'Reports', icon: LineChart },
 ];
 
-const unitIcons: {[key: string]: React.ElementType} = {
-    'setu-filling-station': Fuel,
-    'huq-bricks': Factory,
-    'hridoy-tara-pharmacy': Pill,
-    'setu-tech': LayoutDashboard,
-};
-const getUnitIcon = (id: string) => {
-    return unitIcons[id] || Briefcase;
-};
-
-
-function BusinessUnitsNav() {
-    const pathname = usePathname();
-    const firestore = useFirestore();
-    const businessUnitsCollection = useMemoFirebase(() => {
-        return firestore ? collection(firestore, 'business_units') : null;
-    }, [firestore]);
-    const { data: businessUnits, isLoading } = useCollection<BusinessUnit>(businessUnitsCollection);
-    const [isOpen, setIsOpen] = React.useState(true);
-
-    const isBusinessUnitActive = pathname.startsWith('/dashboard/');
-
-    if (isLoading) {
-        return (
-            <>
-                <SidebarMenuSkeleton showIcon />
-                <SidebarMenuSkeleton showIcon />
-            </>
-        )
-    }
-
-    if (!businessUnits || businessUnits.length === 0) {
-        return null;
-    }
-
-    return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-            <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                        isActive={isBusinessUnitActive}
-                        className="justify-between"
-                    >
-                        <div className="flex items-center gap-2">
-                           <Briefcase />
-                            <span>Business Units</span>
-                        </div>
-                        <ChevronDown className={cn("transition-transform duration-200", isOpen && "rotate-180")} />
-                    </SidebarMenuButton>
-                </CollapsibleTrigger>
-            </SidebarMenuItem>
-            <CollapsibleContent>
-                <SidebarMenuSub>
-                    {businessUnits.map(unit => {
-                        const Icon = getUnitIcon(unit.id);
-                        const href = `/dashboard/${unit.id}`;
-                        return (
-                            <SidebarMenuSubItem key={unit.id}>
-                                <Link href={href}>
-                                    <SidebarMenuSubButton isActive={pathname === href}>
-                                        <Icon />
-                                        <span>{unit.name}</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
-                            </SidebarMenuSubItem>
-                        );
-                    })}
-                </SidebarMenuSub>
-            </CollapsibleContent>
-        </Collapsible>
-    )
-}
+const rewardPointsSubItems = [
+    { href: '/reward/point-settings', label: 'Point settings' },
+    { href: '/reward/point-categories', label: 'Point categories' },
+    { href: '/reward/management-points', label: 'Management points' },
+];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -144,64 +64,70 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-3 p-2">
           <Logo />
-          <span className="text-lg font-semibold text-sidebar-foreground">ExecuDash</span>
+          <span className="text-xl font-bold text-sidebar-foreground">YRM</span>
+        </div>
+        <div className="p-2">
+          <Input placeholder="Menu Search..." />
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navItems.map((item) => {
-              if (item.href === '/dashboard') {
-                  return (
-                      <React.Fragment key="dashboard-and-units">
-                          <SidebarMenuItem>
-                              <Link href={item.href}>
-                                  <SidebarMenuButton
-                                      isActive={pathname === item.href}
-                                      tooltip={item.label}
-                                      className="justify-start"
-                                  >
-                                      <item.icon />
-                                      <span>{item.label}</span>
-                                  </SidebarMenuButton>
-                              </Link>
-                          </SidebarMenuItem>
-                          <BusinessUnitsNav />
-                      </React.Fragment>
-                  );
-              }
-
-              // Hide sundry debtors from the main nav list as it's part of sales
-              if (item.href === '/sales/sundry-debtors') return null;
-
-              return (
-                <SidebarMenuItem key={item.label}>
-                  <Link href={item.href}>
-                    <SidebarMenuButton
-                      isActive={pathname.startsWith(item.href) && !item.exactMatch}
-                      tooltip={item.label}
-                      className="justify-start"
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
+          {navItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <Link href={item.href}>
+                <SidebarMenuButton
+                  isActive={pathname === item.href || (!item.exactMatch && pathname.startsWith(item.href))}
+                  tooltip={item.label}
+                  className="justify-between"
+                >
+                    <div className="flex items-center gap-2">
+                        <item.icon />
+                        <span>{item.label}</span>
+                    </div>
+                    {['/attendance', '/award', '/department', '/employee', '/leave', '/loan', '/notice-board', '/project-management', '/recruitment', '/reports'].includes(item.href) && <ChevronRight className="h-4 w-4" />}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          ))}
+            <Collapsible asChild>
+                <>
+                <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="justify-between" isActive={pathname.startsWith('/reward')}>
+                            <div className="flex items-center gap-2">
+                                <Star />
+                                <span>Reward points</span>
+                            </div>
+                            <ChevronRight className="h-4 w-4" />
+                        </SidebarMenuButton>
+                    </CollapsibleTrigger>
                 </SidebarMenuItem>
-              );
-          })}
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        <SidebarMenuItem>
+                            <Link href="/reward/attendance">
+                                <SidebarMenuSubButton isActive={pathname === '/reward/attendance'}>
+                                    <Dot />
+                                    <span>Point settings</span>
+                                </SidebarMenuSubButton>
+                            </Link>
+                        </SidebarMenuItem>
+                         {rewardPointsSubItems.map(subItem => (
+                           <SidebarMenuItem key={subItem.href}>
+                               <Link href={subItem.href}>
+                                   <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                       <Dot />
+                                       <span>{subItem.label}</span>
+                                   </SidebarMenuSubButton>
+                               </Link>
+                           </SidebarMenuItem>
+                        ))}
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+                </>
+            </Collapsible>
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/help">
-              <SidebarMenuButton tooltip="Help" className="justify-start">
-                <CircleHelp />
-                <span>Help & Support</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 }

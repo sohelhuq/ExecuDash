@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,7 +18,7 @@ const attendanceData = [
   { si: 9, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:28', points: 0, date: '2025-10-25' },
 ];
 
-export default function DashboardPage() {
+export default function AttendancePointsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
