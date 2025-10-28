@@ -85,7 +85,7 @@ export function Dashboard() {
                 </div>
              ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {businessUnits?.filter(u => ['setu-filling-station', 'huq-bricks', 'hridoy-tara-pharmacy', 'setu-tech'].includes(u.id)).map(unit => {
+                {businessUnits?.map(unit => {
                     const Icon = getUnitIcon(unit.id);
                     const totalSales = unit.transactions?.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) || 0;
                     const totalExpenses = unit.transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + Math.abs(t.amount), 0) || 0;
