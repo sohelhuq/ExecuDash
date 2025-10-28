@@ -54,7 +54,7 @@ const accountingModules = [
     icon: FilePieChart,
     title: "Reports",
     description: "Manage finances effortlessly. Track income and expenses, generate insightful reports, and stay organized.",
-    href: "#"
+    href: "/accounting/reports"
   },
 ];
 
