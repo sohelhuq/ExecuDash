@@ -20,6 +20,12 @@ type SavingsAccount = {
   balance: number;
 }
 
+type BankDeposit = {
+    amount: number;
+    date: string;
+    reference: string;
+}
+
 export const initialCcAccounts: CcAccount[] = [
   {
     bank: 'United Commercial Bank PLC',
@@ -34,4 +40,8 @@ export const initialCcAccounts: CcAccount[] = [
 
 export const initialSavingsAccounts: SavingsAccount[] = [
   // Add initial savings accounts here if needed
+];
+
+export const initialBankDeposits: BankDeposit[] = [
+  // Add initial bank deposits here if needed
 ];

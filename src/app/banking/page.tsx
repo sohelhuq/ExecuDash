@@ -31,11 +31,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, PlusCircle, Database } from 'lucide-react';
+import { Loader2, PlusCircle, Database, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
 import { initialCcAccounts, initialSavingsAccounts } from '@/lib/banking-data';
+import Link from 'next/link';
 
 
 type Account = {
@@ -278,10 +279,15 @@ export default function BankingPage() {
             <h1 className="text-3xl font-bold tracking-tight">Banking Summary</h1>
             <p className="text-muted-foreground">An overview of your CC and Savings accounts.</p>
           </div>
-          <Button variant="outline" onClick={seedData} disabled={isSeeding}>
-            {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-            Seed Data
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href="/banking/deposits">
+                <Button variant="outline">Bank Deposits <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </Link>
+            <Button variant="outline" onClick={seedData} disabled={isSeeding}>
+                {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                Seed Data
+            </Button>
+          </div>
         </div>
 
         <Card>
