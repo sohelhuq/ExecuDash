@@ -29,10 +29,11 @@ const assignedAccounts = [
 ];
 
 const responsibilities = [
-    { task: "Monitored Invoices (Daily)", completed: true },
-    { task: "Monitor High-Value Clients (Weekly)", completed: true },
-    { task: "Generate Weekly Collections Report (Friday PM)", completed: true },
-    { task: "Follow-up Payment Plans (Bi-weekly)", completed: false },
+    { task: "Oversee Collections Portfolio", completed: true },
+    { task: "Develop & Implement Collection Strategies", completed: true },
+    { task: "Negotiate Payment Plans with Clients", completed: false },
+    { task: "Analyze Delinquent Accounts & Report", completed: true },
+    { task: "Ensure Compliance with Regulations", completed: false },
 ]
 
 export default function CollectionsPage() {
