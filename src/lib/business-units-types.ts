@@ -1,3 +1,4 @@
+
 export type Transaction = {
   id: string;
   date: string;
@@ -63,3 +64,13 @@ export type BusinessUnit = {
   cngSector?: CngSector;
   lpgSector?: LpgSector;
 };
+
+export type MeterReading = {
+    id: string;
+    product: string;
+    nozzle: string;
+    reading: number;
+    timestamp: any; // Firestore Timestamp
+};
+
+    

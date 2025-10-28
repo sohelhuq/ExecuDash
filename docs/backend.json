@@ -125,6 +125,22 @@
         "description"
       ]
     },
+    "MeterReading": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MeterReading",
+      "type": "object",
+      "description": "Represents a meter reading from a nozzle at a specific time.",
+      "properties": {
+        "id": { "type": "string" },
+        "businessUnitId": { "type": "string" },
+        "shiftId": { "type": "string" },
+        "nozzle": { "type": "string" },
+        "product": { "type": "string" },
+        "reading": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessUnitId", "nozzle", "product", "reading", "timestamp"]
+    },
     "Metric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Metric",
@@ -609,6 +625,14 @@
         }
       },
       {
+        "path": "/business_units/{businessUnitId}/meter_readings/{readingId}",
+        "definition": {
+          "entityName": "MeterReading",
+          "schema": { "$ref": "#/backend/entities/MeterReading" },
+          "description": "Stores meter readings for a specific business unit."
+        }
+      },
+      {
         "path": "/business_units/{businessUnitId}/metrics/{metricId}",
         "definition": {
           "entityName": "Metric",
@@ -757,4 +781,5 @@
   }
 }
 
+    
     
