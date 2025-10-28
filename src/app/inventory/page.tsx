@@ -97,13 +97,13 @@ export default function InventoryPage() {
 
             if (module.href !== '#') {
                 return (
-                    <Link href={module.href} key={module.title} className="flex">
+                    <Link href={module.href} key={module.title} className="flex no-underline">
                         {cardContent}
                     </Link>
                 )
             }
             
-            return <div key={module.title}>{cardContent}</div>
+            return <div key={module.title} className="flex">{cardContent}</div>
           })}
         </div>
       </div>
