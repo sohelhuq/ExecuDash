@@ -31,10 +31,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, PlusCircle } from 'lucide-react';
+import { Loader2, PlusCircle, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
+import { initialCcAccounts, initialSavingsAccounts } from '@/lib/banking-data';
 
 
 type Account = {
@@ -48,7 +49,7 @@ type Account = {
 }
 
 type CcAccount = Account & {
-    interest: number;
+    interest?: number;
 }
 
 const defaultCcAccountState: Omit<CcAccount, 'balance'> = {
@@ -75,6 +76,7 @@ const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style
 export default function BankingPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
+    const [isSeeding, setIsSeeding] = React.useState(false);
 
     const ccAccountsCollection = useMemoFirebase(() => {
         return firestore ? collection(firestore, 'cc_accounts') : null;
@@ -138,6 +140,44 @@ export default function BankingPage() {
         }
     };
 
+    const seedData = async () => {
+        if (!firestore) return;
+        setIsSeeding(true);
+        try {
+            const ccSnapshot = await getDocs(collection(firestore, 'cc_accounts'));
+            const savingsSnapshot = await getDocs(collection(firestore, 'savings_accounts'));
+
+            if (!ccSnapshot.empty && !savingsSnapshot.empty) {
+                toast({ title: 'Data Already Exists', description: 'Banking data has already been seeded.' });
+                return;
+            }
+
+            const batch = writeBatch(firestore);
+
+            if (ccSnapshot.empty) {
+                initialCcAccounts.forEach((account) => {
+                    const docRef = doc(collection(firestore, 'cc_accounts'));
+                    batch.set(docRef, account);
+                });
+            }
+
+            if (savingsSnapshot.empty) {
+                initialSavingsAccounts.forEach((account) => {
+                    const docRef = doc(collection(firestore, 'savings_accounts'));
+                    batch.set(docRef, account);
+                });
+            }
+
+            await batch.commit();
+            toast({ title: 'Seeding Complete', description: `Initial banking records have been added.` });
+        } catch (error) {
+            console.error('Error seeding data:', error);
+            toast({ variant: 'destructive', title: 'Seeding Failed', description: 'Could not seed banking data.' });
+        } finally {
+            setIsSeeding(false);
+        }
+    };
+
     const totalCCOpening = ccAccounts?.reduce((acc, curr) => acc + curr.opening, 0) || 0;
     const totalCCCr = ccAccounts?.reduce((acc, curr) => acc + curr.cr, 0) || 0;
     const totalCCDr = ccAccounts?.reduce((acc, curr) => acc + curr.dr, 0) || 0;
@@ -176,11 +216,11 @@ export default function BankingPage() {
                     <Input id="opening" name="opening" type="number" value={newCcAccount.opening} onChange={handleCcInputChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="cr" className="text-right">CR (Payments)</Label>
+                    <Label htmlFor="cr" className="text-right">CR (Deposits)</Label>
                     <Input id="cr" name="cr" type="number" value={newCcAccount.cr} onChange={handleCcInputChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="dr" className="text-right">DR (Drawings)</Label>
+                    <Label htmlFor="dr" className="text-right">DR (Withdrawals)</Label>
                     <Input id="dr" name="dr" type="number" value={newCcAccount.dr} onChange={handleCcInputChange} className="col-span-3" />
                 </div>
             </div>
@@ -233,9 +273,15 @@ export default function BankingPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Banking Summary</h1>
-          <p className="text-muted-foreground">An overview of your CC and Savings accounts.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Banking Summary</h1>
+            <p className="text-muted-foreground">An overview of your CC and Savings accounts.</p>
+          </div>
+          <Button variant="outline" onClick={seedData} disabled={isSeeding}>
+            {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+            Seed Data
+          </Button>
         </div>
 
         <Card>
@@ -263,8 +309,8 @@ export default function BankingPage() {
                   <TableHead>Account No</TableHead>
                   <TableHead>Interest %</TableHead>
                   <TableHead className="text-right">Opening</TableHead>
-                  <TableHead className="text-right">CR</TableHead>
-                  <TableHead className="text-right">DR</TableHead>
+                  <TableHead className="text-right">CR (Deposits)</TableHead>
+                  <TableHead className="text-right">DR (Withdrawals)</TableHead>
                   <TableHead className="text-right">Balance</TableHead>
                 </TableRow>
               </TableHeader>
@@ -276,7 +322,7 @@ export default function BankingPage() {
                     <TableCell>{account.bank}</TableCell>
                     <TableCell>{account.name}</TableCell>
                     <TableCell>{account.no}</TableCell>
-                    <TableCell>{account.interest}%</TableCell>
+                    <TableCell>{account.interest ? `${account.interest}%` : 'N/A'}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(account.opening)}</TableCell>
                     <TableCell className="text-right font-mono text-green-600">{formatCurrency(account.cr)}</TableCell>
                     <TableCell className="text-right font-mono text-red-600">{formatCurrency(account.dr)}</TableCell>
@@ -288,8 +334,8 @@ export default function BankingPage() {
                 <TableRow className="font-bold">
                     <TableCell colSpan={4}>Total CC Account Transaction</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(totalCCOpening)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(totalCCCr)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(totalCCDr)}</TableCell>
+                    <TableCell className="text-right font-mono text-green-600">{formatCurrency(totalCCCr)}</TableCell>
+                    <TableCell className="text-right font-mono text-red-600">{formatCurrency(totalCCDr)}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(totalCCBalance)}</TableCell>
                 </TableRow>
               </TableFooter>
