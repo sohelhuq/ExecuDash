@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt } from 'lucide-react';
+import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt, Pill } from 'lucide-react';
 import type { BusinessUnit } from '@/lib/business-units-types';
 import * as React from 'react';
 
@@ -37,6 +37,7 @@ const ICONS: { [key: string]: React.ElementType } = {
   ArrowRightLeft,
   Factory,
   Receipt,
+  Pill,
 };
 
 

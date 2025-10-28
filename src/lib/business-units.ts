@@ -1,4 +1,4 @@
-import { DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel } from 'lucide-react';
+import { DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, Pill, PackageCheck, FileText, ShoppingCart } from 'lucide-react';
 import { type BusinessUnit } from './business-units-types';
 
 
@@ -99,7 +99,6 @@ export const businessUnits: BusinessUnit[] = [
         { id: 'txn3', date: '2024-06-15', description: 'New Retainer Signed', amount: 150000, type: 'income' },
     ],
   },
-  // Add other business units here...
   {
     id: 'hotel-midway',
     name: 'Hotel Midway',
@@ -122,6 +121,31 @@ export const businessUnits: BusinessUnit[] = [
       { id: 'txn1', date: '2024-06-28', description: 'Room Booking', amount: 9000, type: 'income' },
       { id: 'txn2', date: '2024-06-28', description: 'Food Supplies', amount: -25000, type: 'expense' },
       { id: 'txn3', date: '2024-06-27', description: 'Restaurant Sales', amount: 12000, type: 'income' },
+    ],
+  },
+    {
+    id: 'video-tara-pharmacy',
+    name: 'Video Tara Pharmacy',
+    description: 'Retail pharmacy providing prescription and over-the-counter medications.',
+    kpis: [
+      { title: 'Total Sales', value: '৳950,000', change: '+11.5%', icon: 'DollarSign' },
+      { title: 'Gross Profit', value: '৳380,000', change: '+9.8%', icon: 'Banknote' },
+      { title: 'Inventory Value', value: '৳1,500,000', change: '-2.1%', icon: 'Archive' },
+      { title: 'Prescriptions Filled', value: '1,800', change: '+20%', icon: 'FileText' },
+    ],
+    timeSeriesData: [
+      { month: 'Jan', revenue: 880000, profit: 340000 },
+      { month: 'Feb', revenue: 900000, profit: 350000 },
+      { month: 'Mar', revenue: 920000, profit: 360000 },
+      { month: 'Apr', revenue: 910000, profit: 355000 },
+      { month: 'May', revenue: 950000, profit: 380000 },
+      { month: 'Jun', revenue: 980000, profit: 390000 },
+    ],
+    transactions: [
+      { id: 'txn1', date: '2024-06-28', description: 'Prescription Sale', amount: 1200, type: 'income' },
+      { id: 'txn2', date: '2024-06-28', description: 'Supplier Payment: Beximco', amount: -200000, type: 'expense' },
+      { id: 'txn3', date: '2024-06-27', description: 'OTC Sale', amount: 550, type: 'income' },
+      { id: 'txn4', date: '2024-06-27', description: 'Utility Bill: Electricity', amount: -15000, type: 'expense' },
     ],
   },
 ];
