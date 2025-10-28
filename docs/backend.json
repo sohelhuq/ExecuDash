@@ -417,6 +417,57 @@
         "amount",
         "date"
       ]
+    },
+    "CcAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CcAccount",
+      "type": "object",
+      "description": "Represents a single Credit Card (CC) account.",
+      "properties": {
+        "bank": { "type": "string" },
+        "name": { "type": "string" },
+        "no": { "type": "string" },
+        "interest": { "type": "string" },
+        "opening": { "type": "number" },
+        "cr": { "type": "number" },
+        "dr": { "type": "number" },
+        "balance": { "type": "number" }
+      },
+      "required": ["bank", "name", "no", "opening", "cr", "dr", "balance"]
+    },
+    "SavingsAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SavingsAccount",
+      "type": "object",
+      "description": "Represents a single Savings account.",
+      "properties": {
+        "bank": { "type": "string" },
+        "name": { "type": "string" },
+        "no": { "type": "string" },
+        "opening": { "type": "number" },
+        "cr": { "type": "number" },
+        "dr": { "type": "number" },
+        "balance": { "type": "number" }
+      },
+      "required": ["bank", "name", "no", "opening", "cr", "dr", "balance"]
+    },
+    "RentEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RentEntry",
+      "type": "object",
+      "description": "Represents a single rent collection entry for a property.",
+      "properties": {
+        "category": { "type": "string", "enum": ["shetue_vanga_dokan", "jaman_tower", "others"] },
+        "location": { "type": "string" },
+        "tenant": { "type": "string" },
+        "opening": { "type": "number" },
+        "rent": { "type": "number" },
+        "total": { "type": "number" },
+        "collection": { "type": "number" },
+        "expense": { "type": "number" },
+        "due": { "type": "number" }
+      },
+      "required": ["category", "location", "tenant", "opening", "rent", "total", "collection", "expense", "due"]
     }
   },
   "auth": {
@@ -581,6 +632,30 @@
           "entityName": "BankDeposit",
           "schema": { "$ref": "#/backend/entities/BankDeposit" },
           "description": "Stores bank deposit records."
+        }
+      },
+      {
+        "path": "/cc_accounts/{accountId}",
+        "definition": {
+          "entityName": "CcAccount",
+          "schema": { "$ref": "#/backend/entities/CcAccount" },
+          "description": "Stores Credit Card (CC) account data."
+        }
+      },
+      {
+        "path": "/savings_accounts/{accountId}",
+        "definition": {
+          "entityName": "SavingsAccount",
+          "schema": { "$ref": "#/backend/entities/SavingsAccount" },
+          "description": "Stores Savings account data."
+        }
+      },
+      {
+        "path": "/rent_entries/{entryId}",
+        "definition": {
+          "entityName": "RentEntry",
+          "schema": { "$ref": "#/backend/entities/RentEntry" },
+          "description": "Stores individual rent entries for properties."
         }
       }
     ],

@@ -1,74 +1,40 @@
+
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FilePlus } from 'lucide-react';
+import { FilePlus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import * as React from 'react';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+
 
 type RentEntry = {
   id: string;
-  name: string;
+  category: 'shetue_vanga_dokan' | 'jaman_tower' | 'others';
+  location: string;
+  tenant: string;
   opening: number;
-  vara: number;
+  rent: number;
   total: number;
   collection: number;
-  exp: number;
+  expense: number;
   due: number;
 };
 
-const shetueVangaDokanData: RentEntry[] = [
-  { id: 'Dokan 1', name: 'Rofiq Mia', opening: 1772, vara: 39759, total: 41531, collection: 38271, exp: 0, due: 3260 },
-  { id: 'Dokan 2', name: 'Shipon', opening: 3914, vara: 61758, total: 65672, collection: 65672, exp: 0, due: 0 },
-  { id: 'Dokan 3', name: 'Iqbal Mia', opening: 0, vara: 44495, total: 44495, collection: 41433, exp: 0, due: 3062 },
-  { id: 'Dokan 4', name: 'Ismail Mia', opening: 11004, vara: 37051, total: 48055, collection: 48055, exp: 0, due: 0 },
-  { id: 'Dokan 5', name: 'Feed office', opening: 0, vara: 0, total: 0, collection: 0, exp: 0, due: 0 },
-  { id: 'Dokan 6', name: 'Dulal', opening: 3541, vara: 28987, total: 32528, collection: 28236, exp: 440, due: 4292 },
-  { id: 'Dokan 7', name: 'Jamal', opening: 5782, vara: 31591, total: 37373, collection: 29241, exp: 1600, due: 8132 },
-  { id: 'Dokan 8', name: 'Abdul Halim', opening: 19642, vara: 49743, total: 69385, collection: 32000, exp: 0, due: 37385 },
-  { id: 'Dokan 9', name: 'Faruk', opening: 19479, vara: 66307, total: 85786, collection: 58508, exp: 0, due: 27278 },
-  { id: 'Dokan 10', name: 'Mosjid', opening: 0, vara: 0, total: 0, collection: 0, exp: 0, due: 0 },
-];
-
-const jamanTowerData: RentEntry[] = [
-  { id: '3Floor/01', name: 'Shetue Tech', opening: 0, vara: 0, total: 0, collection: 0, exp: 0, due: 0 },
-  { id: '3Floor/02', name: 'Piber Cabel', opening: 5500, vara: 66000, total: 71500, collection: 66000, exp: 0, due: 5500 },
-  { id: '3Floor/03', name: 'Family Basa', opening: 0, vara: 0, total: 0, collection: 0, exp: 0, due: 0 },
-  { id: '3Floor/04', name: 'Golden Ispat', opening: 10000, vara: 132000, total: 142000, collection: 110000, exp: 0, due: 32000 },
-  { id: '3Floor/05', name: 'Family Basa', opening: 9000, vara: 54000, total: 63000, collection: 49500, exp: 0, due: 13500 },
-  { id: '4Floor/01', name: 'Khalek vai', opening: 52000, vara: 78000, total: 130000, collection: 130000, exp: 0, due: 0 },
-  { id: '4Floor/02', name: 'Family Basa', opening: 4000, vara: 48000, total: 52000, collection: 40000, exp: 0, due: 12000 },
-  { id: '4Floor/03', name: 'Family Basa', opening: 0, vara: 15000, total: 15000, collection: 6500, exp: 0, due: 8500 },
-  { id: '4Floor/04', name: 'Family Basa', opening: 4500, vara: 13500, total: 18000, collection: 18000, exp: 0, due: 0 },
-  { id: '4Floor/05', name: 'Family Basa', opening: 4500, vara: 54000, total: 58500, collection: 45000, exp: 70634, due: 13500 },
-];
-
-const othersData: RentEntry[] = [
-  { id: 'Room 1', name: 'Mohiuddin Plastic', opening: 140000, vara: 240000, total: 380000, collection: 210000, exp: 0, due: 170000 },
-  { id: 'Dalia Market', name: 'Juta dokan', opening: 24000, vara: 60000, total: 84000, collection: 84000, exp: 2500, due: 0 },
-  { id: 'Dalia Market', name: 'Kapor dokan', opening: 34000, vara: 60000, total: 94000, collection: 94000, exp: 0, due: 0 },
-  { id: 'College road', name: '', opening: 7300, vara: 132000, total: 139300, collection: 139300, exp: 0, due: 0 },
-  { id: 'Sohel vai basa', name: '', opening: 60000, vara: 360000, total: 420000, collection: 390000, exp: 153120, due: 30000 },
-  { id: 'Arambag', name: '', opening: 140000, vara: 200000, total: 340000, collection: 0, exp: 0, due: 340000 },
-  { id: 'Nakhal para', name: '', opening: 60000, vara: 240000, total: 300000, collection: 280000, exp: 0, due: 20000 },
-  { id: 'Masud', name: 'Number 01', opening: 25000, vara: 0, total: 25000, collection: 0, exp: 0, due: 25000 },
-  { id: 'Mater shed', name: '', opening: 35000, vara: 300000, total: 335000, collection: 400000, exp: 0, due: -65000 },
-  { id: 'Pablic hall', name: '', opening: 8000, vara: 96000, total: 104000, collection: 80000, exp: 0, due: 24000 },
-  { id: 'New Shed', name: '', opening: 45000, vara: 180000, total: 225000, collection: 140000, exp: 0, due: 85000 },
-  { id: 'Kutubpur Fram', name: '', opening: 375000, vara: 300000, total: 675000, collection: 150000, exp: 0, due: 525000 },
-];
-
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN').format(value);
 
-const RentTable = ({ title, data }: { title: string, data: RentEntry[] }) => {
+const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[], isLoading: boolean }) => {
   const totals = data.reduce((acc, item) => ({
     opening: acc.opening + item.opening,
-    vara: acc.vara + item.vara,
+    rent: acc.rent + item.rent,
     total: acc.total + item.total,
     collection: acc.collection + item.collection,
-    exp: acc.exp + item.exp,
+    expense: acc.expense + item.expense,
     due: acc.due + item.due,
-  }), { opening: 0, vara: 0, total: 0, collection: 0, exp: 0, due: 0 });
+  }), { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 });
 
   return (
     <Card>
@@ -90,27 +56,31 @@ const RentTable = ({ title, data }: { title: string, data: RentEntry[] }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
-              <TableRow key={item.id + item.name}>
-                <TableCell>{item.id}</TableCell>
-                <TableCell>{item.name}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(item.opening)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(item.vara)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(item.total)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(item.collection)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(item.exp)}</TableCell>
-                <TableCell className="text-right font-mono">{formatCurrency(item.due)}</TableCell>
-              </TableRow>
-            ))}
+            {isLoading ? (
+                <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground"/></TableCell></TableRow>
+            ) : (
+                data.map((item) => (
+                <TableRow key={item.id}>
+                    <TableCell>{item.location}</TableCell>
+                    <TableCell>{item.tenant}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.opening)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.rent)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.total)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.collection)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.expense)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.due)}</TableCell>
+                </TableRow>
+                ))
+            )}
           </TableBody>
           <TableFooter>
             <TableRow className="font-bold">
               <TableCell colSpan={2}>Total</TableCell>
               <TableCell className="text-right font-mono">{formatCurrency(totals.opening)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.vara)}</TableCell>
+              <TableCell className="text-right font-mono">{formatCurrency(totals.rent)}</TableCell>
               <TableCell className="text-right font-mono">{formatCurrency(totals.total)}</TableCell>
               <TableCell className="text-right font-mono">{formatCurrency(totals.collection)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.exp)}</TableCell>
+              <TableCell className="text-right font-mono">{formatCurrency(totals.expense)}</TableCell>
               <TableCell className="text-right font-mono">{formatCurrency(totals.due)}</TableCell>
             </TableRow>
           </TableFooter>
@@ -134,6 +104,16 @@ const SummaryCard = ({ title, value }: { title: string; value: string }) => (
 
 export default function PropertiesPage() {
     const { toast } = useToast();
+    const firestore = useFirestore();
+
+    const vangaDokanQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'shetue_vanga_dokan')) : null, [firestore]);
+    const { data: shetueVangaDokanData, isLoading: isLoadingVangaDokan } = useCollection<RentEntry>(vangaDokanQuery);
+
+    const jamanTowerQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'jaman_tower')) : null, [firestore]);
+    const { data: jamanTowerData, isLoading: isLoadingJamanTower } = useCollection<RentEntry>(jamanTowerQuery);
+
+    const othersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'others')) : null, [firestore]);
+    const { data: othersData, isLoading: isLoadingOthers } = useCollection<RentEntry>(othersQuery);
 
     const handleButtonClick = (action: string) => {
         toast({
@@ -141,6 +121,11 @@ export default function PropertiesPage() {
             description: `${action} functionality will be implemented here.`,
         });
     };
+
+    const grandTotalOpening = (shetueVangaDokanData?.reduce((a,c) => a+c.opening, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.opening, 0) || 0) + (othersData?.reduce((a,c) => a+c.opening, 0) || 0);
+    const grandTotalRent = (shetueVangaDokanData?.reduce((a,c) => a+c.rent, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.rent, 0) || 0) + (othersData?.reduce((a,c) => a+c.rent, 0) || 0);
+    const grandTotalCollection = (shetueVangaDokanData?.reduce((a,c) => a+c.collection, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.collection, 0) || 0) + (othersData?.reduce((a,c) => a+c.collection, 0) || 0);
+    const grandTotalDue = (shetueVangaDokanData?.reduce((a,c) => a+c.due, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.due, 0) || 0) + (othersData?.reduce((a,c) => a+c.due, 0) || 0);
 
   return (
     <AppShell>
@@ -157,16 +142,16 @@ export default function PropertiesPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <SummaryCard title="Grand Total Opening" value="1,107,934" />
-            <SummaryCard title="Grand Total Rent" value="2,988,191" />
-            <SummaryCard title="Grand Total Collection" value="2,773,716" />
-            <SummaryCard title="Grand Total Due" value="1,322,409" />
+            <SummaryCard title="Grand Total Opening" value={formatCurrency(grandTotalOpening)} />
+            <SummaryCard title="Grand Total Rent" value={formatCurrency(grandTotalRent)} />
+            <SummaryCard title="Grand Total Collection" value={formatCurrency(grandTotalCollection)} />
+            <SummaryCard title="Grand Total Due" value={formatCurrency(grandTotalDue)} />
         </div>
 
         <div className="space-y-6">
-            <RentTable title="Shetue Vanga Dokan Vara" data={shetueVangaDokanData} />
-            <RentTable title="Jaman Tower" data={jamanTowerData} />
-            <RentTable title="Others" data={othersData} />
+            <RentTable title="Shetue Vanga Dokan Vara" data={shetueVangaDokanData || []} isLoading={isLoadingVangaDokan} />
+            <RentTable title="Jaman Tower" data={jamanTowerData || []} isLoading={isLoadingJamanTower} />
+            <RentTable title="Others" data={othersData || []} isLoading={isLoadingOthers} />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -179,9 +164,9 @@ export default function PropertiesPage() {
                         <TableHeader><TableRow><TableHead>Particular</TableHead><TableHead className="text-right">Taka</TableHead></TableRow></TableHeader>
                         <TableBody>
                             <TableRow><TableCell>Opening cash</TableCell><TableCell className="text-right font-mono">{formatCurrency(602562)}</TableCell></TableRow>
-                            <TableRow><TableCell>Total Collection</TableCell><TableCell className="text-right font-mono">{formatCurrency(2773716)}</TableCell></TableRow>
+                            <TableRow><TableCell>Total Collection</TableCell><TableCell className="text-right font-mono">{formatCurrency(grandTotalCollection)}</TableCell></TableRow>
                         </TableBody>
-                        <TableFooter><TableRow className="font-bold"><TableCell>Total</TableCell><TableCell className="text-right font-mono">{formatCurrency(3376278)}</TableCell></TableRow></TableFooter>
+                        <TableFooter><TableRow className="font-bold"><TableCell>Total</TableCell><TableCell className="text-right font-mono">{formatCurrency(602562 + grandTotalCollection)}</TableCell></TableRow></TableFooter>
                     </Table>
                 </CardContent>
             </Card>
@@ -205,7 +190,7 @@ export default function PropertiesPage() {
                             </TableRow>
                              <TableRow className="font-bold text-primary">
                                 <TableCell>Cash in hand</TableCell>
-                                <TableCell className="text-right font-mono">{formatCurrency(964584)}</TableCell>
+                                <TableCell className="text-right font-mono">{formatCurrency((602562 + grandTotalCollection) - 2411694)}</TableCell>
                             </TableRow>
                         </TableFooter>
                     </Table>
@@ -217,3 +202,5 @@ export default function PropertiesPage() {
     </AppShell>
   );
 }
+
+    

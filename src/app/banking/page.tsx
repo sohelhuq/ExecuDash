@@ -31,42 +31,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle } from 'lucide-react';
+import { Loader2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
-const initialCcAccounts = [
-    { bank: 'UCB', name: 'Shetue Filling Station', no: '513', interest: '14.25%', opening: -20632117, cr: 67440735, dr: 57880318.85, balance: -11071701 },
-    { bank: 'NCC', name: 'Shetue Feed Mills', no: '587', interest: '14.50%', opening: -25712932, cr: 13636000, dr: 13781431, balance: -25858363 },
-    { bank: 'NCC', name: 'Shetue Feed Mills', no: '587 N', interest: '14.50%', opening: 0, cr: 0, dr: 0, balance: 0 },
-    { bank: 'NCC', name: 'Shetue Plastic', no: '774', interest: '14.50%', opening: -2568923, cr: 1240000, dr: 6744392, balance: -8073315 },
-    { bank: 'SIBL', name: 'Shetue Filling Station', no: '7107', interest: '15.50%', opening: -20176029, cr: 2370500, dr: 1356250, balance: -19161779 },
-    { bank: 'UCB', name: 'Shetue CNG Refualing', no: '57', interest: '14.25%', opening: -3045911, cr: 17120703, dr: 17027616, balance: -2952824 },
-    { bank: 'IDLC', name: 'IDLC', no: '1111', interest: '13.50%', opening: -941186, cr: 666960, dr: 9329, balance: -283555 },
-    { bank: 'UCB', name: 'Hoque Brick', no: '433', interest: '14.25%', opening: -16116968, cr: 2274844, dr: 1101249, balance: -14943373 },
-    { bank: 'NCC', name: 'Duplex House Loan', no: '999', interest: '12.00%', opening: -6973239, cr: 785000, dr: 416791, balance: -6605030 },
-];
-
-const initialSavingsAccounts = [
-    { bank: 'UCB', name: 'Filling', no: '20', interest: '', opening: 6601186, cr: 3715000, dr: 11504100, balance: -1187914 },
-    { bank: 'UCB', name: 'Sabikun', no: '2489', interest: '', opening: 2927, cr: 0, dr: 0, balance: 2927 },
-    { bank: 'UCB', name: 'CNG', no: '249', interest: '', opening: 15866, cr: 0, dr: 0, balance: 15866 },
-    { bank: 'UCB', name: 'Filling', no: '163', interest: '', opening: 1655, cr: 0, dr: 0, balance: 1655 },
-    { bank: 'NCC', name: 'Fish Feed', no: '5894', interest: '', opening: 10650, cr: 0, dr: 0, balance: 10650 },
-    { bank: 'NCC', name: 'Plastic', no: '8220', interest: '', opening: 2288, cr: 0, dr: 0, balance: 2288 },
-    { bank: 'NCC', name: 'Sabikun', no: '556', interest: '', opening: 74627, cr: 79300, dr: 0, balance: 153927 },
-    { bank: 'SIBL', name: 'Shaheb ulla trading', no: '603', interest: '', opening: 2496, cr: 0, dr: 0, balance: 2496 },
-    { bank: 'SIBL', name: 'Shetue Trading', no: '507', interest: '', opening: 2384, cr: 0, dr: 0, balance: 2384 },
-    { bank: 'UCB', name: 'Plastic', no: '2860', interest: '', opening: 1308, cr: 0, dr: 0, balance: 1308 },
-    { bank: 'One bank', name: 'Jahirul', no: '668', interest: '', opening: 1352, cr: 0, dr: 0, balance: 1352 },
-    { bank: 'IFIC', name: 'Shetue Filling Station', no: '0', interest: '', opening: 0, cr: 0, dr: 0, balance: 0 },
-    { bank: 'Mercantile', name: 'CNG', no: '2786', interest: '', opening: 70215, cr: 0, dr: 0, balance: 70215 },
-    { bank: 'Meghna', name: 'Filling', no: '121', interest: '', opening: 4533, cr: 0, dr: 0, balance: 4533 },
-    { bank: 'Jamuna', name: 'Sabikun', no: '447', interest: '', opening: 26317, cr: 0, dr: 0, balance: 26317 },
-    { bank: 'IFIC', name: 'Jahirul', no: '811', interest: '', opening: -490000, cr: 400000, dr: 600000, balance: -690000 },
-    { bank: 'DBBL', name: 'Jahirul', no: '4578', interest: '', opening: 28770, cr: 500000, dr: 0, balance: 528770 },
-    { bank: 'City', name: 'Jahirul', no: '001', interest: '', opening: 8832, cr: 0, dr: 0, balance: 8832 },
-    { bank: 'Brac', name: 'Johirul', no: '9001', interest: '', opening: 154712, cr: 2835230, dr: 0, balance: 2989942 },
-];
 
 type Account = {
   bank: string;
@@ -79,7 +48,7 @@ type Account = {
   balance: number;
 }
 
-const defaultAccountState = {
+const defaultAccountState: Omit<Account, 'balance'> = {
   bank: '',
   name: '',
   no: '',
@@ -87,20 +56,24 @@ const defaultAccountState = {
   opening: 0,
   cr: 0,
   dr: 0,
-  balance: 0,
 };
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'BDT' }).format(value);
 
 export default function BankingPage() {
-    const [ccAccounts, setCcAccounts] = React.useState(initialCcAccounts);
-    const [savingsAccounts, setSavingsAccounts] = React.useState(initialSavingsAccounts);
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const ccAccountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'cc_accounts') : null, [firestore]);
+    const { data: ccAccounts, isLoading: isLoadingCc } = useCollection<Account>(ccAccountsCollection);
+
+    const savingsAccountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'savings_accounts') : null, [firestore]);
+    const { data: savingsAccounts, isLoading: isLoadingSavings } = useCollection<Account>(savingsAccountsCollection);
 
     const [isCcDialogOpen, setIsCcDialogOpen] = React.useState(false);
     const [isSavingsDialogOpen, setIsSavingsDialogOpen] = React.useState(false);
 
     const [newAccount, setNewAccount] = React.useState<Omit<Account, 'balance'>>(defaultAccountState);
-    const { toast } = useToast();
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -116,30 +89,32 @@ export default function BankingPage() {
         }
 
         const newEntry: Account = { ...newAccount, balance: opening + cr - dr };
+        const targetCollection = type === 'cc' ? ccAccountsCollection : savingsAccountsCollection;
 
-        if (type === 'cc') {
-            setCcAccounts(prev => [...prev, newEntry]);
-            setIsCcDialogOpen(false);
-        } else {
-            setSavingsAccounts(prev => [...prev, newEntry]);
-            setIsSavingsDialogOpen(false);
+        if (targetCollection) {
+          addDocumentNonBlocking(targetCollection, newEntry);
+          toast({ title: 'Account Added', description: `${newAccount.name} has been successfully added.` });
+          
+          if (type === 'cc') {
+              setIsCcDialogOpen(false);
+          } else {
+              setIsSavingsDialogOpen(false);
+          }
+          setNewAccount(defaultAccountState);
         }
-        
-        toast({ title: 'Account Added', description: `${newAccount.name} has been successfully added.` });
-        setNewAccount(defaultAccountState);
     };
 
-    const totalCCOpening = ccAccounts.reduce((acc, curr) => acc + curr.opening, 0);
-    const totalCCCr = ccAccounts.reduce((acc, curr) => acc + curr.cr, 0);
-    const totalCCDr = ccAccounts.reduce((acc, curr) => acc + curr.dr, 0);
-    const totalCCBalance = ccAccounts.reduce((acc, curr) => acc + curr.balance, 0);
+    const totalCCOpening = ccAccounts?.reduce((acc, curr) => acc + curr.opening, 0) || 0;
+    const totalCCCr = ccAccounts?.reduce((acc, curr) => acc + curr.cr, 0) || 0;
+    const totalCCDr = ccAccounts?.reduce((acc, curr) => acc + curr.dr, 0) || 0;
+    const totalCCBalance = ccAccounts?.reduce((acc, curr) => acc + curr.balance, 0) || 0;
 
-    const totalSavingsOpening = savingsAccounts.reduce((acc, curr) => acc + curr.opening, 0);
-    const totalSavingsCr = savingsAccounts.reduce((acc, curr) => acc + curr.cr, 0);
-    const totalSavingsDr = savingsAccounts.reduce((acc, curr) => acc + curr.dr, 0);
-    const totalSavingsBalance = savingsAccounts.reduce((acc, curr) => acc + curr.balance, 0);
+    const totalSavingsOpening = savingsAccounts?.reduce((acc, curr) => acc + curr.opening, 0) || 0;
+    const totalSavingsCr = savingsAccounts?.reduce((acc, curr) => acc + curr.cr, 0) || 0;
+    const totalSavingsDr = savingsAccounts?.reduce((acc, curr) => acc + curr.dr, 0) || 0;
+    const totalSavingsBalance = savingsAccounts?.reduce((acc, curr) => acc + curr.balance, 0) || 0;
 
-    const AccountForm = ({ onAdd, type }: { onAdd: () => void; type: 'cc' | 'savings' }) => (
+    const AccountForm = ({ onAdd, type, onOpenChange }: { onAdd: () => void; type: 'cc' | 'savings', onOpenChange: (open: boolean) => void }) => (
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Add New {type === 'cc' ? 'CC' : 'Savings'} Account</DialogTitle>
@@ -200,7 +175,7 @@ export default function BankingPage() {
               <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> New Account</Button>
               </DialogTrigger>
-              <AccountForm type="cc" onAdd={() => handleAddAccount('cc')} />
+              <AccountForm type="cc" onAdd={() => handleAddAccount('cc')} onOpenChange={setIsCcDialogOpen} />
             </Dialog>
           </CardHeader>
           <CardContent>
@@ -218,7 +193,9 @@ export default function BankingPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ccAccounts.map((account, index) => (
+                {isLoadingCc ? (
+                  <TableRow><TableCell colSpan={8} className="text-center h-24"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></TableCell></TableRow>
+                ) : ccAccounts?.map((account, index) => (
                   <TableRow key={index}>
                     <TableCell>{account.bank}</TableCell>
                     <TableCell>{account.name}</TableCell>
@@ -254,7 +231,7 @@ export default function BankingPage() {
                 <DialogTrigger asChild>
                     <Button><PlusCircle className="mr-2 h-4 w-4" /> New Account</Button>
                 </DialogTrigger>
-                <AccountForm type="savings" onAdd={() => handleAddAccount('savings')} />
+                <AccountForm type="savings" onAdd={() => handleAddAccount('savings')} onOpenChange={setIsSavingsDialogOpen} />
             </Dialog>
           </CardHeader>
           <CardContent>
@@ -271,7 +248,9 @@ export default function BankingPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {savingsAccounts.map((account, index) => (
+                {isLoadingSavings ? (
+                   <TableRow><TableCell colSpan={7} className="text-center h-24"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></TableCell></TableRow>
+                ) : savingsAccounts?.map((account, index) => (
                   <TableRow key={index}>
                     <TableCell>{account.bank}</TableCell>
                     <TableCell>{account.name}</TableCell>
@@ -300,3 +279,4 @@ export default function BankingPage() {
   );
 }
 
+    
