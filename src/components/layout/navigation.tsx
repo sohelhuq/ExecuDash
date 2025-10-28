@@ -9,7 +9,8 @@ import {
   Bell,
   TrendingUp,
   ReceiptText,
-  Building
+  Building,
+  Landmark as BankIcon
 } from 'lucide-react';
 import {
   Sidebar,
@@ -27,6 +28,7 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/banking', label: 'Banking', icon: BankIcon },
   { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
   { href: '/properties', label: 'Properties', icon: Building },
