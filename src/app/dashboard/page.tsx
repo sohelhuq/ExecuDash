@@ -1,72 +1,58 @@
 'use client';
 import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
-const attendanceData = [
-  { si: 1, employee: 'Honorato Imogene Curry Terry', inTime: '16:04', points: 0, date: '2025-10-28' },
-  { si: 2, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:29', points: 0, date: '2025-10-28' },
-  { si: 3, employee: 'Amy Aphrodite Zamora Peck', inTime: '16:12', points: 0, date: '2025-10-28' },
-  { si: 4, employee: 'Maisha Lucy Zamora Gonzales', inTime: '00:52', points: 5, date: '2025-10-27' },
-  { si: 5, employee: 'Honorato Imogene Curry Terry', inTime: '15:20', points: 0, date: '2025-10-27' },
-  { si: 6, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:28', points: 0, date: '2025-10-27' },
-  { si: 7, employee: 'Amy Aphrodite Zamora Peck', inTime: '01:05', points: 0, date: '2025-10-27' },
-  { si: 8, employee: 'Scarlet Melvin Reese Rogers', inTime: '17:36', points: 0, date: '2025-10-25' },
-  { si: 9, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:28', points: 0, date: '2025-10-25' },
-];
+type Employee = {
+  id: string;
+  name: string;
+  department: string;
+  jobRole: string;
+};
 
 export default function DashboardPage() {
+  const firestore = useFirestore();
+  const employeesCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'employees') : null;
+  }, [firestore]);
+  const { data: employees, isLoading } = useCollection<Employee>(employeesCollection);
+
   return (
     <AppShell>
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Attendance points</CardTitle>
+            <CardTitle>Employee Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                    <span>Show</span>
-                    <Select defaultValue="10">
-                        <SelectTrigger className="w-20">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="20">20</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span>entries</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span>Search:</span>
-                    <Input className="max-w-sm" />
-                </div>
-            </div>
-            <Table>
+             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>SI</TableHead>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>In time</TableHead>
-                  <TableHead>Points</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Job Role</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendanceData.map((row) => (
-                  <TableRow key={row.si}>
-                    <TableCell>{row.si}</TableCell>
-                    <TableCell>{row.employee}</TableCell>
-                    <TableCell>{row.inTime}</TableCell>
-                    <TableCell>{row.points}</TableCell>
-                    <TableCell>{row.date}</TableCell>
-                  </TableRow>
-                ))}
+                {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={3} className="text-center h-24">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                        </TableCell>
+                    </TableRow>
+                ) : (
+                    employees?.map((employee) => (
+                      <TableRow key={employee.id}>
+                        <TableCell>{employee.name}</TableCell>
+                        <TableCell>{employee.department}</TableCell>
+                        <TableCell>{employee.jobRole}</TableCell>
+                      </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </CardContent>

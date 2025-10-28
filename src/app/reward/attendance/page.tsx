@@ -5,20 +5,25 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
-const attendanceData = [
-  { si: 1, employee: 'Honorato Imogene Curry Terry', inTime: '16:04', points: 0, date: '2025-10-28' },
-  { si: 2, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:29', points: 0, date: '2025-10-28' },
-  { si: 3, employee: 'Amy Aphrodite Zamora Peck', inTime: '16:12', points: 0, date: '2025-10-28' },
-  { si: 4, employee: 'Maisha Lucy Zamora Gonzales', inTime: '00:52', points: 5, date: '2025-10-27' },
-  { si: 5, employee: 'Honorato Imogene Curry Terry', inTime: '15:20', points: 0, date: '2025-10-27' },
-  { si: 6, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:28', points: 0, date: '2025-10-27' },
-  { si: 7, employee: 'Amy Aphrodite Zamora Peck', inTime: '01:05', points: 0, date: '2025-10-27' },
-  { si: 8, employee: 'Scarlet Melvin Reese Rogers', inTime: '17:36', points: 0, date: '2025-10-25' },
-  { si: 9, employee: 'Maisha Lucy Zamora Gonzales', inTime: '17:28', points: 0, date: '2025-10-25' },
-];
+type AttendancePoint = {
+    id: string;
+    employeeName: string;
+    inTime: string;
+    points: number;
+    date: string;
+};
 
 export default function AttendancePointsPage() {
+  const firestore = useFirestore();
+  const attendanceCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'attendance_points') : null;
+  }, [firestore]);
+  const { data: attendanceData, isLoading } = useCollection<AttendancePoint>(attendanceCollection);
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -50,7 +55,6 @@ export default function AttendancePointsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>SI</TableHead>
                   <TableHead>Employee</TableHead>
                   <TableHead>In time</TableHead>
                   <TableHead>Points</TableHead>
@@ -58,15 +62,22 @@ export default function AttendancePointsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendanceData.map((row) => (
-                  <TableRow key={row.si}>
-                    <TableCell>{row.si}</TableCell>
-                    <TableCell>{row.employee}</TableCell>
-                    <TableCell>{row.inTime}</TableCell>
-                    <TableCell>{row.points}</TableCell>
-                    <TableCell>{row.date}</TableCell>
-                  </TableRow>
-                ))}
+                {isLoading ? (
+                     <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                        </TableCell>
+                    </TableRow>
+                ) : (
+                    attendanceData?.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>{row.employeeName}</TableCell>
+                        <TableCell>{row.inTime}</TableCell>
+                        <TableCell>{row.points}</TableCell>
+                        <TableCell>{row.date}</TableCell>
+                      </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </CardContent>

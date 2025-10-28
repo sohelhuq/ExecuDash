@@ -20,6 +20,22 @@
           "format": "date"
         }
       }
+    },
+    "Employee": {
+      "title": "Employee",
+      "type": "object",
+      "description": "Represents an employee record.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "department": {
+          "type": "string"
+        },
+        "jobRole": {
+          "type": "string"
+        }
+      }
     }
   },
   "auth": {
@@ -37,6 +53,16 @@
             "$ref": "#/backend/entities/AttendancePoint"
           },
           "description": "Stores attendance points for employees."
+        }
+      },
+      {
+        "path": "/employees/{employeeId}",
+        "definition": {
+            "entityName": "Employee",
+            "schema": {
+                "$ref": "#/backend/entities/Employee"
+            },
+            "description": "Stores employee records."
         }
       }
     ]
