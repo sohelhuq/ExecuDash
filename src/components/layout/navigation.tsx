@@ -5,6 +5,8 @@ import {
   LineChart,
   Settings,
   CircleHelp,
+  Briefcase,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,8 +24,11 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/alerts', label: 'Alerts', icon: Bell },
-  { href: '/trends', label: 'Trend Analysis', icon: LineChart },
+  { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
+  { href: '/inventory', label: 'Inventory', icon: LineChart },
+  { href: '/reports', label: 'Reports', icon: LineChart },
+  { href: '/users', label: 'User Management', icon: Users },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -32,9 +37,9 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 p-2">
           <Logo />
-          <span className="text-lg font-semibold text-sidebar-foreground">ExecuDash</span>
+          <span className="text-lg font-semibold text-sidebar-foreground">Shetue Group</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -43,8 +48,9 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.label}>
               <Link href={item.href}>
                 <SidebarMenuButton
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href)}
                   tooltip={item.label}
+                  className="justify-start"
                 >
                   <item.icon />
                   <span>{item.label}</span>
@@ -61,14 +67,6 @@ export function AppSidebar() {
               <SidebarMenuButton tooltip="Help">
                 <CircleHelp />
                 <span>Help & Support</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <Link href="/settings">
-              <SidebarMenuButton tooltip="Settings">
-                <Settings />
-                <span>Settings</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>

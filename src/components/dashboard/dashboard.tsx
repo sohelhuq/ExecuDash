@@ -8,14 +8,16 @@ import {
 } from "@/components/ui/card";
 import {
   DollarSign,
-  Fuel,
+  Package,
   Users,
-  Archive, // Changed from Activity
+  Archive,
   Bell,
   LineChart,
   ChevronRight,
-  Package, // Added
-  UserPlus, // Added
+  TrendingUp,
+  TrendingDown,
+  Warehouse,
+  FileText,
 } from "lucide-react";
 import {
   Bar,
@@ -26,6 +28,11 @@ import {
   Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import {
   ChartConfig,
@@ -39,57 +46,69 @@ import { Button } from "../ui/button";
 
 const kpiData = [
   {
-    title: "Fuel Sales",
-    value: "৳1,250,000",
-    change: "+15.2% from last month",
-    icon: Fuel,
+    title: "Total Sales (Today)",
+    value: "৳15,200",
+    change: "+11.2% from yesterday",
+    icon: DollarSign,
   },
   {
-    title: "Feed Sales",
+    title: "Stock Value (Current)",
     value: "৳850,000",
-    change: "+12.1% from last month",
-    icon: Archive,
+    change: "+2.1% from last month",
+    icon: Warehouse,
   },
   {
-    title: "Brick Sales",
-    value: "৳2,500,000",
-    change: "+25.0% from last month",
-    icon: Package,
+    title: "Outstanding Invoices",
+    value: "45",
+    change: "-3 from last week",
+    icon: FileText,
   },
   {
-    title: "Tech Subscribers",
-    value: "1,200",
-    change: "+50 from last month",
-    icon: UserPlus,
+    title: "Inventory Turnover Rate",
+    value: "4.2",
+    change: "+0.5 from last quarter",
+    icon: TrendingUp,
   },
 ];
 
-const salesData = [
-  { month: "Jan", "Filling Station": 4000, "CNG Station": 2400 },
-  { month: "Feb", "Filling Station": 3000, "CNG Station": 1398 },
-  { month: "Mar", "Filling Station": 2000, "CNG Station": 9800 },
-  { month: "Apr", "Filling Station": 2780, "CNG Station": 3908 },
-  { month: "May", "Filling Station": 1890, "CNG Station": 4800 },
-  { month: "Jun", "Filling Station": 2390, "CNG Station": 3800 },
+const revenueData = [
+    { month: "Jan", revenue: 1200 },
+    { month: "Feb", revenue: 1500 },
+    { month: "Mar", revenue: 1400 },
+    { month: "Apr", revenue: 1800 },
+    { month: "May", revenue: 2100 },
+    { month: "Jun", revenue: 2500 },
+    { month: "Jul", revenue: 2400 },
+    { month: "Aug", revenue: 2600 },
 ];
 
-const chartConfig = {
-  "Filling Station": {
-    label: "Filling Station Sales",
+const revenueChartConfig = {
+  revenue: {
+    label: "Revenue",
     color: "hsl(var(--chart-1))",
   },
-  "CNG Station": {
-    label: "CNG Sales",
-    color: "hsl(var(--chart-2))",
-  },
 } satisfies ChartConfig;
+
+const salesDistributionData = [
+    { name: 'Fuel', value: 45, color: 'hsl(var(--chart-1))' },
+    { name: 'ISP', value: 10, color: 'hsl(var(--chart-2))' },
+    { name: 'Feed', value: 5, color: 'hsl(var(--chart-3))' },
+    { name: 'Pharmacy', value: 20, color: 'hsl(var(--chart-4))' },
+    { name: 'Bricks', value: 20, color: 'hsl(var(--chart-5))' },
+];
+
+const lowStockAlerts = [
+    { item: 'Diesel Fuel', level: 'Low', color: 'text-yellow-400' },
+    { item: 'Red Bricks', level: 'Critical', color: 'text-red-500' },
+]
+
 
 export function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {kpiData.map((kpi) => (
-          <Card key={kpi.title}>
+          <Card key={kpi.title} className="border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
               <kpi.icon className="h-4 w-4 text-muted-foreground" />
@@ -102,122 +121,115 @@ export function Dashboard() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Business Units</CardTitle>
-          <CardDescription>Select a business unit to view its detailed financial performance.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Unit Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">View</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {businessUnits.map((unit) => (
-                <TableRow key={unit.id}>
-                  <TableCell className="font-medium">{unit.name}</TableCell>
-                  <TableCell>{unit.description}</TableCell>
-                  <TableCell className="text-right">
-                    <Link href={`/dashboard/${unit.id}`}>
-                      <Button variant="ghost" size="sm">
-                        Details <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+        <Card className="lg:col-span-4 border-border/60">
           <CardHeader>
-            <CardTitle>Energy Sales Overview</CardTitle>
-            <CardDescription>
-              Sales comparison for the last 6 months.
-            </CardDescription>
+            <CardTitle>Monthly Revenue Trend</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <BarChart accessibilityLayer data={salesData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <YAxis />
-                <RechartsTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Legend />
-                <Bar
-                  dataKey="Filling Station"
-                  fill="var(--color-Filling Station)"
-                  radius={4}
-                />
-                <Bar
-                  dataKey="CNG Station"
-                  fill="var(--color-CNG Station)"
-                  radius={4}
-                />
-              </BarChart>
+             <ChartContainer config={revenueChartConfig} className="h-[250px] w-full">
+                <AreaChart
+                    accessibilityLayer
+                    data={revenueData}
+                    margin={{
+                        left: 12,
+                        right: 12,
+                    }}
+                    >
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                    <XAxis
+                        dataKey="month"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                    />
+                    <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tickFormatter={(value) => `$${Number(value)/1000}k`}
+                     />
+                    <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                    <Area
+                        dataKey="revenue"
+                        type="natural"
+                        fill="var(--color-revenue)"
+                        fillOpacity={0.1}
+                        stroke="var(--color-revenue)"
+                        strokeWidth={2}
+                    />
+                </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 border-border/60">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              A feed of recent alerts and system notifications.
-            </CardDescription>
+            <CardTitle>Sales Distribution by Unit</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-start gap-3">
-              <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-accent/20">
-                <Bell className="h-4 w-4 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Alert: Fuel Stock Low</p>
-                <p className="text-sm text-muted-foreground">
-                  Setu Filling Station stock is at 450 liters.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/20">
-                <Bell className="h-4 w-4 text-destructive" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Critical: Pump Offline</p>
-                <p className="text-sm text-muted-foreground">
-                  Pump 2 at Setu CNG has been offline for 7 minutes.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
-                <LineChart className="h-4 w-4 text-green-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Trend: Occupancy Up</p>
-                <p className="text-sm text-muted-foreground">
-                  Hotel Midway occupancy shows a positive 7-day trend.
-                </p>
-              </div>
-            </div>
+          <CardContent>
+            <ChartContainer config={{}} className="h-[250px] w-full">
+                <PieChart>
+                    <RechartsTooltip cursor={false} content={<ChartTooltipContent hideLabel indicator="dot" />} />
+                    <Pie
+                        data={salesDistributionData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        strokeWidth={2}
+                    >
+                         {salesDistributionData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
+                        ))}
+                    </Pie>
+                    <Legend
+                        content={({ payload }) => (
+                            <ul className="flex flex-wrap gap-x-4 justify-center">
+                            {payload?.map((entry, index) => (
+                                <li key={`item-${index}`} className="flex items-center gap-2 text-xs">
+                                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                <span>{entry.value} {entry.payload.percent.toFixed(0)}%</span>
+                                </li>
+                            ))}
+                            </ul>
+                        )}
+                    />
+                </PieChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
+
+       <Card className="border-border/60">
+          <CardHeader>
+            <CardTitle>Low Stock Alerts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lowStockAlerts.map((alert) => (
+                  <TableRow key={alert.item}>
+                    <TableCell className="font-medium">{alert.item}</TableCell>
+                    <TableCell>
+                      <span className={`flex items-center gap-2 ${alert.color}`}>
+                        <span className="h-2 w-2 rounded-full bg-current"></span>
+                        {alert.level}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
     </div>
   );
 }

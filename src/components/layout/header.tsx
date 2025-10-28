@@ -24,16 +24,16 @@ function UserNav() {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
             {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" data-ai-hint={userAvatar.imageHint} />}
-            <AvatarFallback>EU</AvatarFallback>
+            <AvatarFallback>JS</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Executive User</p>
+            <p className="text-sm font-medium leading-none">John Smith</p>
             <p className="text-xs leading-none text-muted-foreground">
-              user@shetue.com
+              john.smith@shetue.com
             </p>
           </div>
         </DropdownMenuLabel>
@@ -60,8 +60,9 @@ export function Header() {
       <div className="md:hidden">
         <SidebarTrigger />
       </div>
-      <div className="w-full flex-1">
-        <NlqInput />
+      <div className="flex-1">
+        <h1 className="text-xl font-semibold tracking-tight">Shetue Group Unified ERP System</h1>
+        <p className="text-sm text-muted-foreground">Centralized Performance Hub</p>
       </div>
       <UserNav />
     </header>
