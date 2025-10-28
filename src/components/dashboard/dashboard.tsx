@@ -29,9 +29,9 @@ import { Loader2 } from 'lucide-react';
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
 
 const kpis = [
-    { title: 'Total Sales / মোট বিক্রয়', value: '৳538,000', change: '+12%', icon: TrendingUp },
-    { title: 'Total Expenses / মোট খরচ', value: '৳363,000', change: '+5%', icon: TrendingDown, changeColor: 'text-red-500' },
-    { title: 'Net Profit / নীট লাভ', value: '৳175,000', change: '+18%', icon: DollarSign },
+    { title: 'Total Sales / মোট বিক্রয়', value: '৳538,000', change: '+12%', icon: TrendingUp, href: '/sales' },
+    { title: 'Total Expenses / মোট খরচ', value: '৳363,000', change: '+5%', icon: TrendingDown, changeColor: 'text-red-500', href: '/accounting' },
+    { title: 'Net Profit / নীট লাভ', value: '৳175,000', change: '+18%', icon: DollarSign, href: '/accounting' },
 ];
 
 const unitIcons: {[key: string]: React.ElementType} = {
@@ -63,16 +63,18 @@ export function Dashboard() {
             {kpis.map(kpi => {
                 const Icon = kpi.icon;
                 return (
-                    <Card key={kpi.title}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-                            <Icon className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{kpi.value}</div>
-                            <p className={cn("text-xs text-muted-foreground", kpi.changeColor)}>{kpi.change}</p>
-                        </CardContent>
-                    </Card>
+                    <Link href={kpi.href} key={kpi.title}>
+                        <Card className="hover:bg-muted/50 transition-colors h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+                                <Icon className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{kpi.value}</div>
+                                <p className={cn("text-xs text-muted-foreground", kpi.changeColor)}>{kpi.change}</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 );
             })}
         </div>
