@@ -19,6 +19,7 @@ import {
   Warehouse,
   FileText,
   Fuel,
+  Loader2,
 } from "lucide-react";
 import {
   Bar,
@@ -44,44 +45,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { businessUnits } from "@/lib/business-units";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where, orderBy } from "firebase/firestore";
+import * as React from "react";
 
-const kpiData = [
-  {
-    title: 'Daily Cashflow',
-    value: '৳1,20,500',
-    change: '+5.5% from yesterday',
-    icon: DollarSign,
-  },
-  {
-    title: 'Weekly Cashflow',
-    value: '৳7,80,000',
-    change: '-1.2% from last week',
-    icon: DollarSign,
-  },
-  {
-    title: 'Monthly Cashflow',
-    value: '৳32,50,000',
-    change: '+8.7% from last month',
-    icon: DollarSign,
-  },
-  {
-    title: "Outstanding Invoices",
-    value: "45",
-    change: "-3 from last week",
-    icon: FileText,
-  },
-];
-
-const revenueData = [
-    { month: "Jan", revenue: 1200 },
-    { month: "Feb", revenue: 1500 },
-    { month: "Mar", revenue: 1400 },
-    { month: "Apr", revenue: 1800 },
-    { month: "May", revenue: 2100 },
-    { month: "Jun", revenue: 2500 },
-    { month: "Jul", revenue: 2400 },
-    { month: "Aug", revenue: 2600 },
-];
+const ICONS: { [key: string]: React.ElementType } = {
+  DollarSign,
+  Package,
+  Users,
+  Archive,
+  Bell,
+  LineChart,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Warehouse,
+  FileText,
+  Fuel,
+};
 
 const revenueChartConfig = {
   revenue: {
@@ -90,36 +71,106 @@ const revenueChartConfig = {
   },
 } satisfies ChartConfig;
 
-const salesDistributionData = [
-    { name: 'Fuel', value: 45, color: 'hsl(var(--chart-1))' },
-    { name: 'ISP', value: 10, color: 'hsl(var(--chart-2))' },
-    { name: 'Feed', value: 5, color: 'hsl(var(--chart-3))' },
-    { name: 'Pharmacy', value: 20, color: 'hsl(var(--chart-4))' },
-    { name: 'Bricks', value: 20, color: 'hsl(var(--chart-5))' },
+const salesDistributionColors = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
 ];
 
-const lowStockAlerts = [
-    { item: 'Diesel Fuel', level: 'Low', color: 'text-yellow-400' },
-    { item: 'Red Bricks', level: 'Critical', color: 'text-red-500' },
-]
+type Kpi = {
+    id: string;
+    title: string;
+    value: string;
+    change: string;
+    icon: string;
+};
 
+type RevenueTrend = {
+    id: string;
+    month: string;
+    revenue: number;
+    order: number;
+};
+
+type Invoice = {
+    id: string;
+    unit: string;
+    amount: number;
+}
+
+type Alert = {
+    id: string;
+    metric: string;
+    condition: string;
+    severity: 'High' | 'Medium' | 'Low';
+}
 
 export function Dashboard() {
+    const firestore = useFirestore();
+
+    const kpisCollection = useMemoFirebase(() => firestore ? collection(firestore, 'kpis') : null, [firestore]);
+    const { data: kpiData, isLoading: isLoadingKpis } = useCollection<Kpi>(kpisCollection);
+
+    const revenueTrendsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'revenue_trends'), orderBy('order')) : null, [firestore]);
+    const { data: revenueData, isLoading: isLoadingRevenue } = useCollection<RevenueTrend>(revenueTrendsQuery);
+
+    const invoicesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'invoices') : null, [firestore]);
+    const { data: invoiceData, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesCollection);
+    
+    const lowStockAlertsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'alerts'), where('severity', 'in', ['High', 'Medium'])) : null, [firestore]);
+    const { data: lowStockAlerts, isLoading: isLoadingAlerts } = useCollection<Alert>(lowStockAlertsQuery);
+
+    const salesDistributionData = React.useMemo(() => {
+        if (!invoiceData) return [];
+        const salesByUnit = invoiceData.reduce((acc, invoice) => {
+            if (!acc[invoice.unit]) {
+                acc[invoice.unit] = 0;
+            }
+            acc[invoice.unit] += invoice.amount;
+            return acc;
+        }, {} as Record<string, number>);
+
+        return Object.entries(salesByUnit).map(([name, value], index) => ({
+            name,
+            value,
+            color: salesDistributionColors[index % salesDistributionColors.length],
+        }));
+    }, [invoiceData]);
+
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {kpiData.map((kpi) => (
-          <Card key={kpi.title} className="border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-              <kpi.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
-              <p className="text-xs text-muted-foreground">{kpi.change}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {isLoadingKpis ? (
+            Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="h-8 w-3/4 rounded-md bg-muted animate-pulse"></div>
+                        <div className="h-4 w-1/2 rounded-md bg-muted animate-pulse mt-2"></div>
+                    </CardContent>
+                </Card>
+            ))
+        ) : (
+          kpiData?.map((kpi) => {
+              const Icon = ICONS[kpi.icon] || DollarSign;
+              return (
+                <Card key={kpi.title} className="border-border/60">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-2xl font-bold">{kpi.value}</div>
+                    <p className="text-xs text-muted-foreground">{kpi.change}</p>
+                    </CardContent>
+                </Card>
+            )})
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
@@ -128,10 +179,11 @@ export function Dashboard() {
             <CardTitle>Monthly Revenue Trend</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
+            {isLoadingRevenue ? <div className="flex justify-center items-center h-[250px]"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> : (
              <ChartContainer config={revenueChartConfig} className="h-[250px] w-full">
                 <AreaChart
                     accessibilityLayer
-                    data={revenueData}
+                    data={revenueData || []}
                     margin={{
                         left: 12,
                         right: 12,
@@ -161,6 +213,7 @@ export function Dashboard() {
                     />
                 </AreaChart>
             </ChartContainer>
+            )}
           </CardContent>
         </Card>
         <Card className="lg:col-span-3 border-border/60">
@@ -168,6 +221,7 @@ export function Dashboard() {
             <CardTitle>Sales Distribution by Unit</CardTitle>
           </CardHeader>
           <CardContent>
+          {isLoadingInvoices ? <div className="flex justify-center items-center h-[250px]"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> : (
             <ChartContainer config={{}} className="h-[250px] w-full">
                 <PieChart>
                     <RechartsTooltip cursor={false} content={<ChartTooltipContent hideLabel indicator="dot" />} />
@@ -191,7 +245,7 @@ export function Dashboard() {
                             {payload?.map((entry, index) => (
                                 <li key={`item-${index}`} className="flex items-center gap-2 text-xs">
                                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                                <span>{entry.value} {entry.payload.percent.toFixed(0)}%</span>
+                                <span>{entry.value}</span>
                                 </li>
                             ))}
                             </ul>
@@ -199,6 +253,7 @@ export function Dashboard() {
                     />
                 </PieChart>
             </ChartContainer>
+             )}
           </CardContent>
         </Card>
       </div>
@@ -216,17 +271,21 @@ export function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lowStockAlerts.map((alert) => (
-                  <TableRow key={alert.item}>
-                    <TableCell className="font-medium">{alert.item}</TableCell>
-                    <TableCell>
-                      <span className={`flex items-center gap-2 ${alert.color}`}>
-                        <span className="h-2 w-2 rounded-full bg-current"></span>
-                        {alert.level}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isLoadingAlerts ? (
+                    <TableRow><TableCell colSpan={2} className="text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground"/></TableCell></TableRow>
+                ) : (
+                    lowStockAlerts?.map((alert) => (
+                    <TableRow key={alert.id}>
+                        <TableCell className="font-medium">{alert.metric.replace(/_/g, ' ')}</TableCell>
+                        <TableCell>
+                        <span className={`flex items-center gap-2 ${alert.severity === 'High' ? 'text-red-500' : 'text-yellow-400'}`}>
+                            <span className="h-2 w-2 rounded-full bg-current"></span>
+                            {alert.severity}
+                        </span>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -234,3 +293,5 @@ export function Dashboard() {
     </div>
   );
 }
+
+    
