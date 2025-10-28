@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel } from 'lucide-react';
+import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt } from 'lucide-react';
 import type { BusinessUnit } from '@/lib/business-units-types';
 import * as React from 'react';
 
@@ -33,6 +33,10 @@ const ICONS: { [key: string]: React.ElementType } = {
   Package,
   UserPlus,
   Fuel,
+  ShoppingCart,
+  ArrowRightLeft,
+  Factory,
+  Receipt,
 };
 
 
@@ -82,6 +86,50 @@ export default function BusinessUnitPage({ params }: { params: { businessUnit: s
             );
           })}
         </div>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(7500000)}</div>
+                    <p className="text-xs text-muted-foreground">+10.5% from last month</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Production</CardTitle>
+                    <Factory className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">1,200 Units</div>
+                    <p className="text-xs text-muted-foreground">+5% from last month</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Purchases</CardTitle>
+                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(2250000)}</div>
+                    <p className="text-xs text-muted-foreground">+8% from last month</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Cost of Goods Sold</CardTitle>
+                    <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(4800000)}</div>
+                    <p className="text-xs text-muted-foreground">Represents 64% of sales</p>
+                </CardContent>
+            </Card>
+        </div>
+
 
         <Card>
           <CardHeader>
@@ -133,8 +181,8 @@ export default function BusinessUnitPage({ params }: { params: { businessUnit: s
         
         <Card>
             <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>A log of the most recent financial activities.</CardDescription>
+                <CardTitle>Debt &amp; Expenses</CardTitle>
+                <CardDescription>A log of the most recent financial activities, including direct expenses and debts.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
