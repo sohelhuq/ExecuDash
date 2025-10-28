@@ -3,15 +3,15 @@
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, where, getDocs, writeBatch, doc, serverTimestamp, updateDoc, increment } from 'firebase/firestore';
-import React, { useState, useMemo, useEffect } from 'react';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, getDocs, writeBatch, doc, updateDoc, increment } from 'firebase/firestore';
+import React, { useState, useMemo } from 'react';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -183,7 +183,7 @@ export default function AttendancePage() {
                     {[2024, 2023, 2022].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                 </SelectContent>
             </Select>
-            <Button variant="outline" onClick={seedInitialLeaveBalances} disabled={isSeeding}>
+            <Button variant="outline" onClick={seedInitialLeaveBalances} disabled={isSeeding || isLoadingEmployees}>
               {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
               Seed Balances
             </Button>
@@ -256,7 +256,7 @@ export default function AttendancePage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>2022</TableHead>
+                                    <TableHead>{currentYear}</TableHead>
                                     {months.map(m => <TableHead key={m} className="uppercase">{m}</TableHead>)}
                                     <TableHead>Total Used</TableHead>
                                     <TableHead>Total Allotted</TableHead>

@@ -23,7 +23,7 @@ const hrModules = [
   },
   {
     icon: CalendarClock,
-    title: "Attendance Tracking",
+    title: "Absence Tracking",
     description: "Easily monitor work hours, track absences, and manage shifts with a real-time attendance system.",
     href: "/hr/attendance"
   },
