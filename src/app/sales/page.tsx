@@ -13,67 +13,21 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import * as React from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
-const invoiceData = [
-  {
-    id: 1,
-    unit: 'Fuel',
-    customer: 'Customer A',
-    invoiceId: 'INV-0012',
-    dueDate: new Date('2024-05-15'),
-    amount: 12000,
-    status: 'Overdue',
-  },
-  {
-    id: 2,
-    customer: 'Customer B',
-    unit: 'Bricks',
-    invoiceId: 'INV-0013',
-    dueDate: new Date('2024-06-20'),
-    amount: 3500,
-    status: 'Pending',
-  },
-  {
-    id: 3,
-    customer: 'Customer C',
-    unit: 'Pharmacy',
-    invoiceId: 'INV-0014',
-    dueDate: new Date('2024-06-01'),
-    amount: 8600,
-    status: 'Overdue',
-  },
-    {
-    id: 4,
-    customer: 'Customer D',
-    unit: 'Feed',
-    invoiceId: 'INV-0015',
-    dueDate: new Date('2024-07-10'),
-    amount: 5300,
-    status: 'Pending',
-  },
-  {
-    id: 5,
-    customer: 'Customer E',
-    unit: 'Fuel',
-    invoiceId: 'INV-0016',
-    dueDate: new Date('2024-04-20'),
-    amount: 13000,
-    status: 'Overdue',
-  },
-  {
-    id: 6,
-    customer: 'Customer F',
-    unit: 'Bricks',
-    invoiceId: 'INV-0017',
-    dueDate: new Date('2024-06-25'),
-    amount: 2100,
-    status: 'Pending',
-  },
-];
-
-type Invoice = typeof invoiceData[0];
+type Invoice = {
+  id: string;
+  unit: string;
+  customer: string;
+  invoiceId: string;
+  dueDate: string; // ISO string
+  amount: number;
+  status: 'Pending' | 'Overdue' | 'Paid';
+};
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
 
@@ -85,7 +39,7 @@ const statusVariant = (status: string) => {
     }
 };
 
-const InvoiceTable = ({ invoices }: { invoices: Invoice[] }) => (
+const InvoiceTable = ({ invoices, isLoading }: { invoices: Invoice[] | null, isLoading: boolean }) => (
     <Table>
         <TableHeader>
             <TableRow>
@@ -98,12 +52,18 @@ const InvoiceTable = ({ invoices }: { invoices: Invoice[] }) => (
             </TableRow>
         </TableHeader>
         <TableBody>
-            {invoices.map((invoice) => (
+            {isLoading ? (
+                <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                        <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                    </TableCell>
+                </TableRow>
+            ) : invoices?.map((invoice) => (
             <TableRow key={invoice.id}>
                 <TableCell className="font-medium">{invoice.unit}</TableCell>
                 <TableCell>{invoice.customer}</TableCell>
                 <TableCell>{invoice.invoiceId}</TableCell>
-                <TableCell>{format(invoice.dueDate, 'dd MMM, yyyy')}</TableCell>
+                <TableCell>{format(parseISO(invoice.dueDate), 'dd MMM, yyyy')}</TableCell>
                 <TableCell className="text-right font-mono">{formatCurrency(invoice.amount)}</TableCell>
                 <TableCell className="text-center">
                     <Badge variant={statusVariant(invoice.status)} className={
@@ -124,12 +84,18 @@ export default function SalesPage() {
     const [activeTab, setActiveTab] = React.useState('All Units');
     const { toast } = useToast();
     
+    const firestore = useFirestore();
+    const invoicesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'invoices') : null, [firestore]);
+    const { data: invoiceData, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesCollection);
+
     const filteredInvoices = React.useMemo(() => {
+        if (!invoiceData) return null;
         if (activeTab === 'All Units') return invoiceData;
         return invoiceData.filter(i => i.unit === activeTab);
-    }, [activeTab]);
+    }, [activeTab, invoiceData]);
 
     const calculateOverdue = (unit: string | 'All Units') => {
+        if (!invoiceData) return 0;
         const invoicesToSum = unit === 'All Units' ? invoiceData : invoiceData.filter(i => i.unit === unit);
         return invoicesToSum
             .filter(i => i.status === 'Overdue')
@@ -171,7 +137,7 @@ export default function SalesPage() {
           <TabsContent value={activeTab}>
             <Card className="mt-4 border-border/60">
                 <CardContent className="p-0">
-                    <InvoiceTable invoices={filteredInvoices} />
+                    <InvoiceTable invoices={filteredInvoices} isLoading={isLoadingInvoices} />
                 </CardContent>
             </Card>
           </TabsContent>
@@ -193,3 +159,5 @@ export default function SalesPage() {
     </AppShell>
   );
 }
+
+    
