@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 // This is your secret key. It should match the one you set in your automation platform (Make/Zapier).
 // For better security, this should be stored in an environment variable.
-const AUTOMATION_SECRET = process.env.AUTOMATION_SECRET_KEY || 'your-secret-key-here';
+const AUTOMATION_SECRET = process.env.AUTOMATION_SECRET_KEY || 'automations-secret-B8gK3sL9zP7vR2wX';
 
 export async function POST(request: Request) {
   try {
