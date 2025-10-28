@@ -26,15 +26,15 @@ type RentEntry = {
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN').format(value);
 
-const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[], isLoading: boolean }) => {
-  const totals = data.reduce((acc, item) => ({
+const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[] | null, isLoading: boolean }) => {
+  const totals = data?.reduce((acc, item) => ({
     opening: acc.opening + item.opening,
     rent: acc.rent + item.rent,
     total: acc.total + item.total,
     collection: acc.collection + item.collection,
     expense: acc.expense + item.expense,
     due: acc.due + item.due,
-  }), { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 });
+  }), { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 }) || { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 };
 
   return (
     <Card>
@@ -59,7 +59,7 @@ const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[
             {isLoading ? (
                 <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground"/></TableCell></TableRow>
             ) : (
-                data.map((item) => (
+                data?.map((item) => (
                 <TableRow key={item.id}>
                     <TableCell>{item.location}</TableCell>
                     <TableCell>{item.tenant}</TableCell>
@@ -149,9 +149,9 @@ export default function PropertiesPage() {
         </div>
 
         <div className="space-y-6">
-            <RentTable title="Shetue Vanga Dokan Vara" data={shetueVangaDokanData || []} isLoading={isLoadingVangaDokan} />
-            <RentTable title="Jaman Tower" data={jamanTowerData || []} isLoading={isLoadingJamanTower} />
-            <RentTable title="Others" data={othersData || []} isLoading={isLoadingOthers} />
+            <RentTable title="Shetue Vanga Dokan Vara" data={shetueVangaDokanData} isLoading={isLoadingVangaDokan} />
+            <RentTable title="Jaman Tower" data={jamanTowerData} isLoading={isLoadingJamanTower} />
+            <RentTable title="Others" data={othersData} isLoading={isLoadingOthers} />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

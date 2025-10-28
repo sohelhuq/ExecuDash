@@ -27,7 +27,7 @@ import {
   useMemoFirebase,
   addDocumentNonBlocking,
 } from '@/firebase';
-import { collection, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { employeeData } from '@/lib/employee-data';
 import {
@@ -67,7 +67,7 @@ export default function EmployeeManagementPage() {
   const { data: employees, isLoading } = useCollection<Employee>(employeesCollection);
 
   const seedData = async () => {
-    if (!employeesCollection) return;
+    if (!employeesCollection || !firestore) return;
     setIsSeeding(true);
     try {
       const snapshot = await getDocs(employeesCollection);
@@ -81,8 +81,8 @@ export default function EmployeeManagementPage() {
       
       const batch = writeBatch(firestore);
       employeeData.forEach((employee) => {
-        const docRef = collection(employeesCollection);
-        batch.set(doc(docRef.firestore, docRef.path), employee);
+        const docRef = doc(employeesCollection);
+        batch.set(docRef, employee);
       });
       await batch.commit();
 
