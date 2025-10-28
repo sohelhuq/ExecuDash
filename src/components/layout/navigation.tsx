@@ -12,6 +12,7 @@ import {
   Building,
   Landmark as BankIcon,
   UserCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,6 +31,7 @@ import * as React from 'react';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/banking', label: 'Banking', icon: BankIcon },
+  { href: '/fdr', label: 'FDR', icon: ShieldCheck },
   { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
   { href: '/sundry-debtors', label: 'Sundry Debtors', icon: Users },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
@@ -83,3 +85,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
