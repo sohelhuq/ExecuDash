@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Circle, Loader2, PlusCircle, Upload } from 'lucide-react';
+import { CheckCircle, Circle, Loader2, PlusCircle, Upload, TrendingDown, Users, FileStack } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
@@ -100,10 +100,23 @@ export default function CollectionsPage() {
       status: 'Pending',
     },
   });
-
+  
   const officerAvatar = PlaceHolderImages.find((p) => p.id === officerState.avatarId);
   const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
   
+  const kpiData = React.useMemo(() => {
+    if (!assignedAccounts) {
+      return { totalAssigned: 0, totalOverdue: 0, overdueAccounts: 0 };
+    }
+    const totalAssigned = assignedAccounts.reduce((sum, acc) => sum + acc.amountDue, 0);
+    const overdueAccountsList = assignedAccounts.filter(acc => acc.status === 'Overdue');
+    const totalOverdue = overdueAccountsList.reduce((sum, acc) => sum + acc.amountDue, 0);
+    const overdueAccounts = overdueAccountsList.length;
+
+    return { totalAssigned, totalOverdue, overdueAccounts };
+  }, [assignedAccounts]);
+
+
   const handleAssignOfficer = () => {
     if (newOfficerName.trim()) {
       setOfficerState(prev => ({...prev, name: newOfficerName}));
@@ -246,7 +259,7 @@ export default function CollectionsPage() {
            </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
           <div className="space-y-6 lg:col-span-1">
             <Card className="bg-card/80 border-border/60">
               <CardContent className="pt-6 flex flex-col items-center text-center">
@@ -258,25 +271,39 @@ export default function CollectionsPage() {
                 <p className="text-lg font-semibold">{officerState.name}</p>
               </CardContent>
             </Card>
-            <Card className="bg-card/80 border-border/60 text-center">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-normal text-muted-foreground">Dedicated Dues: Overdue</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-primary">{formatCurrency(1450000)}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/80 border-border/60 text-center">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-normal text-muted-foreground">Total Assigned Dues</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{formatCurrency(1450000)}</p>
-              </CardContent>
-            </Card>
+            
+            <div className="space-y-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Assigned Dues</CardTitle>
+                        <FileStack className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(kpiData.totalAssigned)}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Overdue Dues</CardTitle>
+                        <TrendingDown className="h-4 w-4 text-destructive" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-destructive">{formatCurrency(kpiData.totalOverdue)}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Overdue Accounts</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{kpiData.overdueAccounts}</div>
+                    </CardContent>
+                </Card>
+            </div>
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <Card className="bg-card/80 border-border/60 h-full">
               <CardHeader>
                 <CardTitle>{officerState.name} - Job Responsibilities & Timeline</CardTitle>
