@@ -17,6 +17,7 @@ import {
   BookCopy,
   Boxes,
   Factory,
+  Workflow,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -45,6 +46,7 @@ const navItems = [
   { href: '/inventory', label: 'Inventory', icon: Boxes },
   { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
   { href: '/hr', label: 'HR Management', icon: Users },
+  { href: '/automations', label: 'Automations', icon: Workflow },
   { href: '/trends', label: 'Trends', icon: TrendingUp },
   { href: '/alerts', label: 'Alerts', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
