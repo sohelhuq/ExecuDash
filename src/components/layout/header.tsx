@@ -17,6 +17,7 @@ import Link from 'next/link';
 
 function UserNav() {
   const userAvatar = PlaceHolderImages.find((p) => p.id === 'user-avatar');
+  const officerAvatar = PlaceHolderImages.find((p) => p.id === 'officer-avatar');
 
   return (
     <DropdownMenu>
@@ -31,9 +32,9 @@ function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">John Smith</p>
+            <p className="text-sm font-medium leading-none">Jasim Smith</p>
             <p className="text-xs leading-none text-muted-foreground">
-              john.smith@shetue.com
+              owner.jasim@shetue.com
             </p>
           </div>
         </DropdownMenuLabel>

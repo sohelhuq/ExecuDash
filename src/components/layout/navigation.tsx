@@ -7,7 +7,8 @@ import {
   Briefcase,
   Users,
   Bell,
-  TrendingUp
+  TrendingUp,
+  ReceiptText
 } from 'lucide-react';
 import {
   Sidebar,
@@ -25,7 +26,8 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/sales', label: 'Sales', icon: Briefcase },
+  { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
+  { href: '/collections', label: 'Collections', icon: ReceiptText },
   { href: '/trends', label: 'Trends', icon: TrendingUp },
   { href: '/alerts', label: 'Alerts', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
