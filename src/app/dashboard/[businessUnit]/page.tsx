@@ -1,6 +1,5 @@
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
-import { businessUnits, type BusinessUnit } from '@/lib/business-units';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -8,6 +7,11 @@ import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel } from 'lucide-react';
+import type { BusinessUnit } from '@/lib/business-units-types';
+import * as React from 'react';
 
 const chartConfig = {
   revenue: {
@@ -20,9 +24,32 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const ICONS: { [key: string]: React.ElementType } = {
+  DollarSign,
+  Banknote,
+  Landmark,
+  TrendingUp,
+  Archive,
+  Package,
+  UserPlus,
+  Fuel,
+};
+
 
 export default function BusinessUnitPage({ params }: { params: { businessUnit: string } }) {
-  const unit = businessUnits.find(u => u.id === params.businessUnit);
+  const firestore = useFirestore();
+  const unitDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'business_units', params.businessUnit) : null, [firestore, params.businessUnit]);
+  const { data: unit, isLoading } = useDoc<BusinessUnit>(unitDocRef);
+  
+  if (isLoading) {
+    return (
+        <AppShell>
+            <div className="flex h-full items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+            </div>
+        </AppShell>
+    );
+  }
 
   if (!unit) {
     notFound();
@@ -39,18 +66,21 @@ export default function BusinessUnitPage({ params }: { params: { businessUnit: s
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {unit.kpis.map((kpi) => (
-            <Card key={kpi.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-                <kpi.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{kpi.value}</div>
-                <p className="text-xs text-muted-foreground">{kpi.change}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {unit.kpis.map((kpi) => {
+            const Icon = ICONS[kpi.icon] || DollarSign;
+            return (
+                <Card key={kpi.title}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{kpi.value}</div>
+                    <p className="text-xs text-muted-foreground">{kpi.change}</p>
+                </CardContent>
+                </Card>
+            );
+          })}
         </div>
 
         <Card>

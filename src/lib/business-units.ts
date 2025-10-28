@@ -1,32 +1,6 @@
 import { DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel } from 'lucide-react';
+import { type BusinessUnit } from './business-units-types';
 
-export type Transaction = {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-};
-
-export type TimeSeriesDataPoint = {
-  month: string;
-  revenue: number;
-  profit: number;
-};
-
-export type BusinessUnit = {
-  id: string;
-  name: string;
-  description: string;
-  kpis: {
-    title: string;
-    value: string;
-    change: string;
-    icon: React.ElementType;
-  }[];
-  timeSeriesData: TimeSeriesDataPoint[];
-  transactions: Transaction[];
-};
 
 export const businessUnits: BusinessUnit[] = [
   {
@@ -34,10 +8,10 @@ export const businessUnits: BusinessUnit[] = [
     name: 'Setu Filling Station',
     description: 'Retail fuel and convenience store.',
     kpis: [
-      { title: 'Fuel Sales', value: '৳1,250,000', change: '+15.2%', icon: Fuel },
-      { title: 'Net Profit', value: '৳350,000', change: '+12.8%', icon: Banknote },
-      { title: 'Transactions', value: '4,200', change: '+18.1%', icon: Landmark },
-      { title: 'Avg. Transaction', value: '৳297', change: '-2.5%', icon: TrendingUp },
+      { title: 'Fuel Sales', value: '৳1,250,000', change: '+15.2%', icon: 'Fuel' },
+      { title: 'Net Profit', value: '৳350,000', change: '+12.8%', icon: 'Banknote' },
+      { title: 'Transactions', value: '4,200', change: '+18.1%', icon: 'Landmark' },
+      { title: 'Avg. Transaction', value: '৳297', change: '-2.5%', icon: 'TrendingUp' },
     ],
     timeSeriesData: [
       { month: 'Jan', revenue: 1100000, profit: 300000 },
@@ -58,10 +32,10 @@ export const businessUnits: BusinessUnit[] = [
     name: 'Setu Feed Mills',
     description: 'Animal feed production and sales.',
     kpis: [
-      { title: 'Feed Sales', value: '৳850,000', change: '+12.1%', icon: Archive },
-      { title: 'Net Profit', value: '৳210,000', change: '+5.5%', icon: Banknote },
-      { title: 'Production Volume', value: '500 tons', change: '+10%', icon: Landmark },
-      { title: 'Avg. Order Size', value: '5 tons', change: '+2.0%', icon: TrendingUp },
+      { title: 'Feed Sales', value: '৳850,000', change: '+12.1%', icon: 'Archive' },
+      { title: 'Net Profit', value: '৳210,000', change: '+5.5%', icon: 'Banknote' },
+      { title: 'Production Volume', value: '500 tons', change: '+10%', icon: 'Landmark' },
+      { title: 'Avg. Order Size', value: '5 tons', change: '+2.0%', icon: 'TrendingUp' },
     ],
     timeSeriesData: [
         { month: 'Jan', revenue: 780000, profit: 190000 },
@@ -82,10 +56,10 @@ export const businessUnits: BusinessUnit[] = [
     name: 'Huq Bricks',
     description: 'Brick manufacturing and supply.',
     kpis: [
-        { title: 'Brick Sales', value: '৳2,500,000', change: '+25.0%', icon: Package },
-        { title: 'Net Profit', value: '৳750,000', change: '+30.2%', icon: Banknote },
-        { title: 'Production Volume (Bricks)', value: '500,000', change: '+10.0%', icon: Landmark },
-        { title: 'Orders Fulfilled', value: '150', change: '+20.0%', icon: TrendingUp },
+        { title: 'Brick Sales', value: '৳2,500,000', change: '+25.0%', icon: 'Package' },
+        { title: 'Net Profit', value: '৳750,000', change: '+30.2%', icon: 'Banknote' },
+        { title: 'Production Volume (Bricks)', value: '500,000', change: '+10.0%', icon: 'Landmark' },
+        { title: 'Orders Fulfilled', value: '150', change: '+20.0%', icon: 'TrendingUp' },
     ],
     timeSeriesData: [
         { month: 'Jan', revenue: 1800000, profit: 500000 },
@@ -106,10 +80,10 @@ export const businessUnits: BusinessUnit[] = [
     name: 'Setu Tech',
     description: 'IT services and consulting.',
     kpis: [
-        { title: 'Tech Subscribers', value: '1,200', change: '+50', icon: UserPlus },
-        { title: 'Net Profit', value: '৳150,000', change: '-1.5%', icon: Banknote },
-        { title: 'Active Projects', value: '12', change: '+1', icon: Landmark },
-        { title: 'Client Satisfaction', value: '4.8/5', change: '+0.1', icon: TrendingUp },
+        { title: 'Tech Subscribers', value: '1,200', change: '+50', icon: 'UserPlus' },
+        { title: 'Net Profit', value: '৳150,000', change: '-1.5%', icon: 'Banknote' },
+        { title: 'Active Projects', value: '12', change: '+1', icon: 'Landmark' },
+        { title: 'Client Satisfaction', value: '4.8/5', change: '+0.1', icon: 'TrendingUp' },
     ],
     timeSeriesData: [
         { month: 'Jan', revenue: 480000, profit: 140000 },
@@ -131,10 +105,10 @@ export const businessUnits: BusinessUnit[] = [
     name: 'Hotel Midway',
     description: 'Boutique hotel and restaurant.',
     kpis: [
-      { title: 'Total Revenue', value: '৳850,000', change: '+8.1%', icon: DollarSign },
-      { title: 'Net Profit', value: '৳210,000', change: '+5.5%', icon: Banknote },
-      { title: 'Occupancy Rate', value: '85%', change: '+4.0%', icon: Landmark },
-      { title: 'Avg. Daily Rate', value: '৳4,500', change: '+1.2%', icon: TrendingUp },
+      { title: 'Total Revenue', value: '৳850,000', change: '+8.1%', icon: 'DollarSign' },
+      { title: 'Net Profit', value: '৳210,000', change: '+5.5%', icon: 'Banknote' },
+      { title: 'Occupancy Rate', value: '85%', change: '+4.0%', icon: 'Landmark' },
+      { title: 'Avg. Daily Rate', value: '৳4,500', change: '+1.2%', icon: 'TrendingUp' },
     ],
     timeSeriesData: [
         { month: 'Jan', revenue: 780000, profit: 190000 },
