@@ -1,3 +1,4 @@
+
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ const salesModules = [
     icon: CircleUserRound,
     title: "Customer Debits",
     description: "Track customer credit balances, manage overdue payments, and adjust amounts for a seamless debt management system.",
-    href: "#"
+    href: "/sundry-debtors"
   },
 ];
 
