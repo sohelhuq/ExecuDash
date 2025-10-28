@@ -1,0 +1,357 @@
+{
+  "entities": {
+    "BusinessUnit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BusinessUnit",
+      "type": "object",
+      "description": "Represents a business unit within the Shetue Group.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BusinessUnit entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The canonical name of the business unit (e.g., Setu Filling Station)."
+        },
+        "aliases": {
+          "type": "array",
+          "description": "An array of alternative names or aliases for the business unit (e.g., [\"fuel station\", \"the pump\"]",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Metric": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Metric",
+      "type": "object",
+      "description": "Represents a metric that is tracked for a specific business unit.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Metric entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The canonical name of the metric (e.g., daily_sales)."
+        },
+        "businessUnitId": {
+          "type": "string",
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Metric)"
+        },
+        "aliases": {
+          "type": "array",
+          "description": "An array of alternative names or aliases for the metric.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "businessUnitId"
+      ]
+    },
+    "Dashboard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Dashboard",
+      "type": "object",
+      "description": "Represents a customized dashboard configuration for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Dashboard entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Dashboard)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the dashboard (e.g., Fuel Dashboard)."
+        },
+        "layout": {
+          "type": "string",
+          "description": "The layout configuration of the dashboard (e.g., grid-auto)."
+        },
+        "widgetIds": {
+          "type": "array",
+          "description": "References to Widgets. (Relationship: Dashboard 1:N Widget)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "layout"
+      ]
+    },
+    "Widget": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Widget",
+      "type": "object",
+      "description": "Represents a widget on a dashboard displaying a specific metric.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Widget entity."
+        },
+        "dashboardId": {
+          "type": "string",
+          "description": "Reference to Dashboard. (Relationship: Dashboard 1:N Widget)"
+        },
+        "businessUnitId": {
+          "type": "string",
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Widget)"
+        },
+        "metricId": {
+          "type": "string",
+          "description": "Reference to Metric. (Relationship: Metric 1:N Widget)"
+        },
+        "visualization": {
+          "type": "string",
+          "description": "The type of visualization for the widget (e.g., line, bar)."
+        },
+        "timeframeType": {
+          "type": "string",
+          "description": "The type of timeframe for the widget (e.g., relative, absolute)."
+        },
+        "timeframeStart": {
+          "type": "string",
+          "description": "The start date for the widget timeframe if timeframeType is absolute."
+        },
+        "timeframeEnd": {
+          "type": "string",
+          "description": "The end date for the widget timeframe if timeframeType is absolute."
+        },
+        "timeframePeriod": {
+          "type": "string",
+          "description": "The period for the widget timeframe if timeframeType is relative (e.g., past_7d)."
+        }
+      },
+      "required": [
+        "id",
+        "dashboardId",
+        "businessUnitId",
+        "metricId",
+        "visualization"
+      ]
+    },
+    "Alert": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Alert",
+      "type": "object",
+      "description": "Represents an alert rule that triggers when a metric meets a specific condition.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Alert entity."
+        },
+        "businessUnitId": {
+          "type": "string",
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Alert)"
+        },
+        "metricId": {
+          "type": "string",
+          "description": "Reference to Metric. (Relationship: Metric 1:N Alert)"
+        },
+        "conditionOperator": {
+          "type": "string",
+          "description": "The operator for the alert condition (e.g., <, >, ==)."
+        },
+        "conditionValue": {
+          "type": "number",
+          "description": "The value for the alert condition."
+        },
+        "durationMinutes": {
+          "type": "number",
+          "description": "The duration in minutes for which the condition must be met before triggering the alert."
+        },
+        "notifyChannels": {
+          "type": "array",
+          "description": "An array of notification channels for the alert (e.g., [\"telegram\", \"email\"]",
+          "items": {
+            "type": "string"
+          }
+        },
+        "severity": {
+          "type": "string",
+          "description": "The severity level of the alert (e.g., low, medium, high)."
+        }
+      },
+      "required": [
+        "id",
+        "businessUnitId",
+        "metricId",
+        "conditionOperator",
+        "conditionValue",
+        "notifyChannels",
+        "severity"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the ExecuDash application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "The user's preferred language (e.g., en, bn)."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "preferredLanguage"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  Authorization is based on the `userId` path parameter.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/dashboards/{dashboardId}",
+        "definition": {
+          "entityName": "Dashboard",
+          "schema": {
+            "$ref": "#/backend/entities/Dashboard"
+          },
+          "description": "Stores dashboards owned by a user. Authorization is based on the `userId` path parameter, ensuring only the user can access their dashboards.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "dashboardId",
+              "description": "The unique identifier for the dashboard."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/business_units/{businessUnitId}",
+        "definition": {
+          "entityName": "BusinessUnit",
+          "schema": {
+            "$ref": "#/backend/entities/BusinessUnit"
+          },
+          "description": "Stores information about business units.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier for the business unit."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/business_units/{businessUnitId}/metrics/{metricId}",
+        "definition": {
+          "entityName": "Metric",
+          "schema": {
+            "$ref": "#/backend/entities/Metric"
+          },
+          "description": "Stores metrics related to a specific business unit.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier for the business unit."
+            },
+            {
+              "name": "metricId",
+              "description": "The unique identifier for the metric."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/business_units/{businessUnitId}/widgets/{widgetId}",
+        "definition": {
+          "entityName": "Widget",
+          "schema": {
+            "$ref": "#/backend/entities/Widget"
+          },
+          "description": "Stores widgets related to a specific business unit.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier for the business unit."
+            },
+            {
+              "name": "widgetId",
+              "description": "The unique identifier for the widget."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/business_units/{businessUnitId}/alerts/{alertId}",
+        "definition": {
+          "entityName": "Alert",
+          "schema": {
+            "$ref": "#/backend/entities/Alert"
+          },
+          "description": "Stores alert rules for a specific business unit.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier for the business unit."
+            },
+            {
+              "name": "alertId",
+              "description": "The unique identifier for the alert."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs, and maintain data clarity. It leverages path-based ownership for user-specific data (dashboards) and segregates data with different access requirements. The structure denormalizes authorization data to avoid using `get()` calls in security rules.\n\n**Authorization Independence:**\nAuthorization Independence is achieved through path-based ownership and avoids hierarchical authorization dependencies. The collaborative access to `BusinessUnit` data is managed by dedicated subcollections to avoid get() calls.\n\n**QAPs Support:**\nQAPs are supported through structural segregation and the membership model. User-owned dashboards are stored under the `/users/{userId}` collection, ensuring that listing dashboards is secure and limited to the user's data. Business Units have a flat structure.\n\n**Structure Explanation:**\n- `/users/{userId}`: Contains user-specific data, such as dashboards. This path enforces ownership.\n- `/users/{userId}/dashboards/{dashboardId}`: Stores dashboard configurations for each user. The `userId` in the path ensures that only the owner can access the dashboards.\n- `/business_units/{businessUnitId}`: Contains business unit data.\n- `/business_units/{businessUnitId}/metrics/{metricId}`: Contains metrics data for a business unit.\n- `/business_units/{businessUnitId}/widgets/{widgetId}`: Contains widgets data for a business unit. The `businessUnitId` in the path ensures that only authorized users can access the widgets.\n- `/business_units/{businessUnitId}/alerts/{alertId}`: Contains alerts data for a business unit. The `businessUnitId` in the path ensures that only authorized users can access the alerts."
+  }
+}
