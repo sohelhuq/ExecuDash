@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Circle } from 'lucide-react';
+import { CheckCircle, Circle, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
@@ -29,32 +29,41 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const officer = {
   name: 'Ahmed Rahman',
   avatarId: 'officer-avatar',
 };
 
-const assignedAccounts = [
-  { unit: 'Glebal Corp', customer: 'Invoice ID', invoice: 'Teeam', dueDate: 'Tesafil', amountDue: 15331065, status: 'Pending' },
-  { unit: 'Fuel', customer: 'Panys Fast', invoice: 'INV-005', dueDate: '2024-07-20', amountDue: 20000, status: 'Overdue' },
-  { unit: 'Status Feed', customer: 'Panys Fast', invoice: 'INV-006', dueDate: '2024-07-25', amountDue: 23173, status: 'Pending' },
-  { unit: 'Skabsa Pusskc', customer: '789-408', invoice: 'INV-007', dueDate: '2024-08-01', amountDue: 229168, status: 'Pending' },
-];
+type AssignedAccount = {
+  unit: string;
+  customer: string;
+  invoice: string;
+  dueDate: string;
+  amountDue: number;
+  status: 'Pending' | 'Overdue' | 'Paid';
+};
 
-const responsibilities = [
-    { task: "Oversee Collections Portfolio", completed: true },
-    { task: "Develop & Implement Collection Strategies", completed: true },
-    { task: "Negotiate Payment Plans with Clients", completed: false },
-    { task: "Analyze Delinquent Accounts & Report", completed: true },
-    { task: "Ensure Compliance with Regulations", completed: false },
-]
+type Responsibility = {
+  task: string;
+  completed: boolean;
+};
 
 export default function CollectionsPage() {
   const [officerState, setOfficerState] = React.useState(officer);
   const [open, setOpen] = React.useState(false);
   const [newOfficerName, setNewOfficerName] = React.useState('');
   const { toast } = useToast();
+  
+  const firestore = useFirestore();
+  
+  const accountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'assigned_accounts') : null, [firestore]);
+  const { data: assignedAccounts, isLoading: isLoadingAccounts } = useCollection<AssignedAccount>(accountsCollection);
+  
+  const responsibilitiesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'responsibilities') : null, [firestore]);
+  const { data: responsibilities, isLoading: isLoadingResponsibilities } = useCollection<Responsibility>(responsibilitiesCollection);
 
   const officerAvatar = PlaceHolderImages.find((p) => p.id === officerState.avatarId);
   const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
@@ -150,8 +159,13 @@ export default function CollectionsPage() {
                 <CardTitle>{officerState.name} - Job Responsibilities & Timeline</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {isLoadingResponsibilities ? (
+                    <div className="flex justify-center items-center h-48">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                ) : (
                 <ul className="space-y-4">
-                  {responsibilities.map((item, index) => (
+                  {responsibilities?.map((item, index) => (
                      <li key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
                        <div className="flex items-center gap-4">
                          <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs ${item.completed ? 'bg-primary/20 text-primary' : 'bg-muted-foreground/20 text-muted-foreground' }`}>{index + 1}</div>
@@ -161,6 +175,7 @@ export default function CollectionsPage() {
                      </li>
                   ))}
                 </ul>
+                )}
                 <div className="pt-4">
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">70% of Focus Collected</p>
@@ -195,7 +210,14 @@ export default function CollectionsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {assignedAccounts.map((account, index) => (
+                        {isLoadingAccounts ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center h-24">
+                              <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                        assignedAccounts?.map((account, index) => (
                         <TableRow key={index}>
                             <TableCell className="font-medium">{account.unit}</TableCell>
                             <TableCell>{account.customer}</TableCell>
@@ -208,7 +230,7 @@ export default function CollectionsPage() {
                                 </Badge>
                             </TableCell>
                         </TableRow>
-                        ))}
+                        )))}
                     </TableBody>
                 </Table>
             </CardContent>
