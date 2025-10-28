@@ -1,3 +1,4 @@
+
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import {
@@ -40,12 +41,13 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 type Dps = {
+  id: string;
   bank: string;
   maturityDate: string; // Stored as ISO string
   dpsBalance: number;
 }
 
-const defaultDpsState: Omit<Dps, 'maturityDate'> & { maturityDate?: Date } = {
+const defaultDpsState: Omit<Dps, 'id' | 'maturityDate'> & { maturityDate?: Date } = {
   bank: '',
   dpsBalance: 0,
 };
@@ -85,7 +87,7 @@ export default function DpsPage() {
         }
         
         if (dpsCollection) {
-          const newDpsData: Dps = {
+          const newDpsData: Omit<Dps, 'id'> = {
               bank,
               maturityDate: maturityDate.toISOString(),
               dpsBalance,

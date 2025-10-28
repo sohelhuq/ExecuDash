@@ -557,11 +557,12 @@
       "type": "object",
       "description": "Represents a Deposit Pension Scheme (DPS).",
       "properties": {
+        "id": { "type": "string" },
         "bank": { "type": "string" },
         "maturityDate": { "type": "string", "format": "date-time" },
         "dpsBalance": { "type": "number" }
       },
-      "required": ["bank", "maturityDate", "dpsBalance"]
+      "required": ["id", "bank", "maturityDate", "dpsBalance"]
     },
      "Employee": {
       "$schema": "http://json-schema.org/draft-07/schema#",
