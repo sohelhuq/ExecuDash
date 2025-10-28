@@ -19,6 +19,39 @@ export type Kpi = {
     icon: string;
 };
 
+export type FuelProduct = {
+    name: string;
+    purchase: number;
+    sale: number;
+    stockPercentage: number;
+};
+
+export type CngProduct = {
+    name: string;
+    purchase: number;
+    sale: number;
+    stockPercentage: number;
+};
+
+export type LpgProduct = {
+    name: string;
+    purchase: number;
+    sale: number;
+    stockPercentage: number;
+};
+
+export type FuelSector = {
+    products: FuelProduct[];
+};
+
+export type CngSector = {
+    products: CngProduct[];
+};
+
+export type LpgSector = {
+    products: LpgProduct[];
+};
+
 export type BusinessUnit = {
   id: string;
   name: string;
@@ -26,4 +59,7 @@ export type BusinessUnit = {
   kpis: Kpi[];
   timeSeriesData: TimeSeriesDataPoint[];
   transactions: Transaction[];
+  fuelSector?: FuelSector;
+  cngSector?: CngSector;
+  lpgSector?: LpgSector;
 };

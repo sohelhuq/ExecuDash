@@ -60,15 +60,69 @@
             },
             "required": ["id", "date", "description", "amount", "type"]
           }
+        },
+        "fuelSector": {
+          "type": "object",
+          "description": "Data specific to the fuel sector of a filling station.",
+          "properties": {
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "purchase": { "type": "number" },
+                  "sale": { "type": "number" },
+                  "stockPercentage": { "type": "number" }
+                },
+                "required": ["name", "purchase", "sale", "stockPercentage"]
+              }
+            }
+          }
+        },
+        "cngSector": {
+          "type": "object",
+          "description": "Data specific to the CNG sector of a filling station.",
+          "properties": {
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "purchase": { "type": "number" },
+                  "sale": { "type": "number" },
+                  "stockPercentage": { "type": "number" }
+                },
+                "required": ["name", "purchase", "sale", "stockPercentage"]
+              }
+            }
+          }
+        },
+        "lpgSector": {
+          "type": "object",
+          "description": "Data specific to the LPG sector of a filling station.",
+          "properties": {
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "purchase": { "type": "number" },
+                  "sale": { "type": "number" },
+                  "stockPercentage": { "type": "number" }
+                },
+                "required": ["name", "purchase", "sale", "stockPercentage"]
+              }
+            }
+          }
         }
       },
       "required": [
         "id",
         "name",
-        "description",
-        "kpis",
-        "timeSeriesData",
-        "transactions"
+        "description"
       ]
     },
     "Metric": {
