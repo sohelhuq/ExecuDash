@@ -34,6 +34,8 @@ import {
 } from '@/components/ui/select';
 import { suggestAlertThreshold, type SuggestAlertThresholdOutput } from '@/ai/flows/automated-alert-suggestions';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const initialAlerts = [
   { unit: "Setu Filling Station", metric: "fuel_stock", condition: "< 500 liters", severity: "High" },
@@ -51,7 +53,10 @@ type Alert = {
 };
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = React.useState<Alert[]>(initialAlerts);
+  const firestore = useFirestore();
+  const alertsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'alerts') : null, [firestore]);
+  const { data: alerts, isLoading } = useCollection<Alert>(alertsCollection);
+
   const [newAlert, setNewAlert] = React.useState<Partial<Alert>>({});
   const [open, setOpen] = React.useState(false);
   const [isSuggesting, setIsSuggesting] = React.useState(false);
@@ -67,8 +72,8 @@ export default function AlertsPage() {
   };
 
   const handleAddAlert = () => {
-    if (newAlert.unit && newAlert.metric && newAlert.condition && newAlert.severity) {
-      setAlerts(prev => [...prev, newAlert as Alert]);
+    if (alertsCollection && newAlert.unit && newAlert.metric && newAlert.condition && newAlert.severity) {
+      addDocumentNonBlocking(alertsCollection, newAlert as Alert);
       setNewAlert({});
       setOpen(false);
        toast({
@@ -254,7 +259,14 @@ export default function AlertsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {alerts.map((alert, index) => (
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!isLoading && alerts?.map((alert, index) => (
                   <TableRow key={`${alert.unit}-${alert.metric}-${index}`}>
                     <TableCell className="font-medium">{alert.unit}</TableCell>
                     <TableCell>{alert.metric.replace(/_/g, ' ')}</TableCell>
