@@ -1,640 +1,169 @@
-
 {
   "entities": {
-    "BusinessUnit": {
+    "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BusinessUnit",
+      "title": "Project",
       "type": "object",
-      "description": "Represents a business unit within the Shetue Group, including its KPIs, time series data, and transactions.",
+      "description": "Represents a project within the Firestudio environment.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the BusinessUnit entity."
+          "description": "Unique identifier for the project."
         },
         "name": {
           "type": "string",
-          "description": "The canonical name of the business unit (e.g., Setu Filling Station)."
+          "description": "Name of the project."
         },
         "description": {
           "type": "string",
-          "description": "A short description of the business unit."
-        },
-        "kpis": {
-          "type": "array",
-          "description": "An array of Key Performance Indicators for the business unit.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "title": { "type": "string" },
-              "value": { "type": "string" },
-              "change": { "type": "string" },
-              "icon": { "type": "string" }
-            },
-            "required": ["title", "value", "change", "icon"]
-          }
-        },
-        "timeSeriesData": {
-          "type": "array",
-          "description": "An array of time series data points for financial performance charts.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "month": { "type": "string" },
-              "revenue": { "type": "number" },
-              "profit": { "type": "number" }
-            },
-            "required": ["month", "revenue", "profit"]
-          }
-        },
-        "transactions": {
-          "type": "array",
-          "description": "An array of recent transactions for the business unit.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "date": { "type": "string", "format": "date-time" },
-              "description": { "type": "string" },
-              "amount": { "type": "number" },
-              "type": { "type": "string", "enum": ["income", "expense"] }
-            },
-            "required": ["id", "date", "description", "amount", "type"]
-          }
-        },
-        "fuelSector": {
-          "type": "object",
-          "description": "Data specific to the fuel sector of a filling station.",
-          "properties": {
-            "products": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "purchase": { "type": "number" },
-                  "sale": { "type": "number" },
-                  "stockPercentage": { "type": "number" }
-                },
-                "required": ["name", "purchase", "sale", "stockPercentage"]
-              }
-            }
-          }
-        },
-        "cngSector": {
-          "type": "object",
-          "description": "Data specific to the CNG sector of a filling station.",
-          "properties": {
-            "products": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "purchase": { "type": "number" },
-                  "sale": { "type": "number" },
-                  "stockPercentage": { "type": "number" }
-                },
-                "required": ["name", "purchase", "sale", "stockPercentage"]
-              }
-            }
-          }
-        },
-        "lpgSector": {
-          "type": "object",
-          "description": "Data specific to the LPG sector of a filling station.",
-          "properties": {
-            "products": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "purchase": { "type": "number" },
-                  "sale": { "type": "number" },
-                  "stockPercentage": { "type": "number" }
-                },
-                "required": ["name", "purchase", "sale", "stockPercentage"]
-              }
-            }
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description"
-      ]
-    },
-    "MeterReading": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MeterReading",
-      "type": "object",
-      "description": "Represents a meter reading from a nozzle at a specific time.",
-      "properties": {
-        "id": { "type": "string" },
-        "businessUnitId": { "type": "string" },
-        "shiftId": { "type": "string" },
-        "nozzle": { "type": "string" },
-        "product": { "type": "string" },
-        "reading": { "type": "number" },
-        "timestamp": { "type": "string", "format": "date-time" }
-      },
-      "required": ["businessUnitId", "nozzle", "product", "reading", "timestamp"]
-    },
-    "Metric": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Metric",
-      "type": "object",
-      "description": "Represents a metric that is tracked for a specific business unit.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Metric entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The canonical name of the metric (e.g., daily_sales)."
-        },
-        "businessUnitId": {
-          "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Metric)"
-        },
-        "aliases": {
-          "type": "array",
-          "description": "An array of alternative names or aliases for the metric.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "businessUnitId"
-      ]
-    },
-    "Dashboard": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Dashboard",
-      "type": "object",
-      "description": "Represents a customized dashboard configuration for a user.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Dashboard entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Dashboard)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the dashboard (e.g., Fuel Dashboard)."
-        },
-        "layout": {
-          "type": "string",
-          "description": "The layout configuration of the dashboard (e.g., grid-auto)."
-        },
-        "widgetIds": {
-          "type": "array",
-          "description": "References to Widgets. (Relationship: Dashboard 1:N Widget)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "name",
-        "layout"
-      ]
-    },
-    "Widget": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Widget",
-      "type": "object",
-      "description": "Represents a widget on a dashboard displaying a specific metric.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Widget entity."
-        },
-        "dashboardId": {
-          "type": "string",
-          "description": "Reference to Dashboard. (Relationship: Dashboard 1:N Widget)"
-        },
-        "businessUnitId": {
-          "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Widget)"
-        },
-        "metricId": {
-          "type": "string",
-          "description": "Reference to Metric. (Relationship: Metric 1:N Widget)"
-        },
-        "visualization": {
-          "type": "string",
-          "description": "The type of visualization for the widget (e.g., line, bar)."
-        },
-        "timeframeType": {
-          "type": "string",
-          "description": "The type of timeframe for the widget (e.g., relative, absolute)."
-        },
-        "timeframeStart": {
-          "type": "string",
-          "description": "The start date for the widget timeframe if timeframeType is absolute."
-        },
-        "timeframeEnd": {
-          "type": "string",
-          "description": "The end date for the widget timeframe if timeframeType is absolute."
-        },
-        "timeframePeriod": {
-          "type": "string",
-          "description": "The period for the widget timeframe if timeframeType is relative (e.g., past_7d)."
-        }
-      },
-      "required": [
-        "id",
-        "dashboardId",
-        "businessUnitId",
-        "metricId",
-        "visualization"
-      ]
-    },
-    "Alert": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Alert",
-      "type": "object",
-      "description": "Represents an alert rule that triggers when a metric meets a specific condition.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Alert entity."
-        },
-        "businessUnitId": {
-          "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Alert)"
-        },
-        "metricId": {
-          "type": "string",
-          "description": "Reference to Metric. (Relationship: Metric 1:N Alert)"
-        },
-        "conditionOperator": {
-          "type": "string",
-          "description": "The operator for the alert condition (e.g., &lt;, &gt;, ==)."
-        },
-        "conditionValue": {
-          "type": "number",
-          "description": "The value for the alert condition."
-        },
-        "durationMinutes": {
-          "type": "number",
-          "description": "The duration in minutes for which the condition must be met before triggering the alert."
-        },
-        "notifyChannels": {
-          "type": "array",
-          "description": "An array of notification channels for the alert (e.g., [\"telegram\", \"email\"]",
-          "items": {
-            "type": "string"
-          }
-        },
-        "severity": {
-          "type": "string",
-          "description": "The severity level of the alert (e.g., low, medium, high)."
-        }
-      },
-      "required": [
-        "id",
-        "businessUnitId",
-        "metricId",
-        "conditionOperator",
-        "conditionValue",
-        "notifyChannels",
-        "severity"
-      ]
-    },
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user of the ExecuDash application.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "username": {
-          "type": "string",
-          "description": "The user's username."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address.",
-          "format": "email"
-        },
-        "preferredLanguage": {
-          "type": "string",
-          "description": "The user's preferred language (e.g., en, bn)."
-        }
-      },
-      "required": [
-        "id",
-        "username",
-        "email",
-        "preferredLanguage"
-      ]
-    },
-    "AssignedAccount": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AssignedAccount",
-      "type": "object",
-      "description": "Represents an account assigned to a collections officer.",
-      "properties": {
-        "unit": {
-          "type": "string"
-        },
-        "customer": {
-          "type": "string"
-        },
-        "invoice": {
-          "type": "string"
-        },
-        "dueDate": {
-          "type": "string"
-        },
-        "amountDue": {
-          "type": "number"
+          "description": "Description of the project's purpose."
         },
         "status": {
           "type": "string",
-          "enum": [
-            "Pending",
-            "Overdue",
-            "Paid"
-          ]
+          "description": "The current status of the project (e.g., 'setup', 'active', 'completed')."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The date and time the project started.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The date and time the project ended or is expected to end.",
+          "format": "date-time"
         }
       },
       "required": [
-        "unit",
-        "customer",
-        "invoice",
-        "dueDate",
-        "amountDue",
+        "id",
+        "name",
+        "description",
         "status"
       ]
     },
-    "Responsibility": {
+    "Module": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Responsibility",
+      "title": "Module",
       "type": "object",
-      "description": "Represents a job responsibility for a collections officer.",
+      "description": "Represents a module within the Firestudio environment, such as 'Attendance' or 'Employee'.",
       "properties": {
-        "task": {
-          "type": "string"
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the module."
         },
-        "completed": {
-          "type": "boolean"
+        "name": {
+          "type": "string",
+          "description": "Name of the module (e.g., 'Attendance', 'Employee')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the module's functionality."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Module)"
+        },
+        "deploymentStatus": {
+          "type": "string",
+          "description": "Status of the module's deployment (e.g., 'deployed', 'pending', 'failed')."
         }
       },
       "required": [
-        "task",
-        "completed"
+        "id",
+        "name",
+        "description",
+        "projectId",
+        "deploymentStatus"
       ]
     },
-    "Invoice": {
+    "TelegramBot": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Invoice",
+      "title": "TelegramBot",
       "type": "object",
-      "description": "Represents an invoice for a sale.",
+      "description": "Represents the Telegram bot connection details for notifications.",
       "properties": {
-        "unit": {
-          "type": "string"
-        },
-        "customer": {
-          "type": "string"
-        },
-        "invoiceId": {
-          "type": "string"
-        },
-        "dueDate": {
+        "id": {
           "type": "string",
-          "format": "date-time"
+          "description": "Unique identifier for the Telegram bot connection."
         },
-        "amount": {
-          "type": "number"
+        "botName": {
+          "type": "string",
+          "description": "Name of the Telegram bot."
+        },
+        "token": {
+          "type": "string",
+          "description": "API token for the Telegram bot."
+        },
+        "chatId": {
+          "type": "string",
+          "description": "Chat ID to send notifications to."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N TelegramBot)"
         },
         "status": {
           "type": "string",
-          "enum": [
-            "Pending",
-            "Overdue",
-            "Paid"
-          ]
+          "description": "The connection status of the Telegram bot (e.g., 'active', 'inactive')."
         }
       },
       "required": [
-        "unit",
-        "customer",
-        "invoiceId",
-        "dueDate",
-        "amount",
+        "id",
+        "botName",
+        "token",
+        "chatId",
+        "projectId",
         "status"
       ]
     },
-    "Kpi": {
+    "FinanceDataSync": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Kpi",
+      "title": "FinanceDataSync",
       "type": "object",
-      "description": "Represents a Key Performance Indicator for the main dashboard.",
+      "description": "Represents the synchronization process for finance data from Google Sheets to Firestore.",
       "properties": {
-        "title": { "type": "string" },
-        "value": { "type": "string" },
-        "change": { "type": "string" },
-        "icon": { "type": "string" }
-      },
-      "required": ["title", "value", "change", "icon"]
-    },
-    "RevenueTrend": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RevenueTrend",
-      "type": "object",
-      "description": "Represents a single data point for the monthly revenue trend chart.",
-      "properties": {
-        "month": { "type": "string" },
-        "revenue": { "type": "number" },
-        "order": { "type": "number" }
-      },
-      "required": ["month", "revenue", "order"]
-    },
-    "BankDeposit": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BankDeposit",
-      "type": "object",
-      "description": "Represents a bank deposit transaction.",
-      "properties": {
-        "amount": {
-          "type": "number"
-        },
-        "date": {
+        "id": {
           "type": "string",
-          "format": "date-time"
+          "description": "Unique identifier for the finance data synchronization process."
         },
-        "reference": {
-          "type": "string"
+        "sourceType": {
+          "type": "string",
+          "description": "The type of data source (e.g., 'Google Sheets')."
+        },
+        "sourceDetails": {
+          "type": "string",
+          "description": "Connection details for the data source (e.g., spreadsheet ID, sheet name)."
+        },
+        "destinationType": {
+          "type": "string",
+          "description": "The type of data destination (e.g., 'Firestore')."
+        },
+        "destinationDetails": {
+          "type": "string",
+          "description": "Connection details for the data destination (e.g., Firestore collection path)."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N FinanceDataSync)"
+        },
+        "syncStatus": {
+          "type": "string",
+          "description": "The current status of the synchronization process (e.g., 'active', 'pending', 'completed', 'failed')."
+        },
+        "lastSyncTime": {
+          "type": "string",
+          "description": "The date and time of the last successful synchronization.",
+          "format": "date-time"
         }
       },
       "required": [
-        "amount",
-        "date"
+        "id",
+        "sourceType",
+        "sourceDetails",
+        "destinationType",
+        "destinationDetails",
+        "projectId",
+        "syncStatus"
       ]
-    },
-    "CcAccount": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "CcAccount",
-      "type": "object",
-      "description": "Represents a single Credit Card (CC) loan account.",
-      "properties": {
-        "bank": { "type": "string" },
-        "name": { "type": "string" },
-        "no": { "type": "string" },
-        "interest": { "type": "number" },
-        "opening": { "type": "number" },
-        "cr": { "type": "number" },
-        "dr": { "type": "number" },
-        "balance": { "type": "number" }
-      },
-      "required": ["bank", "name", "no", "opening", "cr", "dr", "balance"]
-    },
-    "SavingsAccount": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SavingsAccount",
-      "type": "object",
-      "description": "Represents a single Savings account.",
-      "properties": {
-        "bank": { "type": "string" },
-        "name": { "type": "string" },
-        "no": { "type": "string" },
-        "opening": { "type": "number" },
-        "cr": { "type": "number" },
-        "dr": { "type": "number" },
-        "balance": { "type": "number" }
-      },
-      "required": ["bank", "name", "no", "opening", "cr", "dr", "balance"]
-    },
-    "RentEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RentEntry",
-      "type": "object",
-      "description": "Represents a single rent collection entry for a property.",
-      "properties": {
-        "category": { "type": "string", "enum": ["shetue_vanga_dokan", "jaman_tower", "others"] },
-        "location": { "type": "string" },
-        "tenant": { "type": "string" },
-        "opening": { "type": "number" },
-        "rent": { "type": "number" },
-        "total": { "type": "number" },
-        "collection": { "type": "number" },
-        "expense": { "type": "number" },
-        "due": { "type": "number" }
-      },
-      "required": ["category", "location", "tenant", "opening", "rent", "total", "collection", "expense", "due"]
-    },
-    "Fdr": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Fdr",
-      "type": "object",
-      "description": "Represents a Fixed Deposit Receipt (FDR).",
-      "properties": {
-        "bank": { "type": "string" },
-        "category": { "type": "string" },
-        "amount": { "type": "number" }
-      },
-      "required": ["bank", "category", "amount"]
-    },
-    "Dps": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Dps",
-      "type": "object",
-      "description": "Represents a Deposit Pension Scheme (DPS).",
-      "properties": {
-        "id": { "type": "string" },
-        "bank": { "type": "string" },
-        "maturityDate": { "type": "string", "format": "date-time" },
-        "dpsBalance": { "type": "number" }
-      },
-      "required": ["id", "bank", "maturityDate", "dpsBalance"]
-    },
-     "Employee": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Employee",
-      "type": "object",
-      "description": "Represents an employee record.",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "jobRole": { "type": "string" },
-        "department": { "type": "string" },
-        "salary": { "type": "number" },
-        "contactDetails": { "type": "string" },
-        "joiningDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["active", "inactive", "on_leave"] },
-        "location": { "type": "object", "properties": { "latitude": { "type": "number" }, "longitude": { "type": "number" } } },
-        "photoUrl": { "type": "string", "format": "uri" }
-      },
-      "required": ["id", "name", "jobRole", "department", "joiningDate", "status"]
-    },
-    "Attendance": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Attendance",
-      "type": "object",
-      "description": "Represents an employee attendance record for a specific day.",
-      "properties": {
-        "id": { "type": "string" },
-        "employeeId": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["present", "absent", "leave"] },
-        "checkIn": { "type": "string", "format": "time" },
-        "checkOut": { "type": "string", "format": "time" }
-      },
-      "required": ["id", "employeeId", "date", "status"]
-    },
-    "LeaveBalance": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LeaveBalance",
-      "type": "object",
-      "description": "Represents the leave balance and usage for an employee for a specific year.",
-      "properties": {
-        "employeeId": { "type": "string" },
-        "year": { "type": "number" },
-        "leaveType": { "type": "string", "enum": ["vacation", "medical"] },
-        "allottedHours": { "type": "number" },
-        "monthlyUsage": {
-          "type": "object",
-          "properties": {
-            "jan": { "type": "number" }, "feb": { "type": "number" }, "mar": { "type": "number" },
-            "apr": { "type": "number" }, "may": { "type": "number" }, "jun": { "type": "number" },
-            "jul": { "type": "number" }, "aug": { "type": "number" }, "sep": { "type": "number" },
-            "oct": { "type": "number" }, "nov": { "type": "number" }, "dec": { "type": "number" }
-          }
-        }
-      },
-      "required": ["employeeId", "year", "leaveType", "allottedHours"]
-    },
-    "Payroll": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Payroll",
-      "type": "object",
-      "description": "Represents a payroll record for an employee for a specific period.",
-      "properties": {
-        "id": { "type": "string" },
-        "employeeId": { "type": "string" },
-        "period": { "type": "string", "description": "e.g., 'YYYY-MM'" },
-        "grossSalary": { "type": "number" },
-        "deductions": { "type": "number" },
-        "netSalary": { "type": "number" },
-        "status": { "type": "string", "enum": ["pending", "paid"] }
-      },
-      "required": ["id", "employeeId", "period", "grossSalary", "netSalary"]
     }
   },
   "auth": {
@@ -646,242 +175,82 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
+        "path": "/projects/{projectId}",
         "definition": {
-          "entityName": "User",
+          "entityName": "Project",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/backend/entities/Project"
           },
-          "description": "Stores user profiles.  Authorization is based on the `userId` path parameter.",
+          "description": "Stores project details.  Authorization is typically based on user roles or project ownership (not explicitly modeled here, assuming external auth mechanism manages this).",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier for the user."
+              "name": "projectId",
+              "description": "Unique identifier for the project."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/dashboards/{dashboardId}",
+        "path": "/projects/{projectId}/modules/{moduleId}",
         "definition": {
-          "entityName": "Dashboard",
+          "entityName": "Module",
           "schema": {
-            "$ref": "#/backend/entities/Dashboard"
+            "$ref": "#/backend/entities/Module"
           },
-          "description": "Stores dashboards owned by a user. Authorization is based on the `userId` path parameter, ensuring only the user can access their dashboards.",
+          "description": "Stores module details associated with a project. Includes denormalized 'projectId' for authorization independence.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier for the user."
+              "name": "projectId",
+              "description": "Unique identifier for the project."
             },
             {
-              "name": "dashboardId",
-              "description": "The unique identifier for the dashboard."
+              "name": "moduleId",
+              "description": "Unique identifier for the module."
             }
           ]
         }
       },
       {
-        "path": "/business_units/{businessUnitId}",
+        "path": "/projects/{projectId}/telegram_bots/{telegramBotId}",
         "definition": {
-          "entityName": "BusinessUnit",
+          "entityName": "TelegramBot",
           "schema": {
-            "$ref": "#/backend/entities/BusinessUnit"
+            "$ref": "#/backend/entities/TelegramBot"
           },
-          "description": "Stores information about business units.",
+          "description": "Stores Telegram bot connection details for a project. Includes denormalized 'projectId' for authorization independence.",
           "params": [
             {
-              "name": "businessUnitId",
-              "description": "The unique identifier for the business unit."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/business_units/{businessUnitId}/meter_readings/{readingId}",
-        "definition": {
-          "entityName": "MeterReading",
-          "schema": { "$ref": "#/backend/entities/MeterReading" },
-          "description": "Stores meter readings for a specific business unit."
-        }
-      },
-      {
-        "path": "/business_units/{businessUnitId}/metrics/{metricId}",
-        "definition": {
-          "entityName": "Metric",
-          "schema": {
-            "$ref": "#/backend/entities/Metric"
-          },
-          "description": "Stores metrics related to a specific business unit.",
-          "params": [
-            {
-              "name": "businessUnitId",
-              "description": "The unique identifier for the business unit."
+              "name": "projectId",
+              "description": "Unique identifier for the project."
             },
             {
-              "name": "metricId",
-              "description": "The unique identifier for the metric."
+              "name": "telegramBotId",
+              "description": "Unique identifier for the Telegram bot."
             }
           ]
         }
       },
       {
-        "path": "/business_units/{businessUnitId}/widgets/{widgetId}",
+        "path": "/projects/{projectId}/finance_data_syncs/{financeDataSyncId}",
         "definition": {
-          "entityName": "Widget",
+          "entityName": "FinanceDataSync",
           "schema": {
-            "$ref": "#/backend/entities/Widget"
+            "$ref": "#/backend/entities/FinanceDataSync"
           },
-          "description": "Stores widgets related to a specific business unit.",
+          "description": "Stores finance data synchronization details for a project. Includes denormalized 'projectId' for authorization independence.",
           "params": [
             {
-              "name": "businessUnitId",
-              "description": "The unique identifier for the business unit."
+              "name": "projectId",
+              "description": "Unique identifier for the project."
             },
             {
-              "name": "widgetId",
-              "description": "The unique identifier for the widget."
+              "name": "financeDataSyncId",
+              "description": "Unique identifier for the finance data sync process."
             }
           ]
-        }
-      },
-      {
-        "path": "/alerts/{alertId}",
-        "definition": {
-          "entityName": "Alert",
-          "schema": {
-            "$ref": "#/backend/entities/Alert"
-          },
-          "description": "Stores alert rules for a specific business unit."
-        }
-      },
-      {
-        "path": "/assigned_accounts/{accountId}",
-        "definition": {
-          "entityName": "AssignedAccount",
-          "schema": {
-            "$ref": "#/backend/entities/AssignedAccount"
-          },
-          "description": "Stores accounts assigned to a collections officer."
-        }
-      },
-      {
-        "path": "/responsibilities/{responsibilityId}",
-        "definition": {
-          "entityName": "Responsibility",
-          "schema": {
-            "$ref": "#/backend/entities/Responsibility"
-          },
-          "description": "Stores job responsibilities for a collections officer."
-        }
-      },
-      {
-        "path": "/invoices/{invoiceId}",
-        "definition": {
-          "entityName": "Invoice",
-          "schema": {
-            "$ref": "#/backend/entities/Invoice"
-          },
-          "description": "Stores invoice data for sales and invoicing."
-        }
-      },
-       {
-        "path": "/kpis/{kpiId}",
-        "definition": {
-          "entityName": "Kpi",
-          "schema": { "$ref": "#/backend/entities/Kpi" },
-          "description": "Stores KPI data for the main dashboard."
-        }
-      },
-      {
-        "path": "/revenue_trends/{trendId}",
-        "definition": {
-          "entityName": "RevenueTrend",
-          "schema": { "$ref": "#/backend/entities/RevenueTrend" },
-          "description": "Stores time-series data for the main dashboard's revenue chart."
-        }
-      },
-      {
-        "path": "/bank_deposits/{depositId}",
-        "definition": {
-          "entityName": "BankDeposit",
-          "schema": { "$ref": "#/backend/entities/BankDeposit" },
-          "description": "Stores bank deposit records."
-        }
-      },
-      {
-        "path": "/cc_accounts/{accountId}",
-        "definition": {
-          "entityName": "CcAccount",
-          "schema": { "$ref": "#/backend/entities/CcAccount" },
-          "description": "Stores Credit Card (CC) account data."
-        }
-      },
-      {
-        "path": "/savings_accounts/{accountId}",
-        "definition": {
-          "entityName": "SavingsAccount",
-          "schema": { "$ref": "#/backend/entities/SavingsAccount" },
-          "description": "Stores Savings account data."
-        }
-      },
-      {
-        "path": "/rent_entries/{entryId}",
-        "definition": {
-          "entityName": "RentEntry",
-          "schema": { "$ref": "#/backend/entities/RentEntry" },
-          "description": "Stores individual rent entries for properties."
-        }
-      },
-      {
-        "path": "/fdr/{fdrId}",
-        "definition": {
-          "entityName": "Fdr",
-          "schema": { "$ref": "#/backend/entities/Fdr" },
-          "description": "Stores Fixed Deposit Receipt (FDR) records."
-        }
-      },
-       {
-        "path": "/dps/{dpsId}",
-        "definition": {
-          "entityName": "Dps",
-          "schema": { "$ref": "#/backend/entities/Dps" },
-          "description": "Stores Deposit Pension Scheme (DPS) records."
-        }
-      },
-      {
-        "path": "/employees/{employeeId}",
-        "definition": {
-          "entityName": "Employee",
-          "schema": { "$ref": "#/backend/entities/Employee" },
-          "description": "Stores employee records."
-        }
-      },
-      {
-        "path": "/attendance/{attendanceId}",
-        "definition": {
-          "entityName": "Attendance",
-          "schema": { "$ref": "#/backend/entities/Attendance" },
-          "description": "Stores daily attendance records for employees."
-        }
-      },
-       {
-        "path": "/leave_balances/{balanceId}",
-        "definition": {
-          "entityName": "LeaveBalance",
-          "schema": { "$ref": "#/backend/entities/LeaveBalance" },
-          "description": "Stores annual leave balance summaries for employees."
-        }
-      },
-      {
-        "path": "/payroll/{payrollId}",
-        "definition": {
-          "entityName": "Payroll",
-          "schema": { "$ref": "#/backend/entities/Payroll" },
-          "description": "Stores payroll records for employees."
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs, and maintain data clarity. It leverages path-based ownership for user-specific data (dashboards) and segregates data with different access requirements. The structure denormalizes authorization data to avoid using `get()` calls in security rules.\n\n**Authorization Independence:**\nAuthorization Independence is achieved through path-based ownership and avoids hierarchical authorization dependencies. The collaborative access to `BusinessUnit` data is managed by dedicated subcollections to avoid get() calls.\n\n**QAPs Support:**\nQAPs are supported through structural segregation and the membership model. User-owned dashboards are stored under the `/users/{userId}` collection, ensuring that listing dashboards is secure and limited to the user's data. Business Units have a flat structure.\n\n**Structure Explanation:**\n- `/users/{userId}`: Contains user-specific data, such as dashboards. This path enforces ownership.\n- `/users/{userId}/dashboards/{dashboardId}`: Stores dashboard configurations for each user. The `userId` in the path ensures that only the owner can access the dashboards.\n- `/business_units/{businessUnitId}`: Contains business unit data.\n- `/business_units/{businessUnitId}/metrics/{metricId}`: Contains metrics data for a business unit.\n- `/business_units/{businessUnitId}/widgets/{widgetId}`: Contains widgets data for a business unit. The `businessUnitId` in the path ensures that only authorized users can access the widgets.\n- `/alerts/{alertId}`: Contains alerts data. Access is restricted to authenticated users.\n- `/assigned_accounts/{accountId}`: Contains assigned accounts data. Access is restricted to authenticated users.\n- `/responsibilities/{responsibilityId}`: Contains responsibilities data. Access is restricted to authenticated users.\n- `/invoices/{invoiceId}`: Stores invoice data. Access is restricted to authenticated users."
+    "reasoning": "The Firestore structure is designed to support the Firestudio project setup, focusing on projects, modules, Telegram bot notifications, and finance data synchronization from Google Sheets. The structure prioritizes authorization independence through denormalization and structural segregation to ensure secure and scalable operations. All authorization relies solely on `request.auth.uid`. The use of path-based ownership `/projects/{projectId}/modules/{moduleId}` simplifies security rules and improves efficiency for ownership-based access control. A membership map is not required as there is no need for collaborative data.\n\n**Authorization Independence (Denormalization):**\n*   The `projectId` field is included in the Module, TelegramBot, and FinanceDataSync collections. This denormalization allows direct access and querying of these subcollections based on the `projectId` without needing to perform parent document lookups, thus ensuring authorization independence and enabling atomic operations.\n\n**Structural Segregation (Homogeneous Security Posture):**\n*   Each top-level collection and subcollection houses documents with similar security requirements. For instance, all documents within `/projects/{projectId}/modules` share the same access control policies based on the project.\n\n**Access Modeling:**\n*   Path-Based Ownership: The structure `/projects/{projectId}/modules/{moduleId}` and similar paths enforce clear ownership and simplify security rules. This approach is used for modules, Telegram bots, and finance data sync configurations that belong to specific projects.\n\n**QAPs (Rules are not Filters):**\n*   The structure enables secure `list` operations because the security rules can be applied directly to each collection based on the `projectId` and other denormalized fields. This prevents the need to filter data based on client-side logic, enhancing security and performance.\n"
   }
 }

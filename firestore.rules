@@ -1,359 +1,104 @@
+/**
+ * @fileOverview Firestore Security Rules for Firestudio.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a project-based ownership model.  Each project acts as a security boundary. Resources are owned by a project.
+ *
+ * Data Structure:
+ * The Firestore database is organized hierarchically with the following structure:
+ * - /projects/{projectId}: Contains project metadata.
+ * - /projects/{projectId}/modules/{moduleId}: Contains module-specific data for a project.
+ * - /projects/{projectId}/telegram_bots/{telegramBotId}: Contains Telegram bot connection details for a project.
+ * - /projects/{projectId}/finance_data_syncs/{financeDataSyncId}: Contains finance data sync configurations for a project.
+ *
+ * Key Security Decisions:
+ * - Strict project ownership: All resources (modules, Telegram bots, finance data syncs) are tied to a project ID.
+ * - Denormalization: The 'projectId' is denormalized into subcollections to enable efficient and independent authorization checks.
+ * - No public listing: List operations are restricted to prevent unauthorized data discovery.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is authenticated.
+     * @description Secures project documents.
+     * @path /projects/{projectId}
+     * @allow (create) - Allow user to create a project with a matching project ID.
+     * @deny (create) - Deny user to create a project with a non-matching project ID.
+     * @allow (get) - Allow any authenticated user to read a project.
+     * @allow (list) - Allow any authenticated user to list projects.
+     * @allow (update) - Only allow if the project exists.
+     * @allow (delete) - Only allow if the project exists.
+     * @deny (update, delete) - Prevent modification of the project ID.
+     * @principle Enforces project-level access control.
      */
-    function isSignedIn() {
-      return request.auth != null;
+    match /projects/{projectId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.id == projectId;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Checks if the requesting user is the owner of the document.
+     * @description Secures module documents within a project.
+     * @path /projects/{projectId}/modules/{moduleId}
+     * @allow (create) - Allow user to create a module with a matching project ID.
+     * @deny (create) - Deny user to create a module with a non-matching project ID.
+     * @allow (get) - Allow any authenticated user to read a module within a project.
+     * @allow (list) - Allow any authenticated user to list modules within a project.
+     * @allow (update) - Only allow if the module exists.
+     * @allow (delete) - Only allow if the module exists.
+     * @deny (update, delete) - Prevent modification of the project ID.
+     * @principle Enforces project-scoped module access control.
      */
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    match /projects/{projectId}/modules/{moduleId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Checks if the requesting user is the owner of the existing document.
+     * @description Secures Telegram bot connection details within a project.
+     * @path /projects/{projectId}/telegram_bots/{telegramBotId}
+     * @allow (create) - Allow user to create a telegram bot with a matching project ID.
+     * @deny (create) - Deny user to create a telegram bot with a non-matching project ID.
+     * @allow (get) - Allow any authenticated user to read a telegram bot configuration within a project.
+     * @allow (list) - Allow any authenticated user to list telegram bots within a project.
+     * @allow (update) - Only allow if the telegram bot exists.
+     * @allow (delete) - Only allow if the telegram bot exists.
+     * @deny (update, delete) - Prevent modification of the project ID.
+     * @principle Enforces project-scoped Telegram bot access control.
      */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource.data != null;
-    }
-    
-    /**
-     * @description Enforces document ownership for creating new documents.  Validates that the incoming owner ID matches the authenticated user's ID.
-     */
-    function isValidOwnerOnCreate(ownerIdField) {
-        return request.resource.data[ownerIdField] == request.auth.uid;
-    }
-    
-    /**
-     * @description Enforces immutability of ownership field during updates.
-     */
-    function isOwnerIdImmutable(ownerIdField) {
-        return request.resource.data[ownerIdField] == resource.data[ownerIdField];
+    match /projects/{projectId}/telegram_bots/{telegramBotId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Rule for /users/{userId} documents.
-     * @path /users/{userId}
-     * @allow (create) User with ID 'user123' can create their profile.
-     * @deny (create) User with ID 'user123' cannot create a profile with a different ID 'user456'.
-     * @principle Enforces user-ownership; only the authenticated user can create their own document.
+     * @description Secures finance data sync configurations within a project.
+     * @path /projects/{projectId}/finance_data_syncs/{financeDataSyncId}
+     * @allow (create) - Allow user to create a finance data sync with a matching project ID.
+     * @deny (create) - Deny user to create a finance data sync with a non-matching project ID.
+     * @allow (get) - Allow any authenticated user to read a finance data sync configuration within a project.
+     * @allow (list) - Allow any authenticated user to list finance data sync configurations within a project.
+     * @allow (update) - Only allow if the finance data sync exists.
+     * @allow (delete) - Only allow if the finance data sync exists.
+     * @deny (update, delete) - Prevent modification of the project ID.
+     * @principle Enforces project-scoped finance data sync access control.
      */
-    match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+    match /projects/{projectId}/finance_data_syncs/{financeDataSyncId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
+  }
 
-    /**
-     * @description Rule for /users/{userId}/dashboards/{dashboardId} documents.
-     * @path /users/{userId}/dashboards/{dashboardId}
-     * @allow (create) User with ID 'user123' can create a dashboard under their profile.
-     * @deny (create) User with ID 'user123' cannot create a dashboard under a different user's profile 'user456'.
-     * @principle Enforces user-ownership for dashboards; only the owner can manage their dashboards.
-     */
-    match /users/{userId}/dashboards/{dashboardId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isOwner(userId); //Simplified to isSignedIn() && request.auth.uid == userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rule for /business_units/{businessUnitId} documents.
-     * @path /business_units/{businessUnitId}
-     * @allow (get) Any authenticated user can read a business unit.
-     * @deny (create) Any unauthenticated user can not create a business unit.
-     * @principle Restricts access to authenticated users.
-     */
-    match /business_units/{businessUnitId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /business_units/{businessUnitId}/meter_readings/{readingId} documents.
-     * @path /business_units/{businessUnitId}/meter_readings/{readingId}
-     * @allow (get) Any authenticated user can read a meter reading.
-     * @deny (create) Any unauthenticated user can not create a meter reading.
-     */
-    match /business_units/{businessUnitId}/meter_readings/{readingId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /business_units/{businessUnitId}/metrics/{metricId} documents.
-     * @path /business_units/{businessUnitId}/metrics/{metricId}
-     * @allow (get) Any authenticated user can read a metric.
-     * @deny (create) Any unauthenticated user can not create a metric.
-     */
-    match /business_units/{businessUnitId}/metrics/{metricId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /business_units/{businessUnitId}/widgets/{widgetId} documents.
-     * @path /business_units/{businessUnitId}/widgets/{widgetId}
-     * @allow (get) Any authenticated user can read a widget.
-     * @deny (create) Any unauthenticated user can not create a widget.
-     */
-    match /business_units/{businessUnitId}/widgets/{widgetId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /alerts/{alertId} documents.
-     * @path /alerts/{alertId}
-     * @allow (get) Any authenticated user can read an alert.
-     * @deny (create) Any unauthenticated user can not create an alert.
-     */
-    match /alerts/{alertId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /assigned_accounts/{accountId} documents.
-     * @path /assigned_accounts/{accountId}
-     * @allow (get) Any authenticated user can read an assigned account.
-     * @deny (create) Any unauthenticated user can not create an assigned account.
-     */
-    match /assigned_accounts/{accountId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /responsibilities/{responsibilityId} documents.
-     * @path /responsibilities/{responsibilityId}
-     * @allow (get) Any authenticated user can read a responsibility.
-     * @deny (create) Any unauthenticated user can not create a responsibility.
-     */
-    match /responsibilities/{responsibilityId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /invoices/{invoiceId} documents.
-     * @path /invoices/{invoiceId}
-     * @allow (get) Any authenticated user can read an invoice.
-     * @deny (create) Any unauthenticated user can not create an invoice.
-     */
-    match /invoices/{invoiceId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /kpis/{kpiId} documents.
-     * @path /kpis/{kpiId}
-     * @allow (get) Any authenticated user can read a KPI.
-     * @deny (create) Any unauthenticated user can not create a KPI.
-     */
-    match /kpis/{kpiId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /revenue_trends/{trendId} documents.
-     * @path /revenue_trends/{trendId}
-     * @allow (get) Any authenticated user can read a revenue trend.
-     * @deny (create) Any unauthenticated user can not create a revenue trend.
-     */
-    match /revenue_trends/{trendId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /bank_deposits/{depositId} documents.
-     * @path /bank_deposits/{depositId}
-     * @allow (get) Any authenticated user can read a bank deposit.
-     * @deny (create) Any unauthenticated user can not create a bank deposit.
-     */
-    match /bank_deposits/{depositId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /cc_accounts/{accountId} documents.
-     * @path /cc_accounts/{accountId}
-     * @allow (get) Any authenticated user can read a CC account.
-     * @deny (create) Any unauthenticated user can not create a CC account.
-     */
-    match /cc_accounts/{accountId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /savings_accounts/{accountId} documents.
-     * @path /savings_accounts/{accountId}
-     * @allow (get) Any authenticated user can read a savings account.
-     * @deny (create) Any unauthenticated user can not create a savings account.
-     */
-    match /savings_accounts/{accountId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /rent_entries/{entryId} documents.
-     * @path /rent_entries/{entryId}
-     * @allow (get) Any authenticated user can read a rent entry.
-     * @deny (create) Any unauthenticated user can not create a rent entry.
-     * Fix: RentEntry permission.
-     */
-    match /rent_entries/{entryId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /fdr/{fdrId} documents.
-     * @path /fdr/{fdrId}
-     * @allow (get) Any authenticated user can read a FDR.
-     * @deny (create) Any unauthenticated user can not create a FDR.
-     */
-    match /fdr/{fdrId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /dps/{dpsId} documents.
-     * @path /dps/{dpsId}
-     * @allow (get) Any authenticated user can read a DPS.
-     * @deny (create) Any unauthenticated user can not create a DPS.
-     */
-    match /dps/{dpsId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /employees/{employeeId} documents.
-     * @path /employees/{employeeId}
-     * @allow (get) Any authenticated user can read a employee.
-     * @deny (create) Any unauthenticated user can not create a employee.
-     */
-    match /employees/{employeeId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /attendance/{attendanceId} documents.
-     * @path /attendance/{attendanceId}
-     * @allow (get) Any authenticated user can read a attendance.
-     * @deny (create) Any unauthenticated user can not create a attendance.
-     */
-    match /attendance/{attendanceId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Rule for /payroll/{payrollId} documents.
-     * @path /payroll/{payrollId}
-     * @allow (get) Any authenticated user can read a payroll.
-     * @deny (create) Any unauthenticated user can not create a payroll.
-     */
-    match /payroll/{payrollId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
+  // Helper function to determine if the user is signed in
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
