@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -19,8 +17,8 @@ import {
   TableRow,
   TableFooter
 } from '@/components/ui/table';
-import { PlusCircle, Loader2, MoreHorizontal } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { PlusCircle, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
 import {
   useCollection,
   useFirestore,
@@ -42,6 +40,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type Employee = {
   id: string;
@@ -51,19 +54,40 @@ type Employee = {
   salary: number;
 };
 
+const employeeFormSchema = z.object({
+    name: z.string().min(1, 'Name is required.'),
+    department: z.string().min(1, 'Department is required.'),
+    jobRole: z.string().min(1, 'Job role is required.'),
+    salary: z.coerce.number().positive('Salary must be a positive number.'),
+    locationConsent: z.literal<boolean>(true, {
+        errorMap: () => ({ message: "Location consent is required for employee tracking." }),
+    }),
+});
+
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'BDT' }).format(value);
 
 
 export default function EmployeeManagementPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isSeeding, setIsSeeding] = React.useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const employeesCollection = useMemoFirebase(() => {
     return firestore ? collection(firestore, 'employees') : null;
   }, [firestore]);
 
   const { data: employees, isLoading } = useCollection<Employee>(employeesCollection);
+  
+  const form = useForm<z.infer<typeof employeeFormSchema>>({
+    resolver: zodResolver(employeeFormSchema),
+    defaultValues: {
+      name: '',
+      department: '',
+      jobRole: '',
+      salary: 0,
+    },
+  });
 
   const seedData = async () => {
     if (!employeesCollection || !firestore) return;
@@ -105,6 +129,25 @@ export default function EmployeeManagementPage() {
     return employees?.reduce((sum, emp) => sum + emp.salary, 0) || 0;
   }, [employees]);
 
+  async function onSubmit(values: z.infer<typeof employeeFormSchema>) {
+    if (!employeesCollection) return;
+
+    // We don't save the consent checkbox itself, just the employee data
+    const { locationConsent, ...employeeInfo } = values;
+
+    addDocumentNonBlocking(employeesCollection, {
+        ...employeeInfo,
+        joiningDate: new Date().toISOString().split('T')[0], // Set joining date to today
+        status: 'active',
+    });
+
+    toast({
+        title: "Employee Added",
+        description: `${values.name} has been successfully added.`,
+    });
+    form.reset();
+    setIsDialogOpen(false);
+  }
 
   return (
     <AppShell>
@@ -123,7 +166,7 @@ export default function EmployeeManagementPage() {
               ) : null}
               Seed Initial Data
             </Button>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> New Employee</Button>
               </DialogTrigger>
@@ -134,11 +177,38 @@ export default function EmployeeManagementPage() {
                     Enter the details for the new employee.
                   </DialogDescription>
                 </DialogHeader>
-                <p className="text-center py-8 text-muted-foreground">(Form under construction)</p>
-                <DialogFooter>
-                    <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
-                    <Button disabled>Add Employee</Button>
-                </DialogFooter>
+                 <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+                        <FormField control={form.control} name="name" render={({ field }) => (
+                            <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g. John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="department" render={({ field }) => (
+                            <FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="e.g. Sales" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="jobRole" render={({ field }) => (
+                            <FormItem><FormLabel>Job Role / Designation</FormLabel><FormControl><Input placeholder="e.g. Manager" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                         <FormField control={form.control} name="salary" render={({ field }) => (
+                            <FormItem><FormLabel>Salary (BDT)</FormLabel><FormControl><Input type="number" placeholder="e.g. 50000" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="locationConsent" render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+                                <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel>Location Consent</FormLabel>
+                                    <FormDescription>
+                                        By checking this box, the employee agrees to enable location services for tracking purposes. This is mandatory for enrollment.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </div>
+                            </FormItem>
+                        )} />
+                        <DialogFooter className="pt-4">
+                            <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                            <Button type="submit">Add Employee</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>
