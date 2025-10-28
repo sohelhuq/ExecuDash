@@ -57,12 +57,11 @@ function UserNav() {
 export function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
-      <div className="md:hidden">
+      <div className="flex items-center gap-2 md:hidden">
         <SidebarTrigger />
       </div>
-      <div className="flex-1">
-        <h1 className="text-xl font-semibold tracking-tight">Shetue Group Unified ERP System</h1>
-        <p className="text-sm text-muted-foreground">Centralized Performance Hub</p>
+      <div className="flex flex-1 justify-center">
+        <NlqInput />
       </div>
       <UserNav />
     </header>
