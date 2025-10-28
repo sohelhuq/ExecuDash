@@ -1,126 +1,160 @@
 /**
- * @fileOverview This ruleset enforces a strict user-ownership model for user-specific data
- *   and a public-read, owner-write model for business unit data. It leverages path-based
- *   authorization to ensure that users can only access their own dashboards and that
- *   writes to business unit data are restricted.
+ * @fileoverview Firestore Security Rules for ExecuDash.
  *
- * @dataStructure
- *   - /users/{userId}: Stores user profiles, with each document ID matching the user's UID.
- *   - /users/{userId}/dashboards/{dashboardId}: Stores dashboards owned by a specific user.
- *   - /business_units/{businessUnitId}: Stores business unit information.
- *   - /business_units/{businessUnitId}/metrics/{metricId}: Stores metrics for a business unit.
- *   - /business_units/{businessUnitId}/widgets/{widgetId}: Stores widgets for a business unit.
- *   - /business_units/{businessUnitId}/alerts/{alertId}: Stores alerts for a business unit.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user-specific data (dashboards).
+ * Business unit data is kept separate and access is not strictly controlled in this prototype.
  *
- * @keySecurityDecisions
- *   - Users can only read and write their own user documents and dashboards.
- *   - Listing of users is disallowed.
- *   - Business unit data is publicly readable, but only authorized users can create, update, or delete it.
- *   - The rules do not enforce strict schema validation beyond authorization-critical fields.
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles. Each user can only access their own profile.
+ * - /users/{userId}/dashboards/{dashboardId}: Stores dashboards owned by a user.
+ * - /business_units/{businessUnitId}: Stores information about business units.
+ * - /business_units/{businessUnitId}/metrics/{metricId}: Stores metrics related to a specific business unit.
+ * - /business_units/{businessUnitId}/widgets/{widgetId}: Stores widgets related to a specific business unit.
+ * - /business_units/{businessUnitId}/alerts/{alertId}: Stores alert rules for a specific business unit.
  *
- * @denormalizationForAuthorization Not applicable in this basic prototype.
- * @structuralSegregation User-specific data (dashboards) is segregated under the /users/{userId} collection.
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - Business unit data is not strictly secured in this prototype, allowing open read/write access for simplicity.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own user profile.
+     * @description Enforces user-ownership for user profiles.
      * @path /users/{userId}
-     * @allow (create) - User with UID 'user123' can create a document at /users/user123.
-     * @allow (get, update, delete) - User with UID 'user123' can read, update, or delete their own document at /users/user123.
-     * @deny (create) - User with UID 'user456' cannot create a document at /users/user123.
-     * @deny (get, update, delete) - User with UID 'user456' cannot read, update, or delete the document at /users/user123.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) User with ID 'user123' can create their own profile.
+     * @allow (get) User with ID 'user123' can read their own profile.
+     * @allow (update) User with ID 'user123' can update their own profile.
+     * @allow (delete) User with ID 'user123' can delete their own profile.
+     * @deny (create) User with ID 'user123' cannot create a profile for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read the profile of 'user456'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-
       function isSignedIn() {
         return request.auth != null;
       }
 
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.id == userId;
-      allow delete: if isSignedIn() && isOwner(userId) && resource.data.id == userId;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Allows users to manage their own dashboards.
+     * @description Enforces user-ownership for dashboards within a user's profile.
      * @path /users/{userId}/dashboards/{dashboardId}
-     * @allow (create) - User with UID 'user123' can create a dashboard at /users/user123/dashboards/dashboard456.
-     * @allow (get, update, delete) - User with UID 'user123' can read, update, or delete their own dashboard at /users/user123/dashboards/dashboard456.
-     * @deny (create) - User with UID 'user456' cannot create a dashboard at /users/user123/dashboards/dashboard456.
-     * @deny (get, update, delete) - User with UID 'user456' cannot read, update, or delete the dashboard at /users/user123/dashboards/dashboard456.
+     * @allow (create) User 'user123' can create a dashboard under their profile.
+     * @allow (get) User 'user123' can read a dashboard under their profile.
+     * @allow (update) User 'user123' can update a dashboard under their profile.
+     * @allow (delete) User 'user123' can delete a dashboard under their profile.
+     * @deny (create) User 'user123' cannot create a dashboard under 'user456' profile.
+     * @deny (get) User 'user123' cannot read a dashboard from 'user456' profile.
      * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId}/dashboards/{dashboardId} {
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-
       function isSignedIn() {
         return request.auth != null;
       }
 
       allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.userId == userId;
-      allow delete: if isSignedIn() && isOwner(userId) && resource.data.userId == userId;
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Allows anyone to read business unit information, but restricts writes.
+     * @description Allows open read/write access to business unit data for prototyping.
      * @path /business_units/{businessUnitId}
-     * @allow (get, list) - Any user, signed in or not, can read business unit data.
-     * @deny (create, update, delete) - No user can create, update, or delete business unit data without specific authorization (TODO).
-     * @principle Public read access with owner-only writes.
+     * @allow (create) Any authenticated user can create a business unit.
+     * @allow (get) Any user can read a business unit.
+     * @allow (update) Any authenticated user can update a business unit.
+     * @allow (delete) Any authenticated user can delete a business unit.
+     * @principle Open access for prototyping.
      */
     match /business_units/{businessUnitId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows anyone to read metrics, but restricts writes.
+     * @description Allows open read/write access to metric data for prototyping.
      * @path /business_units/{businessUnitId}/metrics/{metricId}
-     * @allow (get, list) - Any user, signed in or not, can read metrics data.
-     * @deny (create, update, delete) - No user can create, update, or delete metrics data without specific authorization (TODO).
-     * @principle Public read access with owner-only writes.
+     * @allow (create) Any authenticated user can create a metric.
+     * @allow (get) Any user can read a metric.
+     * @allow (update) Any authenticated user can update a metric.
+     * @allow (delete) Any authenticated user can delete a metric.
+     * @principle Open access for prototyping.
      */
     match /business_units/{businessUnitId}/metrics/{metricId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows anyone to read widgets, but restricts writes.
+     * @description Allows open read/write access to widget data for prototyping.
      * @path /business_units/{businessUnitId}/widgets/{widgetId}
-     * @allow (get, list) - Any user, signed in or not, can read widgets data.
-     * @deny (create, update, delete) - No user can create, update, or delete widgets data without specific authorization (TODO).
-     * @principle Public read access with owner-only writes.
+     * @allow (create) Any authenticated user can create a widget.
+     * @allow (get) Any user can read a widget.
+     * @allow (update) Any authenticated user can update a widget.
+     * @allow (delete) Any authenticated user can delete a widget.
+     * @principle Open access for prototyping.
      */
     match /business_units/{businessUnitId}/widgets/{widgetId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows anyone to read alerts, but restricts writes.
+     * @description Allows open read/write access to alert data for prototyping.
      * @path /business_units/{businessUnitId}/alerts/{alertId}
-     * @allow (get, list) - Any user, signed in or not, can read alerts data.
-     * @deny (create, update, delete) - No user can create, update, or delete alerts data without specific authorization (TODO).
-     * @principle Public read access with owner-only writes.
+     * @allow (create) Any authenticated user can create an alert.
+     * @allow (get) Any user can read an alert.
+     * @allow (update) Any authenticated user can update an alert.
+     * @allow (delete) Any authenticated user can delete an alert.
+     * @principle Open access for prototyping.
      */
     match /business_units/{businessUnitId}/alerts/{alertId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
   }
 }
