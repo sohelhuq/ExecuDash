@@ -3,160 +3,227 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces user-ownership for user profiles. Only the authenticated user can read and write their own profile.
+     * @description Enforces user-ownership for user profiles.
      * @path /users/{userId}
-     * @allow (create) User with UID 'user123' can create their profile at /users/user123.
-     * @allow (get, update, delete) User with UID 'user123' can get, update, and delete their profile at /users/user123.
-     * @deny (create, get, update, delete) User with UID 'user456' cannot access /users/user123.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - A user can create their own profile if the userId matches their auth UID.
+     * @allow (get, list, update, delete) - A user can only access their own profile.
+     * @deny (create) - A user cannot create a profile with a userId that doesn't match their auth UID.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      // Allow the user to read their own profile
-      allow get: if request.auth.uid == userId;
-      // Prevent listing of all users
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      // Allow the user to create their own profile, enforcing that the userId matches the authenticated user's UID.
-      allow create: if request.auth.uid == userId;
-      // Allow the user to update their own profile
-      allow update: if request.auth.uid == userId && request.auth != null;
-      // Allow the user to delete their own profile
-      allow delete: if request.auth.uid == userId && request.auth != null;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Enforces user-ownership for dashboards. Only the authenticated user can manage their own dashboards.
+     * @description Enforces user-ownership for dashboards.
      * @path /users/{userId}/dashboards/{dashboardId}
-     * @allow (create) User with UID 'user123' can create a dashboard at /users/user123/dashboards/dashboard456.
-     * @allow (get, update, delete) User with UID 'user123' can get, update, and delete their dashboard at /users/user123/dashboards/dashboard456.
-     * @deny (create, get, update, delete) User with UID 'user456' cannot access /users/user123/dashboards/dashboard456.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - A user can create a dashboard under their userId.
+     * @allow (get, list, update, delete) - A user can only access and modify their own dashboards.
+     * @deny (create) - A user cannot create a dashboard under another user's userId.
+     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId}/dashboards/{dashboardId} {
-      // Allow the user to read their own dashboard
-      allow get: if request.auth.uid == userId;
-      // Allow the user to list their own dashboards
-      allow list: if request.auth.uid == userId;
-      // Allow the user to create their own dashboard, enforcing that the userId matches the authenticated user's UID.
-      allow create: if request.auth.uid == userId;
-      // Allow the user to update their own dashboard
-      allow update: if request.auth.uid == userId && request.auth != null;
-      // Allow the user to delete their own dashboard
-      allow delete: if request.auth.uid == userId && request.auth != null;
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Allows public read access to business unit data, but requires authentication for writes.
+     * @description Allows authenticated users to read and write business unit data.
      * @path /business_units/{businessUnitId}
-     * @allow (get, list) Any user can read business unit data.
-     * @allow (create, update, delete) Only authenticated users can create, update, or delete business unit data.
-     * @deny Unauthenticated users cannot create, update, or delete business unit data.
-     * @principle Allows public reads with authenticated writes.
+     * @allow (get, list) - Any authenticated user can read business unit data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete business unit data.
+     * @deny (create, update, delete) - Unauthenticated users cannot create, update, or delete business unit data.
+     * @principle Requires authentication for data access.
      */
     match /business_units/{businessUnitId} {
-      // Allow anyone to read business unit data
-      allow get, list: if true;
-      // Only signed-in users can create, update, or delete business units
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to metrics data, but requires authentication for writes.
+     * @description Allows authenticated users to read and write metric data associated with a business unit.
      * @path /business_units/{businessUnitId}/metrics/{metricId}
-     * @allow (get, list) Any user can read metrics data.
-     * @allow (create, update, delete) Only authenticated users can create, update, or delete metrics data.
-     * @deny Unauthenticated users cannot create, update, or delete metrics data.
-     * @principle Allows public reads with authenticated writes.
+     * @allow (get, list) - Any authenticated user can read metric data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete metric data.
+     * @deny (create, update, delete) - Unauthenticated users cannot create, update, or delete metric data.
+     * @principle Requires authentication for data access.
      */
     match /business_units/{businessUnitId}/metrics/{metricId} {
-      // Allow anyone to read metrics data
-      allow get, list: if true;
-      // Only signed-in users can create, update, or delete metrics
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to widgets data, but requires authentication for writes.
+     * @description Allows authenticated users to read and write widget data associated with a business unit.
      * @path /business_units/{businessUnitId}/widgets/{widgetId}
-     * @allow (get, list) Any user can read widgets data.
-     * @allow (create, update, delete) Only authenticated users can create, update, or delete widgets data.
-     * @deny Unauthenticated users cannot create, update, or delete widgets data.
-     * @principle Allows public reads with authenticated writes.
+     * @allow (get, list) - Any authenticated user can read widget data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete widget data.
+     * @deny (create, update, delete) - Unauthenticated users cannot create, update, or delete widget data.
+     * @principle Requires authentication for data access.
      */
     match /business_units/{businessUnitId}/widgets/{widgetId} {
-      // Allow anyone to read widgets data
-      allow get, list: if true;
-      // Only signed-in users can create, update, or delete widgets
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Requires authentication for all access to alert configurations.
+     * @description Allows authenticated users to read and write alert data.
      * @path /alerts/{alertId}
-     * @allow (create, get, list, update, delete) Only authenticated users can manage alerts.
-     * @deny Unauthenticated users cannot access alert configurations.
-     * @principle Requires authentication for all operations.
+     * @allow (get, list) - Any authenticated user can read alert data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete alert data.
+     * @deny (create, update, delete) - Unauthenticated users cannot create, update, or delete alert data.
+     * @principle Requires authentication for data access.
      */
     match /alerts/{alertId} {
-      // Only signed-in users can access alerts
-      allow get: if request.auth != null;
-      allow list: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Requires authentication for all access to assigned accounts.
+     * @description Allows authenticated users to read and write assigned account data.
      * @path /assigned_accounts/{accountId}
-     * @allow (create, get, list, update, delete) Only authenticated users can manage assigned accounts.
-     * @deny Unauthenticated users cannot access assigned accounts.
-     * @principle Requires authentication for all operations.
+     * @allow (get, list) - Any authenticated user can read assigned account data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete assigned account data.
+     * @deny (create, update, delete) - Unauthenticated users cannot create, update, or delete assigned account data.
+     * @principle Requires authentication for data access.
      */
     match /assigned_accounts/{accountId} {
-      // Only signed-in users can access assigned accounts
-      allow get: if request.auth != null;
-      allow list: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Requires authentication for all access to responsibilities.
+     * @description Allows authenticated users to read and write responsibility data.
      * @path /responsibilities/{responsibilityId}
-     * @allow (create, get, list, update, delete) Only authenticated users can manage responsibilities.
-     * @deny Unauthenticated users cannot access responsibilities.
-     * @principle Requires authentication for all operations.
+     * @allow (get, list) - Any authenticated user can read responsibility data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete responsibility data.
+     * @deny (create, update, delete) - Unauthenticated users cannot create, update, or delete responsibility data.
+     * @principle Requires authentication for data access.
      */
     match /responsibilities/{responsibilityId} {
-      // Only signed-in users can access responsibilities
-      allow get: if request.auth != null;
-      allow list: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Requires authentication for all access to invoices.
+     * @description Allows authenticated users to read and write invoice data.
      * @path /invoices/{invoiceId}
-     * @allow (create, get, list, update, delete) Only authenticated users can manage invoices.
-     * @deny Unauthenticated users cannot access invoices.
-     * @principle Requires authentication for all operations.
+     * @allow (get, list) - Any authenticated user can read invoice data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete invoice data.
+     * @deny (create, update, or delete) - Unauthenticated users cannot create, update, or delete invoice data.
+     * @principle Requires authentication for data access.
      */
     match /invoices/{invoiceId} {
-      // Only signed-in users can access invoices
-      allow get: if request.auth != null;
-      allow list: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to read and write KPI data.
+     * @path /kpis/{kpiId}
+     * @allow (get, list) - Any authenticated user can read KPI data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete KPI data.
+     * @deny (create, update, or delete) - Unauthenticated users cannot create, update, or delete KPI data.
+     */
+    match /kpis/{kpiId} {
+       function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to read and write revenue trend data.
+     * @path /revenue_trends/{trendId}
+     * @allow (get, list) - Any authenticated user can read revenue trend data.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete revenue trend data.
+     * @deny (create, update, or delete) - Unauthenticated users cannot create, update, or delete revenue trend data.
+     */
+    match /revenue_trends/{trendId} {
+       function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
   }
 }
