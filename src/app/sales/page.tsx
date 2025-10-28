@@ -15,9 +15,29 @@ import { Badge } from '@/components/ui/badge';
 import * as React from 'react';
 import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircle, Upload, CalendarIcon } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 type Invoice = {
   id: string;
@@ -28,6 +48,15 @@ type Invoice = {
   amount: number;
   status: 'Pending' | 'Overdue' | 'Paid';
 };
+
+const invoiceFormSchema = z.object({
+  unit: z.string().min(1, 'Business unit is required.'),
+  customer: z.string().min(1, 'Customer name is required.'),
+  invoiceId: z.string().min(1, 'Invoice ID is required.'),
+  dueDate: z.date({ required_error: 'A due date is required.' }),
+  amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
+  status: z.enum(['Pending', 'Overdue', 'Paid']),
+});
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
 
@@ -82,11 +111,42 @@ const InvoiceTable = ({ invoices, isLoading }: { invoices: Invoice[] | null, isL
 
 export default function SalesPage() {
     const [activeTab, setActiveTab] = React.useState('All Units');
+    const [newInvoiceOpen, setNewInvoiceOpen] = React.useState(false);
+    const [bulkUploadOpen, setBulkUploadOpen] = React.useState(false);
     const { toast } = useToast();
     
     const firestore = useFirestore();
     const invoicesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'invoices') : null, [firestore]);
     const { data: invoiceData, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesCollection);
+
+    const invoiceForm = useForm<z.infer<typeof invoiceFormSchema>>({
+        resolver: zodResolver(invoiceFormSchema),
+        defaultValues: {
+            unit: '',
+            customer: '',
+            invoiceId: '',
+            amount: 0,
+            status: 'Pending',
+        },
+    });
+
+    function onAddInvoiceSubmit(values: z.infer<typeof invoiceFormSchema>) {
+        if (!invoicesCollection) return;
+
+        const newInvoiceData = {
+          ...values,
+          dueDate: values.dueDate.toISOString(),
+        };
+
+        addDocumentNonBlocking(invoicesCollection, newInvoiceData);
+
+        toast({
+            title: 'Invoice Added',
+            description: `Invoice ${values.invoiceId} for ${values.customer} has been added.`,
+        });
+        invoiceForm.reset();
+        setNewInvoiceOpen(false);
+    }
 
     const filteredInvoices = React.useMemo(() => {
         if (!invoiceData) return null;
@@ -108,11 +168,12 @@ export default function SalesPage() {
         { title: 'Bricks Unit Total Overdue', value: calculateOverdue('Bricks') },
     ];
     
-    const handleGenerateReport = () => {
+    const handleBulkUpload = () => {
         toast({
-            title: "Report Generation Started",
-            description: "Your report is being generated and will be available for download shortly.",
+            title: 'Upload Started',
+            description: 'Your file is being processed. This is a mock action for now.',
         });
+        setBulkUploadOpen(false);
     };
 
 
@@ -124,7 +185,85 @@ export default function SalesPage() {
                 <h1 className="text-3xl font-bold tracking-tight">Previous Dues Collection</h1>
                 <p className="text-muted-foreground">Review and manage outstanding invoices.</p>
             </div>
-            <Button onClick={handleGenerateReport}>Generate Report</Button>
+            <div className="flex items-center gap-2">
+                <Dialog open={bulkUploadOpen} onOpenChange={setBulkUploadOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline"><Upload className="mr-2 h-4 w-4" /> Bulk Upload</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Bulk Upload Invoices</DialogTitle>
+                            <DialogDescription>Upload a CSV file with your invoice data.</DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <Input type="file" accept=".csv" />
+                             <p className="text-xs text-muted-foreground mt-2">Note: This is a placeholder. File processing is not implemented.</p>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+                            <Button onClick={handleBulkUpload}>Upload File</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+                <Dialog open={newInvoiceOpen} onOpenChange={setNewInvoiceOpen}>
+                    <DialogTrigger asChild>
+                        <Button><PlusCircle className="mr-2 h-4 w-4" /> New Invoice</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[480px]">
+                        <DialogHeader>
+                            <DialogTitle>Create New Invoice</DialogTitle>
+                            <DialogDescription>Fill out the form below to add a single invoice.</DialogDescription>
+                        </DialogHeader>
+                        <Form {...invoiceForm}>
+                            <form onSubmit={invoiceForm.handleSubmit(onAddInvoiceSubmit)} className="grid gap-4 py-4">
+                                <FormField control={invoiceForm.control} name="unit" render={({ field }) => (
+                                    <FormItem><FormLabel>Business Unit</FormLabel><FormControl><Input placeholder="e.g., Bricks, Pharmacy, Feed" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={invoiceForm.control} name="customer" render={({ field }) => (
+                                    <FormItem><FormLabel>Customer</FormLabel><FormControl><Input placeholder="e.g., John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={invoiceForm.control} name="invoiceId" render={({ field }) => (
+                                    <FormItem><FormLabel>Invoice ID</FormLabel><FormControl><Input placeholder="e.g., INV-12345" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={invoiceForm.control} name="dueDate" render={({ field }) => (
+                                    <FormItem className="flex flex-col"><FormLabel>Due Date</FormLabel>
+                                        <Popover><PopoverTrigger asChild>
+                                            <FormControl>
+                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                        </PopoverContent></Popover>
+                                    <FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={invoiceForm.control} name="amount" render={({ field }) => (
+                                    <FormItem><FormLabel>Amount Due</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={invoiceForm.control} name="status" render={({ field }) => (
+                                    <FormItem><FormLabel>Status</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Pending">Pending</SelectItem>
+                                            <SelectItem value="Overdue">Overdue</SelectItem>
+                                            <SelectItem value="Paid">Paid</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage /></FormItem>
+                                )}/>
+                                <DialogFooter className="pt-4">
+                                    <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                                    <Button type="submit">Create Invoice</Button>
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+            </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -159,5 +298,3 @@ export default function SalesPage() {
     </AppShell>
   );
 }
-
-    
