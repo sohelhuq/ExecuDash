@@ -1,4 +1,4 @@
-import { DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, Pill, PackageCheck, FileText, ShoppingCart } from 'lucide-react';
+import { DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, Pill, PackageCheck, FileText, ShoppingCart, Factory } from 'lucide-react';
 import { type BusinessUnit } from './business-units-types';
 
 
@@ -99,10 +99,10 @@ export const businessUnits: BusinessUnit[] = [
     name: 'Setu Tech',
     description: 'IT services and consulting.',
     kpis: [
-        { title: 'Tech Subscribers', value: '1,200', change: '+50', icon: 'UserPlus' },
-        { title: 'Net Profit', value: '৳150,000', change: '-1.5%', icon: 'Banknote' },
-        { title: 'Active Projects', value: '12', change: '+1', icon: 'Landmark' },
-        { title: 'Client Satisfaction', value: '4.8/5', change: '+0.1', icon: 'TrendingUp' },
+        { title: 'Service Sales Invoice', value: '৳2,62,000', change: '+12%', icon: 'FileText' },
+        { title: 'Credited Amount', value: '৳1,50,000', change: '+8%', icon: 'PackageCheck' },
+        { title: 'POP Fund', value: '৳5,00,000', change: '', icon: 'ShoppingCart' },
+        { title: 'Cash On Hand', value: '৳1,12,000', change: '-5%', icon: 'Banknote' },
     ],
     timeSeriesData: [
         { month: 'Jan', revenue: 480000, profit: 140000 },
@@ -143,8 +143,8 @@ export const businessUnits: BusinessUnit[] = [
     ],
   },
     {
-    id: 'video-tara-pharmacy',
-    name: 'Video Tara Pharmacy',
+    id: 'hridoy-tara-pharmacy',
+    name: 'Hridoy Tara Pharmacy',
     description: 'Retail pharmacy providing prescription and over-the-counter medications.',
     kpis: [
       { title: 'Total Sales', value: '৳950,000', change: '+11.5%', icon: 'DollarSign' },

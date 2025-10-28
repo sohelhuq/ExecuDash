@@ -37,7 +37,8 @@ const kpis = [
 const unitIcons: {[key: string]: React.ElementType} = {
     'setu-filling-station': Fuel,
     'huq-bricks': Factory,
-    'video-tara-pharmacy': Pill,
+    'hridoy-tara-pharmacy': Pill,
+    'setu-tech': LayoutDashboard,
 }
 
 export function Dashboard() {
@@ -83,8 +84,8 @@ export function Dashboard() {
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {businessUnits?.filter(u => ['setu-filling-station', 'huq-bricks', 'video-tara-pharmacy'].includes(u.id)).map(unit => {
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {businessUnits?.filter(u => ['setu-filling-station', 'huq-bricks', 'hridoy-tara-pharmacy', 'setu-tech'].includes(u.id)).map(unit => {
                     const Icon = getUnitIcon(unit.id);
                     const totalSales = unit.transactions?.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) || 0;
                     const totalExpenses = unit.transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + Math.abs(t.amount), 0) || 0;
@@ -98,6 +99,7 @@ export function Dashboard() {
                                         <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg", 
                                             unit.id === 'setu-filling-station' ? 'bg-blue-500/10 text-blue-500' :
                                             unit.id === 'huq-bricks' ? 'bg-red-500/10 text-red-500' :
+                                            unit.id === 'setu-tech' ? 'bg-purple-500/10 text-purple-500' :
                                             'bg-green-500/10 text-green-500'
                                         )}>
                                             <Icon className="h-6 w-6" />
