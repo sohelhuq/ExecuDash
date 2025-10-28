@@ -1,140 +1,69 @@
-/**
- * @fileOverview Firestore Security Rules for Firestudio Projects
- *
- * Core Philosophy:
- * This ruleset enforces a project-centric security model. Each project acts as a boundary,
- * with access to modules, Telegram bots, and finance data syncs controlled by project membership.
- * All access control decisions are based on the authenticated user's ID (`request.auth.uid`).
- *
- * Data Structure:
- * The Firestore database is organized hierarchically:
- * - /projects/{projectId}: Contains project metadata.
- * - /projects/{projectId}/modules/{moduleId}: Contains module-specific data for a project.
- * - /projects/{projectId}/telegram_bots/{telegramBotId}: Stores Telegram bot connection details.
- * - /projects/{projectId}/finance_data_syncs/{financeDataSyncId}: Manages finance data sync configurations.
- *
- * Key Security Decisions:
- * - Strict Project Ownership:  All resources (modules, bots, syncs) are tied to a specific project.
- *   Access to these resources is implicitly granted to project members.
- * - No User Listing: Listing all users is disallowed for privacy and security.
- * - Denormalization:  The `projectId` field is denormalized into subcollection documents to
- *   enable efficient authorization checks without needing to perform expensive `get()` operations.
- * - Flexible Schema: Data validation is relaxed in this prototype to allow for rapid iteration,
- *   except for critical fields involved in authorization and relational integrity.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     /**
-     * @description Manages project details.
+     * @description Allows access to project documents for authenticated users.
      * @path /projects/{projectId}
-     * @allow (read) Any authenticated user can read project details.
-     * @allow (create) Any authenticated user can create a project.
-     * @allow (update) Owner can update.
-     * @allow (delete) Owner can delete.
-     * @deny (create) Non-authenticated user cannot create a project.
-     * @deny (update) Non-owner cannot update a project.
-     * @deny (delete) Non-owner cannot delete a project.
-     * @principle Enforces project ownership for writes.
      */
     match /projects/{projectId} {
-      // Anyone can read a project
-      allow get: if true;
-      allow list: if true;
-
-      // Project creation, updates, and deletes are restricted to authenticated users.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn();
       allow delete: if isSignedIn();
     }
 
     /**
-     * @description Manages modules within a project.
+     * @description Manages access to module documents within a project.
      * @path /projects/{projectId}/modules/{moduleId}
-     * @allow (read) Any authenticated user can read a module.
-     * @allow (create) Any authenticated user can create a module within a project.
-     * @allow (update) Owner can update.
-     * @allow (delete) Owner can delete.
-     * @deny (create) Non-authenticated user cannot create a module within a project.
-     * @deny (update) Non-owner cannot update a module.
-     * @deny (delete) Non-owner cannot delete a module.
-     * @principle Enforces project membership and module ownership for writes.
      */
     match /projects/{projectId}/modules/{moduleId} {
-      // Anyone can read a module
-      allow get: if true;
-      // Owner can list modules.
-      allow list: if true;
-
-      // Module creation, updates, and deletes are restricted to authenticated users.
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && request.resource.data.projectId == resource.data.projectId;
+      allow delete: if isSignedIn() && resource.data.projectId == resource.data.projectId;
     }
 
     /**
-     * @description Manages Telegram bot configurations for a project.
+     * @description Manages access to Telegram bot documents within a project.
      * @path /projects/{projectId}/telegram_bots/{telegramBotId}
-     * @allow (read) Any authenticated user can read Telegram bot configuration.
-     * @allow (create) Any authenticated user can create Telegram bot configuration within a project.
-     * @allow (update) Owner can update.
-     * @allow (delete) Owner can delete.
-     * @deny (create) Non-authenticated user cannot create Telegram bot configuration within a project.
-     * @deny (update) Non-owner cannot update a Telegram bot configuration.
-     * @deny (delete) Non-owner cannot delete a Telegram bot configuration.
-     * @principle Enforces project membership and Telegram bot ownership for writes.
      */
     match /projects/{projectId}/telegram_bots/{telegramBotId} {
-      // Anyone can read a telegram bot configuration.
-      allow get: if true;
-      allow list: if true;
-
-      // Telegram bot creation, updates, and deletes are restricted to authenticated users.
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource.data.projectId == resource.data.projectId;
+      allow delete: if isSignedIn() && resource.data.projectId == resource.data.projectId;
     }
 
     /**
-     * @description Manages finance data synchronization configurations for a project.
+     * @description Manages access to finance data sync documents within a project.
      * @path /projects/{projectId}/finance_data_syncs/{financeDataSyncId}
-     * @allow (read) Any authenticated user can read finance data sync configuration.
-     * @allow (create) Any authenticated user can create finance data sync configuration within a project.
-     * @allow (update) Owner can update.
-     * @allow (delete) Owner can delete.
-     * @deny (create) Non-authenticated user cannot create finance data sync configuration within a project.
-     * @deny (update) Non-owner cannot update a finance data sync configuration.
-     * @deny (delete) Non-owner cannot delete a finance data sync configuration.
-     * @principle Enforces project membership and finance data sync ownership for writes.
      */
     match /projects/{projectId}/finance_data_syncs/{financeDataSyncId} {
-      // Anyone can read a finance data sync configuration.
-      allow get: if true;
-      allow list: if true;
-
-      // Finance data sync creation, updates, and deletes are restricted to authenticated users.
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource.data.projectId == resource.data.projectId;
+      allow delete: if isSignedIn() && resource.data.projectId == resource.data.projectId;
     }
 
-    // The error log indicates a permission error when listing "cc_accounts".
-    // Since there's no information about the cc_accounts collection in the provided
-    // data entities, Firestore structure, or authorization details, this rule
-    // will deny access to cc_accounts for now. A future iteration of the app should
-    // describe the `cc_accounts` collection and its access rules in the backend.json.
-    match /cc_accounts/{document} {
+    /**
+     * @description  Placeholder for the savings_accounts collection.  List access is currently denied.
+     * @path /savings_accounts
+     */
+    match /savings_accounts {
       allow get: if false;
       allow list: if false;
       allow create: if false;
       allow update: if false;
       allow delete: if false;
     }
-  }
-
-  // Helper function to determine if the user is signed in.
-  function isSignedIn() {
-    return request.auth != null;
   }
 }
