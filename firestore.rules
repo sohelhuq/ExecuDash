@@ -1,165 +1,144 @@
+/**
+ * @fileoverview Firestore Security Rules for ExecuDash.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user-specific data
+ * (dashboards).  Business unit data and its subcollections (metrics, widgets,
+ * alerts) are currently open for all authenticated users, but this should be
+ * reviewed and updated for production to enforce appropriate access controls.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles.
+ * - /users/{userId}/dashboards/{dashboardId}: Stores dashboards owned by a user.
+ * - /business_units/{businessUnitId}: Stores information about business units.
+ * - /business_units/{businessUnitId}/metrics/{metricId}: Stores metrics related to a specific business unit.
+ * - /business_units/{businessUnitId}/widgets/{widgetId}: Stores widgets related to a specific business unit.
+ * - /business_units/{businessUnitId}/alerts/{alertId}: Stores alert rules for a specific business unit.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - Business unit data is currently accessible to any signed-in user. This should
+ *   be restricted to authorized users/roles in a production environment.
+ * - Data shape is not strictly validated in this prototyping phase. Only
+ *   authorization-critical fields are checked.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secures the `/users/{userId}` collection.  Allows a user to read and write their own profile.
+     * @description Protects the /users/{userId} collection.
      * @path /users/{userId}
-     * @allow (create) - A user with UID 'user_abc' can create their profile at /users/user_abc if the document.id matches their UID.
-     * @allow (get, list, update, delete) - A user with UID 'user_abc' can get, update, and delete their profile at /users/user_abc.
-     * @deny (create) - A user with UID 'user_abc' cannot create a profile for another user at /users/user_xyz.
-     * @deny (update, delete) - A user with UID 'user_abc' cannot update or delete another user's profile at /users/user_xyz.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) - Authenticated user can create their own user document.
+     * @allow (get, list, update, delete) - Authenticated user can only access their own user document.
+     * @deny (create) - If the authenticated user ID does not match the userId in the path.
+     * @deny (get, list, update, delete) - If the authenticated user ID does not match the userId in the path.
+     * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in and owns the resource.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && exists(/databases/$(database)/documents/users/$(userId));
+      function isSignedIn() {
+          return request.auth != null;
       }
 
       allow get: if isOwner(userId);
-      allow list: if false; // User listing is not allowed.
+      allow list: if false;
       allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Secures the `/users/{userId}/dashboards/{dashboardId}` collection.  Allows a user to manage their own dashboards.
+     * @description Protects the /users/{userId}/dashboards/{dashboardId} collection.
      * @path /users/{userId}/dashboards/{dashboardId}
-     * @allow (create) - A user with UID 'user_abc' can create a dashboard under /users/user_abc/dashboards/dashboard_123.
-     * @allow (get, list, update, delete) - A user with UID 'user_abc' can get, list, update, and delete their own dashboards under /users/user_abc/dashboards/.
-     * @deny (create) - A user with UID 'user_abc' cannot create a dashboard under another user's path /users/user_xyz/dashboards/dashboard_123.
-     * @deny (update, delete) - A user with UID 'user_abc' cannot update or delete another user's dashboard under /users/user_xyz/dashboards/dashboard_123.
-     * @principle Enforces document ownership for writes.
+     * @allow (create, get, list, update, delete) - Authenticated user can only access their own dashboards.
+     * @deny (create, get, list, update, delete) - If the authenticated user ID does not match the userId in the path.
+     * @principle Enforces document ownership for dashboards.
      */
     match /users/{userId}/dashboards/{dashboardId} {
-      // Helper function to check if the user is signed in and owns the resource.
-      function isSignedIn() {
-        return request.auth != null;
-      }
+        function isOwner(userId) {
+          return request.auth != null && request.auth.uid == userId;
+        }
 
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && exists(/databases/$(database)/documents/users/$(userId)/dashboards/$(dashboardId));
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Secures the `/business_units/{businessUnitId}` collection.
+     * @description Protects the /business_units/{businessUnitId} collection.
      * @path /business_units/{businessUnitId}
-     * @allow (get, list) - Allows anyone to read business unit information.
-     * @allow (create) - Only authenticated users can create business units.
-     * @allow (update, delete) - Only authenticated users can update or delete business units.
-     * @principle Allows public read access but restricts writes to authenticated users.
+     * @allow (get, list) - Anyone can read business unit data.
+     * @allow (create, update, delete) - Only authenticated users can modify business unit data.
+     * @deny (create, update, delete) - if not authenticated.
      */
     match /business_units/{businessUnitId} {
-       // Helper function to check if the user is signed in.
       function isSignedIn() {
-        return request.auth != null;
+          return request.auth != null;
       }
 
-      function isExisting() {
-        return exists(/databases/$(database)/documents/business_units/$(businessUnitId));
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow update: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow delete: if isSignedIn(); // TODO: Add more granular role-based access control.
     }
 
     /**
-     * @description Secures the `/business_units/{businessUnitId}/metrics/{metricId}` collection.
+     * @description Protects the /business_units/{businessUnitId}/metrics/{metricId} collection.
      * @path /business_units/{businessUnitId}/metrics/{metricId}
-     * @allow (get, list) - Allows anyone to read metric information.
-     * @allow (create) - Only authenticated users can create metrics.
-     * @allow (update, delete) - Only authenticated users can update or delete metrics.
-     * @principle Allows public read access but restricts writes to authenticated users.
+     * @allow (get, list) - Anyone can read metric data.
+     * @allow (create, update, delete) - Only authenticated users can modify metric data.
+     * @deny (create, update, delete) - if not authenticated.
      */
     match /business_units/{businessUnitId}/metrics/{metricId} {
-      // Helper function to check if the user is signed in.
       function isSignedIn() {
-        return request.auth != null;
+          return request.auth != null;
       }
 
-        function isExisting() {
-        return exists(/databases/$(database)/documents/business_units/$(businessUnitId)/metrics/$(metricId));
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow update: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow delete: if isSignedIn(); // TODO: Add more granular role-based access control.
     }
 
-    /**
-     * @description Secures the `/business_units/{businessUnitId}/widgets/{widgetId}` collection.
+   /**
+     * @description Protects the /business_units/{businessUnitId}/widgets/{widgetId} collection.
      * @path /business_units/{businessUnitId}/widgets/{widgetId}
-     * @allow (get, list) - Allows anyone to read widget information.
-     * @allow (create) - Only authenticated users can create widgets.
-     * @allow (update, delete) - Only authenticated users can update or delete widgets.
-     * @principle Allows public read access but restricts writes to authenticated users.
+     * @allow (get, list) - Anyone can read widget data.
+     * @allow (create, update, delete) - Only authenticated users can modify widget data.
+     * @deny (create, update, delete) - if not authenticated.
      */
     match /business_units/{businessUnitId}/widgets/{widgetId} {
-      // Helper function to check if the user is signed in.
       function isSignedIn() {
-        return request.auth != null;
+          return request.auth != null;
       }
 
-        function isExisting() {
-        return exists(/databases/$(database)/documents/business_units/$(businessUnitId)/widgets/$(widgetId));
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow update: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow delete: if isSignedIn(); // TODO: Add more granular role-based access control.
     }
 
     /**
-     * @description Secures the `/business_units/{businessUnitId}/alerts/{alertId}` collection.
+     * @description Protects the /business_units/{businessUnitId}/alerts/{alertId} collection.
      * @path /business_units/{businessUnitId}/alerts/{alertId}
-     * @allow (get, list) - Allows anyone to read alert information.
-     * @allow (create) - Only authenticated users can create alerts.
-     * @allow (update, delete) - Only authenticated users can update or delete alerts.
-     * @principle Allows public read access but restricts writes to authenticated users.
+     * @allow (get, list) - Anyone can read alert data.
+     * @allow (create, update, delete) - Only authenticated users can modify alert data.
+     * @deny (create, update, delete) - if not authenticated.
      */
     match /business_units/{businessUnitId}/alerts/{alertId} {
-      // Helper function to check if the user is signed in.
       function isSignedIn() {
-        return request.auth != null;
+          return request.auth != null;
       }
 
-      function isExisting() {
-        return exists(/databases/$(database)/documents/business_units/$(businessUnitId)/alerts/$(alertId));
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow update: if isSignedIn(); // TODO: Add more granular role-based access control.
+      allow delete: if isSignedIn(); // TODO: Add more granular role-based access control.
     }
   }
 }
