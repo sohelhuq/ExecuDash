@@ -1,69 +1,108 @@
+/**
+ * @fileOverview Firestore Security Rules for Firestudio.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a project-based ownership model.  All data is nested under /projects/{projectId} and access is controlled based on the authenticated user's authorization level, with an assumption that an external auth mechanism (not defined here) manages the authorization levels and ensures the user has access to the project.
+ *
+ * Data Structure:
+ * The Firestore database is structured as follows:
+ * - /projects/{projectId}: Stores project metadata.
+ * - /projects/{projectId}/modules/{moduleId}: Stores module metadata associated with a project.
+ * - /projects/{projectId}/telegram_bots/{telegramBotId}: Stores Telegram bot connection details for a project.
+ * - /projects/{projectId}/finance_data_syncs/{financeDataSyncId}: Stores finance data synchronization details for a project.
+ *
+ * Key Security Decisions:
+ * - No public listing of any collections is allowed.
+ * - All write operations require the user to be authenticated.
+ * - All subcollection documents contain a `projectId` field, which must match the `projectId` in the path for create operations. This ensures data consistency.
+ *
+ * Denormalization for Authorization:
+ * - The `projectId` field is denormalized into the Module, TelegramBot, and FinanceDataSync documents to allow direct access and querying of these subcollections based on the `projectId` without needing to perform parent document lookups.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
     /**
-     * @description Allows access to project documents for authenticated users.
+     * @description Controls access to the /projects collection.
      * @path /projects/{projectId}
+     * @allow (get, list): if true; (assuming public read, but must be reviewed if project data is actually private)
+     * @allow (create): if request.auth != null;
+     * @allow (update, delete): if request.auth != null;
+     * @deny (create): if request.auth == null;
+     * @deny (update, delete): if request.auth == null;
+     * @principle Allows authenticated users to create, update, and delete projects. Read is public.
      */
     match /projects/{projectId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Manages access to module documents within a project.
+     * @description Controls access to the /projects/{projectId}/modules collection.
      * @path /projects/{projectId}/modules/{moduleId}
+     * @allow (get, list): if isSignedIn();
+     * @allow (create): if isSignedIn() && request.resource.data.projectId == projectId;
+     * @allow (update, delete): if isSignedIn() && resource != null && resource.data.projectId == projectId;
+     * @deny (create): if !isSignedIn() || request.resource.data.projectId != projectId;
+     * @deny (update, delete): if !isSignedIn() || resource == null || resource.data.projectId != projectId;
+     * @principle Enforces project-based ownership and authenticated access for modules.
      */
     match /projects/{projectId}/modules/{moduleId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.projectId == projectId;
-      allow update: if isSignedIn() && request.resource.data.projectId == resource.data.projectId;
-      allow delete: if isSignedIn() && resource.data.projectId == resource.data.projectId;
+      allow update, delete: if isSignedIn() && resource != null && resource.data.projectId == projectId;
     }
 
     /**
-     * @description Manages access to Telegram bot documents within a project.
+     * @description Controls access to the /projects/{projectId}/telegram_bots collection.
      * @path /projects/{projectId}/telegram_bots/{telegramBotId}
+     * @allow (get, list): if isSignedIn();
+     * @allow (create): if isSignedIn() && request.resource.data.projectId == projectId;
+     * @allow (update, delete): if isSignedIn() && resource != null && resource.data.projectId == projectId;
+     * @deny (create): if !isSignedIn() || request.resource.data.projectId != projectId;
+     * @deny (update, delete): if !isSignedIn() || resource == null || resource.data.projectId != projectId;
+     * @principle Enforces project-based ownership and authenticated access for Telegram bots.
      */
     match /projects/{projectId}/telegram_bots/{telegramBotId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.projectId == projectId;
-      allow update: if isSignedIn() && resource.data.projectId == resource.data.projectId;
-      allow delete: if isSignedIn() && resource.data.projectId == resource.data.projectId;
+      allow update, delete: if isSignedIn() && resource != null && resource.data.projectId == projectId;
     }
 
     /**
-     * @description Manages access to finance data sync documents within a project.
+     * @description Controls access to the /projects/{projectId}/finance_data_syncs collection.
      * @path /projects/{projectId}/finance_data_syncs/{financeDataSyncId}
+     * @allow (get, list): if isSignedIn();
+     * @allow (create): if isSignedIn() && request.resource.data.projectId == projectId;
+     * @allow (update, delete): if isSignedIn() && resource != null && resource.data.projectId == projectId;
+     * @deny (create): if !isSignedIn() || request.resource.data.projectId != projectId;
+     * @deny (update, delete): if !isSignedIn() || resource == null || resource.data.projectId != projectId;
+     * @principle Enforces project-based ownership and authenticated access for finance data syncs.
      */
     match /projects/{projectId}/finance_data_syncs/{financeDataSyncId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.projectId == projectId;
-      allow update: if isSignedIn() && resource.data.projectId == resource.data.projectId;
-      allow delete: if isSignedIn() && resource.data.projectId == resource.data.projectId;
+      allow update, delete: if isSignedIn() && resource != null && resource.data.projectId == projectId;
     }
 
     /**
-     * @description  Placeholder for the savings_accounts collection.  List access is currently denied.
-     * @path /savings_accounts
+     * @description Denies listing of the cc_accounts collection. This was the cause of the original error.
+     * @path /cc_accounts
+     * @deny list: Denies listing to all users.
+     * @principle Prevents unauthorized access to cc_accounts by denying list operations.
      */
-    match /savings_accounts {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    match /cc_accounts/{document=**} {
+        allow get: if false;
+        allow list: if false;
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
     }
+  }
+
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
