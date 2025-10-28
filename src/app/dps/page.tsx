@@ -1,4 +1,3 @@
-
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import {
@@ -80,23 +79,23 @@ export default function DpsPage() {
     }
 
     const handleAddDps = () => {
+        if (!dpsCollection) return;
+        
         const { bank, maturityDate, dpsBalance } = newDps;
         if (!bank || !maturityDate || dpsBalance <= 0) {
             toast({ variant: 'destructive', title: 'Missing fields', description: 'All fields are required and balance must be positive.' });
             return;
         }
         
-        if (dpsCollection) {
-          const newDpsData: Omit<Dps, 'id'> = {
-              bank,
-              maturityDate: maturityDate.toISOString(),
-              dpsBalance,
-          };
-          addDocumentNonBlocking(dpsCollection, newDpsData);
-          toast({ title: 'DPS Added', description: `A new DPS from ${newDps.bank} has been successfully added.` });
-          setIsDialogOpen(false);
-          setNewDps(defaultDpsState);
-        }
+        const newDpsData: Omit<Dps, 'id'> = {
+            bank,
+            maturityDate: maturityDate.toISOString(),
+            dpsBalance,
+        };
+        addDocumentNonBlocking(dpsCollection, newDpsData);
+        toast({ title: 'DPS Added', description: `A new DPS from ${newDps.bank} has been successfully added.` });
+        setIsDialogOpen(false);
+        setNewDps(defaultDpsState);
     };
 
     const totalBalance = dpsData?.reduce((acc, curr) => acc + curr.dpsBalance, 0) || 0;
@@ -173,8 +172,8 @@ export default function DpsPage() {
               <TableBody>
                 {isLoading ? (
                   <TableRow><TableCell colSpan={3} className="text-center h-24"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></TableCell></TableRow>
-                ) : dpsData?.map((dps, index) => (
-                  <TableRow key={index}>
+                ) : dpsData?.map((dps) => (
+                  <TableRow key={dps.id}>
                     <TableCell>{dps.bank}</TableCell>
                     <TableCell>{format(new Date(dps.maturityDate), 'dd MMM, yyyy')}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(dps.dpsBalance)}</TableCell>
