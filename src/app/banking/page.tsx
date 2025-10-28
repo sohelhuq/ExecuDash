@@ -41,18 +41,30 @@ type Account = {
   bank: string;
   name: string;
   no: string;
-  interest: string;
   opening: number;
   cr: number;
   dr: number;
   balance: number;
 }
 
-const defaultAccountState: Omit<Account, 'balance'> = {
+type CcAccount = Account & {
+    interest: number;
+}
+
+const defaultCcAccountState: Omit<CcAccount, 'balance'> = {
   bank: '',
   name: '',
   no: '',
-  interest: '',
+  interest: 0,
+  opening: 0,
+  cr: 0,
+  dr: 0,
+};
+
+const defaultSavingsAccountState: Omit<Account, 'balance'> = {
+  bank: '',
+  name: '',
+  no: '',
   opening: 0,
   cr: 0,
   dr: 0,
@@ -65,7 +77,7 @@ export default function BankingPage() {
     const { toast } = useToast();
 
     const ccAccountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'cc_accounts') : null, [firestore]);
-    const { data: ccAccounts, isLoading: isLoadingCc } = useCollection<Account>(ccAccountsCollection);
+    const { data: ccAccounts, isLoading: isLoadingCc } = useCollection<CcAccount>(ccAccountsCollection);
 
     const savingsAccountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'savings_accounts') : null, [firestore]);
     const { data: savingsAccounts, isLoading: isLoadingSavings } = useCollection<Account>(savingsAccountsCollection);
@@ -73,34 +85,52 @@ export default function BankingPage() {
     const [isCcDialogOpen, setIsCcDialogOpen] = React.useState(false);
     const [isSavingsDialogOpen, setIsSavingsDialogOpen] = React.useState(false);
 
-    const [newAccount, setNewAccount] = React.useState<Omit<Account, 'balance'>>(defaultAccountState);
+    const [newCcAccount, setNewCcAccount] = React.useState<Omit<CcAccount, 'balance'>>(defaultCcAccountState);
+    const [newSavingsAccount, setNewSavingsAccount] = React.useState<Omit<Account, 'balance'>>(defaultSavingsAccountState);
     
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCcInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        const isNumeric = ['opening', 'cr', 'dr'].includes(name);
-        setNewAccount(prev => ({ ...prev, [name]: isNumeric ? parseFloat(value) || 0 : value }));
+        const isNumeric = ['opening', 'cr', 'dr', 'interest'].includes(name);
+        setNewCcAccount(prev => ({ ...prev, [name]: isNumeric ? parseFloat(value) || 0 : value }));
     };
 
-    const handleAddAccount = (type: 'cc' | 'savings') => {
-        const { bank, name, no, opening, cr, dr } = newAccount;
+    const handleSavingsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const isNumeric = ['opening', 'cr', 'dr'].includes(name);
+        setNewSavingsAccount(prev => ({ ...prev, [name]: isNumeric ? parseFloat(value) || 0 : value }));
+    };
+
+    const handleAddCcAccount = () => {
+        const { bank, name, no, opening, cr, dr } = newCcAccount;
         if (!bank || !name || !no) {
             toast({ variant: 'destructive', title: 'Missing fields', description: 'Bank, Account Name, and Account No are required.' });
             return;
         }
 
-        const newEntry: Account = { ...newAccount, balance: opening + cr - dr };
-        const targetCollection = type === 'cc' ? ccAccountsCollection : savingsAccountsCollection;
+        const newEntry: CcAccount = { ...newCcAccount, balance: opening + dr - cr };
+        
+        if (ccAccountsCollection) {
+          addDocumentNonBlocking(ccAccountsCollection, newEntry);
+          toast({ title: 'Account Added', description: `${newCcAccount.name} has been successfully added.` });
+          setIsCcDialogOpen(false);
+          setNewCcAccount(defaultCcAccountState);
+        }
+    };
+    
+    const handleAddSavingsAccount = () => {
+        const { bank, name, no, opening, cr, dr } = newSavingsAccount;
+        if (!bank || !name || !no) {
+            toast({ variant: 'destructive', title: 'Missing fields', description: 'Bank, Account Name, and Account No are required.' });
+            return;
+        }
 
-        if (targetCollection) {
-          addDocumentNonBlocking(targetCollection, newEntry);
-          toast({ title: 'Account Added', description: `${newAccount.name} has been successfully added.` });
-          
-          if (type === 'cc') {
-              setIsCcDialogOpen(false);
-          } else {
-              setIsSavingsDialogOpen(false);
-          }
-          setNewAccount(defaultAccountState);
+        const newEntry: Account = { ...newSavingsAccount, balance: opening + cr - dr };
+
+        if (savingsAccountsCollection) {
+          addDocumentNonBlocking(savingsAccountsCollection, newEntry);
+          toast({ title: 'Account Added', description: `${newSavingsAccount.name} has been successfully added.` });
+          setIsSavingsDialogOpen(false);
+          setNewSavingsAccount(defaultSavingsAccountState);
         }
     };
 
@@ -114,45 +144,84 @@ export default function BankingPage() {
     const totalSavingsDr = savingsAccounts?.reduce((acc, curr) => acc + curr.dr, 0) || 0;
     const totalSavingsBalance = savingsAccounts?.reduce((acc, curr) => acc + curr.balance, 0) || 0;
 
-    const AccountForm = ({ onAdd, type, onOpenChange }: { onAdd: () => void; type: 'cc' | 'savings', onOpenChange: (open: boolean) => void }) => (
+    const CcAccountForm = () => (
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Add New {type === 'cc' ? 'CC' : 'Savings'} Account</DialogTitle>
+                <DialogTitle>Add New CC Account</DialogTitle>
+                <DialogDescription>Enter the details for the new loan account.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="bank" className="text-right">Bank</Label>
+                    <Input id="bank" name="bank" value={newCcAccount.bank} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">Account Name</Label>
+                    <Input id="name" name="name" value={newCcAccount.name} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="no" className="text-right">Account No</Label>
+                    <Input id="no" name="no" value={newCcAccount.no} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="interest" className="text-right">Interest %</Label>
+                    <Input id="interest" name="interest" type="number" value={newCcAccount.interest} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="opening" className="text-right">Opening</Label>
+                    <Input id="opening" name="opening" type="number" value={newCcAccount.opening} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="cr" className="text-right">CR (Payments)</Label>
+                    <Input id="cr" name="cr" type="number" value={newCcAccount.cr} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="dr" className="text-right">DR (Drawings)</Label>
+                    <Input id="dr" name="dr" type="number" value={newCcAccount.dr} onChange={handleCcInputChange} className="col-span-3" />
+                </div>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+                <Button onClick={handleAddCcAccount}>Add Account</Button>
+            </DialogFooter>
+        </DialogContent>
+    );
+
+    const SavingsAccountForm = () => (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add New Savings Account</DialogTitle>
                 <DialogDescription>Enter the details for the new account.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="bank" className="text-right">Bank</Label>
-                    <Input id="bank" name="bank" value={newAccount.bank} onChange={handleInputChange} className="col-span-3" />
+                    <Input id="bank" name="bank" value={newSavingsAccount.bank} onChange={handleSavingsInputChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="name" className="text-right">Account Name</Label>
-                    <Input id="name" name="name" value={newAccount.name} onChange={handleInputChange} className="col-span-3" />
+                    <Input id="name" name="name" value={newSavingsAccount.name} onChange={handleSavingsInputChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="no" className="text-right">Account No</Label>
-                    <Input id="no" name="no" value={newAccount.no} onChange={handleInputChange} className="col-span-3" />
+                    <Input id="no" name="no" value={newSavingsAccount.no} onChange={handleSavingsInputChange} className="col-span-3" />
                 </div>
-                 {type === 'cc' && <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="interest" className="text-right">Interest %</Label>
-                    <Input id="interest" name="interest" value={newAccount.interest} onChange={handleInputChange} className="col-span-3" />
-                </div>}
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="opening" className="text-right">Opening</Label>
-                    <Input id="opening" name="opening" type="number" value={newAccount.opening} onChange={handleInputChange} className="col-span-3" />
+                    <Input id="opening" name="opening" type="number" value={newSavingsAccount.opening} onChange={handleSavingsInputChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="cr" className="text-right">CR</Label>
-                    <Input id="cr" name="cr" type="number" value={newAccount.cr} onChange={handleInputChange} className="col-span-3" />
+                    <Input id="cr" name="cr" type="number" value={newSavingsAccount.cr} onChange={handleSavingsInputChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="dr" className="text-right">DR</Label>
-                    <Input id="dr" name="dr" type="number" value={newAccount.dr} onChange={handleInputChange} className="col-span-3" />
+                    <Input id="dr" name="dr" type="number" value={newSavingsAccount.dr} onChange={handleSavingsInputChange} className="col-span-3" />
                 </div>
             </div>
             <DialogFooter>
                 <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
-                <Button onClick={onAdd}>Add Account</Button>
+                <Button onClick={handleAddSavingsAccount}>Add Account</Button>
             </DialogFooter>
         </DialogContent>
     );
@@ -168,14 +237,17 @@ export default function BankingPage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <div>
-              <CardTitle>CC Account Transactions</CardTitle>
-              <CardDescription>Summary of transactions for all Credit Card accounts.</CardDescription>
+              <CardTitle>CC (Loan) Account Transactions</CardTitle>
+              <CardDescription>Summary of transactions for all Credit Card loan accounts.</CardDescription>
             </div>
-            <Dialog open={isCcDialogOpen} onOpenChange={setIsCcDialogOpen}>
+            <Dialog open={isCcDialogOpen} onOpenChange={(isOpen) => {
+                setIsCcDialogOpen(isOpen);
+                if (!isOpen) setNewCcAccount(defaultCcAccountState);
+            }}>
               <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> New Account</Button>
               </DialogTrigger>
-              <AccountForm type="cc" onAdd={() => handleAddAccount('cc')} onOpenChange={setIsCcDialogOpen} />
+              <CcAccountForm />
             </Dialog>
           </CardHeader>
           <CardContent>
@@ -200,10 +272,10 @@ export default function BankingPage() {
                     <TableCell>{account.bank}</TableCell>
                     <TableCell>{account.name}</TableCell>
                     <TableCell>{account.no}</TableCell>
-                    <TableCell>{account.interest}</TableCell>
+                    <TableCell>{account.interest}%</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(account.opening)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(account.cr)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(account.dr)}</TableCell>
+                    <TableCell className="text-right font-mono text-green-600">{formatCurrency(account.cr)}</TableCell>
+                    <TableCell className="text-right font-mono text-red-600">{formatCurrency(account.dr)}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(account.balance)}</TableCell>
                   </TableRow>
                 ))}
@@ -227,11 +299,14 @@ export default function BankingPage() {
               <CardTitle>Savings Accounts</CardTitle>
               <CardDescription>Summary of all savings accounts.</CardDescription>
             </div>
-            <Dialog open={isSavingsDialogOpen} onOpenChange={setIsSavingsDialogOpen}>
+            <Dialog open={isSavingsDialogOpen} onOpenChange={(isOpen) => {
+                setIsSavingsDialogOpen(isOpen);
+                if (!isOpen) setNewSavingsAccount(defaultSavingsAccountState);
+            }}>
                 <DialogTrigger asChild>
                     <Button><PlusCircle className="mr-2 h-4 w-4" /> New Account</Button>
                 </DialogTrigger>
-                <AccountForm type="savings" onAdd={() => handleAddAccount('savings')} onOpenChange={setIsSavingsDialogOpen} />
+                <SavingsAccountForm />
             </Dialog>
           </CardHeader>
           <CardContent>
@@ -278,5 +353,3 @@ export default function BankingPage() {
     </AppShell>
   );
 }
-
-    

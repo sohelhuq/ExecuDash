@@ -422,12 +422,12 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "CcAccount",
       "type": "object",
-      "description": "Represents a single Credit Card (CC) account.",
+      "description": "Represents a single Credit Card (CC) loan account.",
       "properties": {
         "bank": { "type": "string" },
         "name": { "type": "string" },
         "no": { "type": "string" },
-        "interest": { "type": "string" },
+        "interest": { "type": "number" },
         "opening": { "type": "number" },
         "cr": { "type": "number" },
         "dr": { "type": "number" },
@@ -662,5 +662,3 @@
     "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs, and maintain data clarity. It leverages path-based ownership for user-specific data (dashboards) and segregates data with different access requirements. The structure denormalizes authorization data to avoid using `get()` calls in security rules.\n\n**Authorization Independence:**\nAuthorization Independence is achieved through path-based ownership and avoids hierarchical authorization dependencies. The collaborative access to `BusinessUnit` data is managed by dedicated subcollections to avoid get() calls.\n\n**QAPs Support:**\nQAPs are supported through structural segregation and the membership model. User-owned dashboards are stored under the `/users/{userId}` collection, ensuring that listing dashboards is secure and limited to the user's data. Business Units have a flat structure.\n\n**Structure Explanation:**\n- `/users/{userId}`: Contains user-specific data, such as dashboards. This path enforces ownership.\n- `/users/{userId}/dashboards/{dashboardId}`: Stores dashboard configurations for each user. The `userId` in the path ensures that only the owner can access the dashboards.\n- `/business_units/{businessUnitId}`: Contains business unit data.\n- `/business_units/{businessUnitId}/metrics/{metricId}`: Contains metrics data for a business unit.\n- `/business_units/{businessUnitId}/widgets/{widgetId}`: Contains widgets data for a business unit. The `businessUnitId` in the path ensures that only authorized users can access the widgets.\n- `/alerts/{alertId}`: Contains alerts data. Access is restricted to authenticated users.\n- `/assigned_accounts/{accountId}`: Contains assigned accounts data. Access is restricted to authenticated users.\n- `/responsibilities/{responsibilityId}`: Contains responsibilities data. Access is restricted to authenticated users.\n- `/invoices/{invoiceId}`: Stores invoice data. Access is restricted to authenticated users."
   }
 }
-
-    
