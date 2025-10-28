@@ -120,7 +120,7 @@ export function Dashboard() {
                   <TableCell className="font-medium">{unit.name}</TableCell>
                   <TableCell>{unit.description}</TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/dashboard/${unit.id}`} legacyBehavior>
+                    <Link href={`/dashboard/${unit.id}`}>
                       <Button variant="ghost" size="sm">
                         Details <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
