@@ -26,7 +26,7 @@ const hrModules = [
     icon: CalendarClock,
     title: "Attendance Tracking",
     description: "Easily monitor work hours, track absences, and manage shifts with a real-time attendance system.",
-    href: "#"
+    href: "/hr/attendance"
   },
   {
     icon: Wallet,
@@ -98,7 +98,12 @@ export default function HrPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-grow flex items-end">
-                  <Button variant="outline" onClick={() => handleLearnMore(module.title, module.href)}>
+                  <Button variant="outline" onClick={(e) => {
+                    if (module.href === '#') {
+                        e.preventDefault();
+                        handleLearnMore(module.title, module.href)
+                    }
+                  }}>
                     Learn More
                   </Button>
                 </CardContent>
