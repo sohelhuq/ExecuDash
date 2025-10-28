@@ -37,7 +37,7 @@ const navItems = [
   { href: '/banking', label: 'Banking', icon: BankIcon },
   { href: '/fdr', label: 'FDR', icon: ShieldCheck },
   { href: '/dps', label: 'DPS', icon: Wallet },
-  { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
+  { href: '/sales', label: 'Sales Management', icon: Briefcase },
   { href: '/sundry-debtors', label: 'Sundry Debtors', icon: UserCheck },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
   { href: '/properties', label: 'Properties', icon: Building },
