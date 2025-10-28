@@ -20,6 +20,8 @@ import {
   FileText,
   Fuel,
   Loader2,
+  Banknote as BanknoteIcon,
+  PiggyBank,
 } from "lucide-react";
 import {
   Bar,
@@ -45,9 +47,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { businessUnits } from "@/lib/business-units";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where, orderBy } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { collection, query, where, orderBy, serverTimestamp } from "firebase/firestore";
 import * as React from "react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const ICONS: { [key: string]: React.ElementType } = {
   DollarSign,
@@ -107,8 +122,19 @@ type Alert = {
     severity: 'High' | 'Medium' | 'Low';
 }
 
+type BankDeposit = {
+    amount: number;
+    date: any;
+    reference?: string;
+};
+
+
 export function Dashboard() {
     const firestore = useFirestore();
+    const { toast } = useToast();
+    const [depositOpen, setDepositOpen] = React.useState(false);
+    const [depositAmount, setDepositAmount] = React.useState('');
+    const [depositReference, setDepositReference] = React.useState('');
 
     const kpisCollection = useMemoFirebase(() => firestore ? collection(firestore, 'kpis') : null, [firestore]);
     const { data: kpiData, isLoading: isLoadingKpis } = useCollection<Kpi>(kpisCollection);
@@ -121,6 +147,8 @@ export function Dashboard() {
     
     const lowStockAlertsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'alerts'), where('severity', 'in', ['High', 'Medium'])) : null, [firestore]);
     const { data: lowStockAlerts, isLoading: isLoadingAlerts } = useCollection<Alert>(lowStockAlertsQuery);
+
+    const bankDepositsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'bank_deposits') : null, [firestore]);
 
     const salesDistributionData = React.useMemo(() => {
         if (!invoiceData) return [];
@@ -138,10 +166,95 @@ export function Dashboard() {
             color: salesDistributionColors[index % salesDistributionColors.length],
         }));
     }, [invoiceData]);
+    
+    const handleCashflow = () => {
+        toast({
+            title: "Daily Cashflow",
+            description: "Today's cashflow summary will be displayed here.",
+        });
+    };
+
+    const handleDeposit = () => {
+        if (!bankDepositsCollection || !depositAmount) {
+             toast({
+                variant: "destructive",
+                title: "Invalid Input",
+                description: "Please enter a valid deposit amount.",
+            });
+            return;
+        }
+
+        const newDeposit: BankDeposit = {
+            amount: parseFloat(depositAmount),
+            date: serverTimestamp(),
+            reference: depositReference,
+        };
+
+        addDocumentNonBlocking(bankDepositsCollection, newDeposit);
+
+        toast({
+            title: "Deposit Recorded",
+            description: `A deposit of ৳${depositAmount} has been recorded.`,
+        });
+
+        setDepositAmount('');
+        setDepositReference('');
+        setDepositOpen(false);
+    };
 
 
   return (
     <div className="space-y-6">
+       <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold tracking-tight">Main Dashboard</h1>
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={handleCashflow}>
+                    <BanknoteIcon className="mr-2 h-4 w-4" />
+                    Daily Cashflow
+                </Button>
+                <Dialog open={depositOpen} onOpenChange={setDepositOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <PiggyBank className="mr-2 h-4 w-4" />
+                            Deposit to Bank
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Record Bank Deposit</DialogTitle>
+                            <DialogDescription>Enter the details of the deposit below.</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="amount" className="text-right">Amount</Label>
+                                <Input 
+                                    id="amount" 
+                                    type="number" 
+                                    value={depositAmount}
+                                    onChange={(e) => setDepositAmount(e.target.value)}
+                                    placeholder="e.g., 50000"
+                                    className="col-span-3"
+                                />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="reference" className="text-right">Reference</Label>
+                                <Input 
+                                    id="reference" 
+                                    value={depositReference}
+                                    onChange={(e) => setDepositReference(e.target.value)}
+                                    placeholder="Optional: e.g., daily sales"
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+                            <Button onClick={handleDeposit}>Save Deposit</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {isLoadingKpis ? (
             Array.from({ length: 4 }).map((_, i) => (
@@ -200,7 +313,7 @@ export function Dashboard() {
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
-                        tickFormatter={(value) => `$${Number(value)/1000}k`}
+                        tickFormatter={(value) => `৳${Number(value)/1000}k`}
                      />
                     <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                     <Area
@@ -293,3 +406,5 @@ export function Dashboard() {
     </div>
   );
 }
+
+    
