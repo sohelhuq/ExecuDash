@@ -76,10 +76,14 @@ export default function BankingPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    const ccAccountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'cc_accounts') : null, [firestore]);
+    const ccAccountsCollection = useMemoFirebase(() => {
+        return firestore ? collection(firestore, 'cc_accounts') : null;
+    }, [firestore]);
     const { data: ccAccounts, isLoading: isLoadingCc } = useCollection<CcAccount>(ccAccountsCollection);
 
-    const savingsAccountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'savings_accounts') : null, [firestore]);
+    const savingsAccountsCollection = useMemoFirebase(() => {
+        return firestore ? collection(firestore, 'savings_accounts') : null;
+    }, [firestore]);
     const { data: savingsAccounts, isLoading: isLoadingSavings } = useCollection<Account>(savingsAccountsCollection);
 
     const [isCcDialogOpen, setIsCcDialogOpen] = React.useState(false);

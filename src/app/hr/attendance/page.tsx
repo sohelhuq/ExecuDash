@@ -46,13 +46,14 @@ export default function AttendancePage() {
 
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
-  const employeesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'employees') : null, [firestore]);
+  const employeesCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'employees') : null;
+  }, [firestore]);
   const { data: employees, isLoading: isLoadingEmployees } = useCollection<Employee>(employeesCollection);
 
-  const leaveBalancesQuery = useMemoFirebase(() => 
-    firestore ? query(collection(firestore, 'leave_balances'), where('year', '==', currentYear)) : null, 
-    [firestore, currentYear]
-  );
+  const leaveBalancesQuery = useMemoFirebase(() => {
+    return firestore ? query(collection(firestore, 'leave_balances'), where('year', '==', currentYear)) : null;
+  }, [firestore, currentYear]);
   const { data: leaveBalances, isLoading: isLoadingLeave } = useCollection<LeaveBalance>(leaveBalancesQuery);
 
   const form = useForm<z.infer<typeof leaveFormSchema>>({
@@ -276,5 +277,3 @@ export default function AttendancePage() {
     </AppShell>
   );
 }
-
-    

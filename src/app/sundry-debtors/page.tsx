@@ -22,12 +22,11 @@ const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').f
 
 export default function SundryDebtorsPage() {
   const firestore = useFirestore();
-  const debtorsQuery = useMemoFirebase(() => 
-    firestore 
+  const debtorsQuery = useMemoFirebase(() => {
+    return firestore 
       ? query(collection(firestore, 'invoices'), where('status', 'in', ['Pending', 'Overdue'])) 
-      : null, 
-    [firestore]
-  );
+      : null;
+  }, [firestore]);
   const { data: debtors, isLoading } = useCollection<SundryDebtor>(debtorsQuery);
 
   const totalDue = React.useMemo(() => {

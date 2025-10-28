@@ -80,10 +80,14 @@ export default function CollectionsPage() {
   
   const firestore = useFirestore();
   
-  const accountsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'assigned_accounts') : null, [firestore]);
+  const accountsCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'assigned_accounts') : null;
+  }, [firestore]);
   const { data: assignedAccounts, isLoading: isLoadingAccounts } = useCollection<AssignedAccount>(accountsCollection);
   
-  const responsibilitiesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'responsibilities') : null, [firestore]);
+  const responsibilitiesCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'responsibilities') : null;
+  }, [firestore]);
   const { data: responsibilities, isLoading: isLoadingResponsibilities } = useCollection<Responsibility>(responsibilitiesCollection);
 
   const accountForm = useForm<z.infer<typeof accountFormSchema>>({

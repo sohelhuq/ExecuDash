@@ -59,10 +59,9 @@ export default function EmployeeManagementPage() {
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = React.useState(false);
 
-  const employeesCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'employees') : null),
-    [firestore]
-  );
+  const employeesCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'employees') : null;
+  }, [firestore]);
 
   const { data: employees, isLoading } = useCollection<Employee>(employeesCollection);
 
@@ -192,5 +191,3 @@ export default function EmployeeManagementPage() {
     </AppShell>
   );
 }
-
-    

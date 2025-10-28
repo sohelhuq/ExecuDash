@@ -82,10 +82,14 @@ export default function PayrollPage() {
     const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth() + 1).padStart(2, '0'));
     const [selectedYear, setSelectedYear] = useState<string>(String(currentYear));
 
-    const employeesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'employees') : null, [firestore]);
+    const employeesCollection = useMemoFirebase(() => {
+        return firestore ? collection(firestore, 'employees') : null;
+    }, [firestore]);
     const { data: employees, isLoading: isLoadingEmployees } = useCollection<Employee>(employeesCollection);
 
-    const payrollCollection = useMemoFirebase(() => firestore ? collection(firestore, 'payroll') : null, [firestore]);
+    const payrollCollection = useMemoFirebase(() => {
+        return firestore ? collection(firestore, 'payroll') : null;
+    }, [firestore]);
     const { data: payrolls, isLoading: isLoadingPayrolls } = useCollection<Payroll>(payrollCollection);
 
     const employeeMap = useMemo(() => {

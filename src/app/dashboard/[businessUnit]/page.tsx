@@ -47,10 +47,14 @@ export default function BusinessUnitPage({ params }: { params: { businessUnit: s
   const [readingOpen, setReadingOpen] = React.useState(false);
   const [newReading, setNewReading] = React.useState<{product?: string, nozzle?: string, reading?: string}>({});
 
-  const unitDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'business_units', params.businessUnit) : null, [firestore, params.businessUnit]);
+  const unitDocRef = useMemoFirebase(() => {
+    return firestore ? doc(firestore, 'business_units', params.businessUnit) : null;
+  }, [firestore, params.businessUnit]);
   const { data: unit, isLoading: isLoadingUnit } = useDoc<BusinessUnit>(unitDocRef);
   
-  const readingsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'business_units', params.businessUnit, 'meter_readings') : null, [firestore, params.businessUnit]);
+  const readingsCollectionRef = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'business_units', params.businessUnit, 'meter_readings') : null;
+  }, [firestore, params.businessUnit]);
   const { data: readings, isLoading: isLoadingReadings } = useCollection<MeterReading>(readingsCollectionRef);
 
   if (isLoadingUnit) {
@@ -300,5 +304,3 @@ export default function BusinessUnitPage({ params }: { params: { businessUnit: s
     </AppShell>
   );
 }
-
-    

@@ -55,7 +55,9 @@ export default function FdrPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    const fdrCollection = useMemoFirebase(() => firestore ? collection(firestore, 'fdr') : null, [firestore]);
+    const fdrCollection = useMemoFirebase(() => {
+        return firestore ? collection(firestore, 'fdr') : null;
+    }, [firestore]);
     const { data: fdrData, isLoading } = useCollection<Fdr>(fdrCollection);
 
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -167,5 +169,3 @@ export default function FdrPage() {
     </AppShell>
   );
 }
-
-    

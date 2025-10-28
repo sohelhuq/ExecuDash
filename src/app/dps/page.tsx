@@ -56,7 +56,9 @@ export default function DpsPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    const dpsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'dps') : null, [firestore]);
+    const dpsCollection = useMemoFirebase(() => {
+        return firestore ? collection(firestore, 'dps') : null;
+    }, [firestore]);
     const { data: dpsData, isLoading } = useCollection<Dps>(dpsCollection);
 
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);

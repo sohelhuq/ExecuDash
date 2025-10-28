@@ -106,13 +106,19 @@ export default function PropertiesPage() {
     const { toast } = useToast();
     const firestore = useFirestore();
 
-    const vangaDokanQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'shetue_vanga_dokan')) : null, [firestore]);
+    const vangaDokanQuery = useMemoFirebase(() => {
+        return firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'shetue_vanga_dokan')) : null;
+    }, [firestore]);
     const { data: shetueVangaDokanData, isLoading: isLoadingVangaDokan } = useCollection<RentEntry>(vangaDokanQuery);
 
-    const jamanTowerQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'jaman_tower')) : null, [firestore]);
+    const jamanTowerQuery = useMemoFirebase(() => {
+        return firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'jaman_tower')) : null;
+    }, [firestore]);
     const { data: jamanTowerData, isLoading: isLoadingJamanTower } = useCollection<RentEntry>(jamanTowerQuery);
 
-    const othersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'others')) : null, [firestore]);
+    const othersQuery = useMemoFirebase(() => {
+        return firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'others')) : null;
+    }, [firestore]);
     const { data: othersData, isLoading: isLoadingOthers } = useCollection<RentEntry>(othersQuery);
 
     const handleButtonClick = (action: string) => {
@@ -202,5 +208,3 @@ export default function PropertiesPage() {
     </AppShell>
   );
 }
-
-    

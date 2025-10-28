@@ -54,7 +54,9 @@ type Alert = {
 
 export default function AlertsPage() {
   const firestore = useFirestore();
-  const alertsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'alerts') : null, [firestore]);
+  const alertsCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'alerts') : null;
+  }, [firestore]);
   const { data: alerts, isLoading } = useCollection<Alert>(alertsCollection);
 
   const [newAlert, setNewAlert] = React.useState<Partial<Alert>>({});
