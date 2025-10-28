@@ -41,7 +41,7 @@ export function AppSidebar() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
                   tooltip={item.label}
@@ -57,7 +57,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link href="/help" legacyBehavior passHref>
+            <Link href="/help">
               <SidebarMenuButton tooltip="Help">
                 <CircleHelp />
                 <span>Help & Support</span>
@@ -65,7 +65,7 @@ export function AppSidebar() {
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="/settings" legacyBehavior passHref>
+            <Link href="/settings">
               <SidebarMenuButton tooltip="Settings">
                 <Settings />
                 <span>Settings</span>
