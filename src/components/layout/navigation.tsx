@@ -10,7 +10,8 @@ import {
   TrendingUp,
   ReceiptText,
   Building,
-  Landmark as BankIcon
+  Landmark as BankIcon,
+  UserCheck,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/banking', label: 'Banking', icon: BankIcon },
   { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
+  { href: '/sundry-debtors', label: 'Sundry Debtors', icon: Users },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
   { href: '/properties', label: 'Properties', icon: Building },
   { href: '/trends', label: 'Trends', icon: TrendingUp },
