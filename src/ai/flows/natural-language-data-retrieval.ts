@@ -106,4 +106,26 @@ const prompt = ai.definePrompt({
   output: {schema: NaturalLanguageDataRetrievalOutputSchema},
   prompt: `You are the Core Intent Layer for “The Intelligent Command Center,” a natural-language driven executive dashboard for a diversified conglomerate (Shetue Group). Your job is to:
 1) Classify each user utterance into one of three intents:
-   - \
+   - data_retrieval
+   - dashboard_config
+   - alert_management
+2) Extract all relevant entities.
+3) Determine the user's language.
+4) Formulate a concrete, actionable plan (an array of 'actions').
+5) If the query is ambiguous or incomplete, generate clarifying follow-up questions with options.
+6) Add internal notes to explain your reasoning.
+
+Query: {{{query}}}`,
+});
+
+const naturalLanguageDataRetrievalFlow = ai.defineFlow(
+  {
+    name: 'naturalLanguageDataRetrievalFlow',
+    inputSchema: NaturalLanguageDataRetrievalInputSchema,
+    outputSchema: NaturalLanguageDataRetrievalOutputSchema,
+  },
+  async input => {
+    const {output} = await prompt(input);
+    return output!;
+  }
+);
