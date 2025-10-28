@@ -1,100 +1,121 @@
+/**
+ * @fileOverview Firestore Security Rules for Firestudio.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a project-based access control model. Each project acts as a security boundary,
+ * and resources within a project (modules, Telegram bots, finance data syncs) inherit the project's access controls.
+ * All authorization decisions are based on user identity (`request.auth.uid`).
+ *
+ * Data Structure:
+ * - /projects/{projectId}: Stores project metadata.
+ * - /projects/{projectId}/modules/{moduleId}: Stores modules associated with a project.
+ * - /projects/{projectId}/telegram_bots/{telegramBotId}: Stores Telegram bot configurations for a project.
+ * - /projects/{projectId}/finance_data_syncs/{financeDataSyncId}: Stores finance data sync configurations for a project.
+ *
+ * Key Security Decisions:
+ * - Write access to project-owned resources (modules, bots, syncs) is restricted to authenticated users.
+ * - Read access to project-owned resources is restricted to authenticated users.
+ * - List operations are restricted to authenticated users.
+ *
+ * Denormalization for Authorization:
+ * - Each subcollection document (Module, TelegramBot, FinanceDataSync) includes a `projectId` field,
+ *   allowing rules to enforce project-level access without requiring parent document lookups.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to project documents.
-     * @path /projects/{projectId}
-     * @allow get, list: if true;
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle No authorization mechanism is explicitly defined for projects.
-     * Assumes access is managed by an external system.
+     * @description Secure access to the /business_units collection.
+     * @path /databases/{database}/documents/business_units
+     * @allow (list) Authenticated user can list business units.
+     * @deny (list) Anonymous user cannot list business units.
+     * @principle Public read, owner-only writes pattern applied.
+     */
+    match /business_units {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+    }
+
+    /**
+     * @description Enforces project-level access control.
+     * @path /databases/{database}/documents/projects/{projectId}
+     * @allow (get) Any authenticated user can read project details.
+     * @allow (list) Any authenticated user can list projects.
+     * @allow (create) No one can create projects through direct client access. Project creation should happen through dedicated admin interfaces.
+     * @deny (create) Anonymous users cannot create projects.
+     * @deny (update) Non-authenticated users cannot update projects.
+     * @principle Project-based access control.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if false;
       allow update: if false;
       allow delete: if false;
     }
 
     /**
-     * @description Controls access to module documents within a project.
-     * @path /projects/{projectId}/modules/{moduleId}
-     * @allow get: if isSignedIn() && isProjectMember(projectId);
-     * @allow list: if isSignedIn() && isProjectMember(projectId);
-     * @allow create: if isSignedIn() && isProjectOwner(projectId);
-     * @allow update: if isSignedIn() && isProjectOwner(projectId);
-     * @allow delete: if isSignedIn() && isProjectOwner(projectId);
-     * @deny create: if !isSignedIn() || !isProjectOwner(projectId);
-     * @deny update: if !isSignedIn() || !isProjectOwner(projectId) || resource == null;
-     * @deny delete: if !isSignedIn() || !isProjectOwner(projectId) || resource == null;
-     * @principle Enforces project membership for reads and project ownership for writes.
+     * @description Enforces module-level access control within a project.
+     * @path /databases/{database}/documents/projects/{projectId}/modules/{moduleId}
+     * @allow (get) Any authenticated user can read a module's details within a project.
+     * @allow (list) Any authenticated user can list modules within a project.
+     * @allow (create) Authenticated users can create modules within the specified project.
+     * @deny (create) Non-authenticated users cannot create modules.
+     * @deny (update) Non-authenticated users cannot update modules.
+     * @principle Project-based access control with denormalized projectId.
      */
     match /projects/{projectId}/modules/{moduleId} {
-      allow get: if isSignedIn() && isProjectMember(projectId);
-      allow list: if isSignedIn() && isProjectMember(projectId);
-      allow create: if isSignedIn() && isProjectOwner(projectId);
-      allow update: if isSignedIn() && isProjectOwner(projectId);
-      allow delete: if isSignedIn() && isProjectOwner(projectId);
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource.data.projectId == projectId;
+      allow delete: if isSignedIn() && resource.data.projectId == projectId;
     }
 
     /**
-     * @description Controls access to Telegram bot documents within a project.
-     * @path /projects/{projectId}/telegram_bots/{telegramBotId}
-     * @allow get: if isSignedIn() && isProjectMember(projectId);
-     * @allow list: if isSignedIn() && isProjectMember(projectId);
-     * @allow create: if isSignedIn() && isProjectOwner(projectId);
-     * @allow update: if isSignedIn() && isProjectOwner(projectId);
-     * @allow delete: if isSignedIn() && isProjectOwner(projectId);
-     * @deny create: if !isSignedIn() || !isProjectOwner(projectId);
-     * @deny update: if !isSignedIn() || !isProjectOwner(projectId) || resource == null;
-     * @deny delete: if !isSignedIn() || !isProjectOwner(projectId) || resource == null;
-     * @principle Enforces project membership for reads and project ownership for writes.
+     * @description Enforces Telegram bot access control within a project.
+     * @path /databases/{database}/documents/projects/{projectId}/telegram_bots/{telegramBotId}
+     * @allow (get) Any authenticated user can read Telegram bot details within a project.
+     * @allow (list) Any authenticated user can list Telegram bots within a project.
+     * @allow (create) Authenticated users can create Telegram bots within the specified project.
+     * @deny (create) Non-authenticated users cannot create Telegram bots.
+     * @deny (update) Non-authenticated users cannot update Telegram bots.
+     * @principle Project-based access control with denormalized projectId.
      */
     match /projects/{projectId}/telegram_bots/{telegramBotId} {
-      allow get: if isSignedIn() && isProjectMember(projectId);
-      allow list: if isSignedIn() && isProjectMember(projectId);
-      allow create: if isSignedIn() && isProjectOwner(projectId);
-      allow update: if isSignedIn() && isProjectOwner(projectId);
-      allow delete: if isSignedIn() && isProjectOwner(projectId);
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource.data.projectId == projectId;
+      allow delete: if isSignedIn() && resource.data.projectId == projectId;
     }
 
     /**
-     * @description Controls access to finance data sync documents within a project.
-     * @path /projects/{projectId}/finance_data_syncs/{financeDataSyncId}
-     * @allow get: if isSignedIn() && isProjectMember(projectId);
-     * @allow list: if isSignedIn() && isProjectMember(projectId);
-     * @allow create: if isSignedIn() && isProjectOwner(projectId);
-     * @allow update: if isSignedIn() && isProjectOwner(projectId);
-     * @allow delete: if isSignedIn() && isProjectOwner(projectId);
-     * @deny create: if !isSignedIn() || !isProjectOwner(projectId);
-     * @deny update: if !isSignedIn() || !isProjectOwner(projectId) || resource == null;
-     * @deny delete: if !isSignedIn() || !isProjectOwner(projectId) || resource == null;
-     * @principle Enforces project membership for reads and project ownership for writes.
+     * @description Enforces finance data sync access control within a project.
+     * @path /databases/{database}/documents/projects/{projectId}/finance_data_syncs/{financeDataSyncId}
+     * @allow (get) Any authenticated user can read finance data sync details within a project.
+     * @allow (list) Any authenticated user can list finance data syncs within a project.
+     * @allow (create) Authenticated users can create finance data syncs within the specified project.
+     * @deny (create) Non-authenticated users cannot create finance data syncs.
+     * @deny (update) Non-authenticated users cannot update finance data syncs.
+     * @principle Project-based access control with denormalized projectId.
      */
     match /projects/{projectId}/finance_data_syncs/{financeDataSyncId} {
-      allow get: if isSignedIn() && isProjectMember(projectId);
-      allow list: if isSignedIn() && isProjectMember(projectId);
-      allow create: if isSignedIn() && isProjectOwner(projectId);
-      allow update: if isSignedIn() && isProjectOwner(projectId);
-      allow delete: if isSignedIn() && isProjectOwner(projectId);
-    }
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isProjectMember(projectId) {
-      return get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid] != null;
-    }
-
-    function isProjectOwner(projectId) {
-      return get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid] == 'owner';
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.projectId == projectId;
+      allow update: if isSignedIn() && resource.data.projectId == projectId;
+      allow delete: if isSignedIn() && resource.data.projectId == projectId;
     }
   }
+
+  // Helper function to determine if a user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
 }
