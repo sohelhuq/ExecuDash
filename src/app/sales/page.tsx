@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import * as React from 'react';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 const invoiceData = [
   {
@@ -121,6 +122,8 @@ const InvoiceTable = ({ invoices }: { invoices: Invoice[] }) => (
 
 export default function SalesPage() {
     const [activeTab, setActiveTab] = React.useState('All Units');
+    const { toast } = useToast();
+    
     const filteredInvoices = React.useMemo(() => {
         if (activeTab === 'All Units') return invoiceData;
         return invoiceData.filter(i => i.unit === activeTab);
@@ -138,6 +141,13 @@ export default function SalesPage() {
         { title: 'Feed Unit Total Overdue', value: calculateOverdue('Feed') },
         { title: 'Bricks Unit Total Overdue', value: calculateOverdue('Bricks') },
     ];
+    
+    const handleGenerateReport = () => {
+        toast({
+            title: "Report Generation Started",
+            description: "Your report is being generated and will be available for download shortly.",
+        });
+    };
 
 
   return (
@@ -148,7 +158,7 @@ export default function SalesPage() {
                 <h1 className="text-3xl font-bold tracking-tight">Previous Dues Collection</h1>
                 <p className="text-muted-foreground">Review and manage outstanding invoices.</p>
             </div>
-            <Button>Generate Report</Button>
+            <Button onClick={handleGenerateReport}>Generate Report</Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

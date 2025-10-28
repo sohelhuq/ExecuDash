@@ -15,6 +15,20 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Circle } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
+import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 const officer = {
   name: 'Ahmed Rahman',
@@ -37,8 +51,31 @@ const responsibilities = [
 ]
 
 export default function CollectionsPage() {
-  const officerAvatar = PlaceHolderImages.find((p) => p.id === officer.avatarId);
+  const [officerState, setOfficerState] = React.useState(officer);
+  const [open, setOpen] = React.useState(false);
+  const [newOfficerName, setNewOfficerName] = React.useState('');
+  const { toast } = useToast();
+
+  const officerAvatar = PlaceHolderImages.find((p) => p.id === officerState.avatarId);
   const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
+  
+  const handleAssignOfficer = () => {
+    if (newOfficerName.trim()) {
+      setOfficerState(prev => ({...prev, name: newOfficerName}));
+      setNewOfficerName('');
+      setOpen(false);
+      toast({
+        title: "Officer Assigned",
+        description: `${newOfficerName} has been assigned as the new collections officer.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Invalid Name",
+        description: "Please enter a name for the officer.",
+      });
+    }
+  };
 
   return (
     <AppShell>
@@ -48,7 +85,33 @@ export default function CollectionsPage() {
             <h1 className="text-2xl font-bold">Due Collection Monitoring & Assignment</h1>
             <p className="text-muted-foreground">Centralized Performance Hub</p>
           </div>
-          <Button variant="outline" className="bg-primary/90 text-primary-foreground border-primary-foreground/20 hover:bg-primary">Assign Officer</Button>
+           <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" className="bg-primary/90 text-primary-foreground border-primary-foreground/20 hover:bg-primary">Assign Officer</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Assign New Collections Officer</DialogTitle>
+                    <DialogDescription>Enter the name of the new officer to assign them to this portfolio.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="officer-name" className="text-right">Name</Label>
+                        <Input 
+                            id="officer-name" 
+                            value={newOfficerName}
+                            onChange={(e) => setNewOfficerName(e.target.value)}
+                            className="col-span-3"
+                            placeholder="e.g. Jane Doe"
+                         />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+                    <Button onClick={handleAssignOfficer}>Assign</Button>
+                </DialogFooter>
+            </DialogContent>
+           </Dialog>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -56,11 +119,11 @@ export default function CollectionsPage() {
             <Card className="bg-card/80 border-border/60">
               <CardContent className="pt-6 flex flex-col items-center text-center">
                  {officerAvatar && <Avatar className="w-20 h-20 mb-4 border-2 border-primary">
-                    <AvatarImage src={officerAvatar.imageUrl} alt={officer.name} data-ai-hint={officerAvatar.imageHint} />
-                    <AvatarFallback>{officer.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={officerAvatar.imageUrl} alt={officerState.name} data-ai-hint={officerAvatar.imageHint} />
+                    <AvatarFallback>{officerState.name.charAt(0)}</AvatarFallback>
                 </Avatar>}
                 <p className="text-sm text-muted-foreground">Responsible Officer:</p>
-                <p className="text-lg font-semibold">{officer.name}</p>
+                <p className="text-lg font-semibold">{officerState.name}</p>
               </CardContent>
             </Card>
             <Card className="bg-card/80 border-border/60 text-center">
@@ -84,7 +147,7 @@ export default function CollectionsPage() {
           <div className="lg:col-span-2">
             <Card className="bg-card/80 border-border/60 h-full">
               <CardHeader>
-                <CardTitle>{officer.name} - Job Responsibilities & Timeline</CardTitle>
+                <CardTitle>{officerState.name} - Job Responsibilities & Timeline</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-4">
