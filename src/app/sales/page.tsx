@@ -69,7 +69,7 @@ const salesModules = [
     icon: CircleUserRound,
     title: "Customer Debits",
     description: "Track customer credit balances, manage overdue payments, and adjust amounts for a seamless debt management system.",
-    href: "/sundry-debtors"
+    href: "/sales/sundry-debtors"
   },
 ];
 

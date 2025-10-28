@@ -39,7 +39,7 @@ const navItems = [
   { href: '/fdr', label: 'FDR', icon: ShieldCheck },
   { href: '/dps', label: 'DPS', icon: Wallet },
   { href: '/sales', label: 'Sales Management', icon: Briefcase },
-  { href: '/sundry-debtors', label: 'Sundry Debtors', icon: UserCheck },
+  { href: '/sales/sundry-debtors', label: 'Sundry Debtors', icon: UserCheck },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
   { href: '/properties', label: 'Properties', icon: Building },
   { href: '/inventory', label: 'Inventory', icon: Boxes },
