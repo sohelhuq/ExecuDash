@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Wallet,
   BookCopy,
+  Boxes,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -40,6 +41,7 @@ const navItems = [
   { href: '/sundry-debtors', label: 'Sundry Debtors', icon: UserCheck },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
   { href: '/properties', label: 'Properties', icon: Building },
+  { href: '/inventory', label: 'Inventory', icon: Boxes },
   { href: '/hr', label: 'HR Management', icon: Users },
   { href: '/trends', label: 'Trends', icon: TrendingUp },
   { href: '/alerts', label: 'Alerts', icon: Bell },
