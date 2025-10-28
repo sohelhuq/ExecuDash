@@ -8,11 +8,18 @@ import {
   ArrowRightLeft,
   Repeat,
   FilePieChart,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const accountingModules = [
+  {
+    icon: LayoutDashboard,
+    title: "Accounting Dashboard",
+    description: "A comprehensive overview of your financial metrics, including income, expenses, and profitability.",
+    href: "/accounting/dashboard"
+  },
   {
     icon: Library,
     title: "Chart of Accounts",
