@@ -8,7 +8,8 @@ import {
   Users,
   Bell,
   TrendingUp,
-  ReceiptText
+  ReceiptText,
+  Building
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/sales', label: 'Sales & Invoicing', icon: Briefcase },
   { href: '/collections', label: 'Collections', icon: ReceiptText },
+  { href: '/properties', label: 'Properties', icon: Building },
   { href: '/trends', label: 'Trends', icon: TrendingUp },
   { href: '/alerts', label: 'Alerts', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
