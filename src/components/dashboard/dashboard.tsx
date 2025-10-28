@@ -16,7 +16,11 @@ import {
     TrendingDown,
     DollarSign,
     Factory,
-    Pill
+    Pill,
+    Users,
+    CalendarCheck,
+    FileCheck,
+    Clock
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -29,9 +33,10 @@ import { Loader2 } from 'lucide-react';
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
 
 const kpis = [
-    { title: 'Total Sales / মোট বিক্রয়', value: '৳538,000', change: '+12%', icon: TrendingUp, href: '/sales' },
-    { title: 'Total Expenses / মোট খরচ', value: '৳363,000', change: '+5%', icon: TrendingDown, changeColor: 'text-red-500', href: '/accounting' },
-    { title: 'Net Profit / নীট লাভ', value: '৳175,000', change: '+18%', icon: DollarSign, href: '/accounting' },
+    { title: 'Active Employees', value: '101', change: '+2 this month', icon: Users, href: '/hr/employees' },
+    { title: 'Today\'s Attendance', value: '95%', change: '8 Late', icon: CalendarCheck, changeColor: 'text-yellow-500', href: '/hr/attendance' },
+    { title: 'Open Approvals', value: '12', change: '3 Urgent', icon: FileCheck, changeColor: 'text-red-500', href: '/approvals' },
+    { title: 'Running Shifts', value: '8', change: '2 Starting Soon', icon: Clock, href: '/hr/attendance' },
 ];
 
 const unitIcons: {[key: string]: React.ElementType} = {
@@ -59,7 +64,7 @@ export function Dashboard() {
             <p className="text-muted-foreground">Overview of all business units</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {kpis.map(kpi => {
                 const Icon = kpi.icon;
                 return (

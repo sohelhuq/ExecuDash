@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address.").min(1, "Email is required."),
@@ -51,6 +53,7 @@ export function LoginPage() {
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!auth) return;
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
@@ -70,11 +73,6 @@ export function LoginPage() {
         setIsSubmitting(false);
     }
   }
-  
-  // Custom Firebase sign-in to avoid page reload issues.
-  // This replaces initiateEmailSignIn for better error handling in this component.
-  const { signInWithEmailAndPassword } = require("firebase/auth");
-
 
   if (isUserLoading || user) {
     return (
