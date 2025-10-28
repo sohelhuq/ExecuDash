@@ -32,7 +32,7 @@ const hrModules = [
     icon: Wallet,
     title: "Payroll Processing",
     description: "Easily manage payroll with automated salary calculations, deductions, and payslip generation—all optimized for accuracy.",
-    href: "#"
+    href: "/hr/payroll"
   },
   {
     icon: Calendar,
@@ -125,5 +125,3 @@ export default function HrPage() {
     </AppShell>
   );
 }
-
-    
