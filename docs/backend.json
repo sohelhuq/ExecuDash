@@ -573,6 +573,7 @@
         "name": { "type": "string" },
         "jobRole": { "type": "string" },
         "department": { "type": "string" },
+        "salary": { "type": "number" },
         "contactDetails": { "type": "string" },
         "joiningDate": { "type": "string", "format": "date" }
       },
@@ -851,5 +852,4 @@
   }
 }
 
-    
     
