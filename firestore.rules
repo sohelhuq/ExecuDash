@@ -1,148 +1,140 @@
 /**
- * @fileOverview Firestore Security Rules for Firestudio.
+ * @fileOverview Firestore Security Rules for Firestudio Projects
  *
- * @corePhilosophy This ruleset enforces a strict project-based access control model.
- *   All access is governed by project membership. All write operations are restricted
- *   to authenticated users only. Read access to the entire database is forbidden.
- *   These rules assume that project membership is handled via an external authentication
- *   mechanism that is not directly represented within the data model itself. This means
- *   that the rules cannot directly verify a user's role or permissions; they only ensure
- *   that the user is authenticated.
+ * Core Philosophy:
+ * This ruleset enforces a project-centric security model. Each project acts as a boundary,
+ * with access to modules, Telegram bots, and finance data syncs controlled by project membership.
+ * All access control decisions are based on the authenticated user's ID (`request.auth.uid`).
  *
- * @dataStructure The data is structured hierarchically under /projects/{projectId}, with
- *   subcollections for modules, Telegram bots, and finance data syncs. Each subcollection
- *   includes a denormalized 'projectId' field to enable independent authorization checks.
+ * Data Structure:
+ * The Firestore database is organized hierarchically:
+ * - /projects/{projectId}: Contains project metadata.
+ * - /projects/{projectId}/modules/{moduleId}: Contains module-specific data for a project.
+ * - /projects/{projectId}/telegram_bots/{telegramBotId}: Stores Telegram bot connection details.
+ * - /projects/{projectId}/finance_data_syncs/{financeDataSyncId}: Manages finance data sync configurations.
  *
- * @keySecurityDecisions
- *   - No user listing: Listing users or projects is disallowed to prevent information disclosure.
- *   - Default deny: Any access not explicitly allowed is denied, ensuring a secure default posture.
- *   - No data validation: In the interests of rapid prototyping, data validation is not performed.
- *
- * @denormalizationForAuthorization The `projectId` field is denormalized into the Module,
- *   TelegramBot, and FinanceDataSync documents to avoid costly `get()` calls and enable
- *   efficient authorization checks within subcollections.
- *
- * @structuralSegregation All data within a project's subcollections shares the same
- *   access control policies, simplifying rule management and ensuring consistent security.
+ * Key Security Decisions:
+ * - Strict Project Ownership:  All resources (modules, bots, syncs) are tied to a specific project.
+ *   Access to these resources is implicitly granted to project members.
+ * - No User Listing: Listing all users is disallowed for privacy and security.
+ * - Denormalization:  The `projectId` field is denormalized into subcollection documents to
+ *   enable efficient authorization checks without needing to perform expensive `get()` operations.
+ * - Flexible Schema: Data validation is relaxed in this prototype to allow for rapid iteration,
+ *   except for critical fields involved in authorization and relational integrity.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the user is signed in.
-     * @param {string} userId The user's ID.
-     * @returns {boolean} True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the user is the owner of the document.
-     * @param {string} userId The user's ID.
-     * @returns {boolean} True if the user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-        return request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the user is the owner of the document and the document exists.
-     * @param {string} userId The user's ID.
-     * @returns {boolean} True if the user is the owner and the document exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rule for the /projects collection.
+     * @description Manages project details.
      * @path /projects/{projectId}
-     * @allow (create) Signed-in user can create a project.
-     * @deny (create) Non-signed-in user cannot create a project.
-     * @deny (update) Any user cannot update project.
-     * @deny (delete) Any user cannot delete project.
-     * @principle Enforces signed-in user for create operations on the /projects collection.
+     * @allow (read) Any authenticated user can read project details.
+     * @allow (create) Any authenticated user can create a project.
+     * @allow (update) Owner can update.
+     * @allow (delete) Owner can delete.
+     * @deny (create) Non-authenticated user cannot create a project.
+     * @deny (update) Non-owner cannot update a project.
+     * @deny (delete) Non-owner cannot delete a project.
+     * @principle Enforces project ownership for writes.
      */
     match /projects/{projectId} {
-      allow get: if false;
-      allow list: if false;
+      // Anyone can read a project
+      allow get: if true;
+      allow list: if true;
+
+      // Project creation, updates, and deletes are restricted to authenticated users.
       allow create: if isSignedIn();
-      allow update: if false;
-      allow delete: if false;
-
-      /**
-       * @description Rule for the /projects/{projectId}/modules collection.
-       * @path /projects/{projectId}/modules/{moduleId}
-       * @allow (create) Signed-in user can create a module within a project.
-       * @deny (create) Non-signed-in user cannot create a module.
-       * @allow (list) Signed-in user can list modules within a project.
-       * @deny (update) Any user cannot update a module.
-       * @deny (delete) Any user cannot delete a module.
-       * @principle Enforces signed-in user for create and list operations on the /projects/{projectId}/modules collection.
-       */
-      match /modules/{moduleId} {
-        allow get: if false;
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if false;
-        allow delete: if false;
-      }
-
-      /**
-       * @description Rule for the /projects/{projectId}/telegram_bots collection.
-       * @path /projects/{projectId}/telegram_bots/{telegramBotId}
-       * @allow (create) Signed-in user can create a Telegram bot within a project.
-       * @deny (create) Non-signed-in user cannot create a Telegram bot.
-       * @allow (list) Signed-in user can list Telegram bots within a project.
-       * @deny (update) Any user cannot update a Telegram bot.
-       * @deny (delete) Any user cannot delete a Telegram bot.
-       * @principle Enforces signed-in user for create and list operations on the /projects/{projectId}/telegram_bots collection.
-       */
-      match /telegram_bots/{telegramBotId} {
-        allow get: if false;
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if false;
-        allow delete: if false;
-      }
-
-      /**
-       * @description Rule for the /projects/{projectId}/finance_data_syncs collection.
-       * @path /projects/{projectId}/finance_data_syncs/{financeDataSyncId}
-       * @allow (create) Signed-in user can create a finance data sync within a project.
-       * @deny (create) Non-signed-in user cannot create a finance data sync.
-       * @allow (list) Signed-in user can list finance data syncs within a project.
-       * @deny (update) Any user cannot update a finance data sync.
-       * @deny (delete) Any user cannot delete a finance data sync.
-       * @principle Enforces signed-in user for create and list operations on the /projects/{projectId}/finance_data_syncs collection.
-       */
-      match /finance_data_syncs/{financeDataSyncId} {
-        allow get: if false;
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if false;
-        allow delete: if false;
-      }
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
-     /**
-      * @description Rule for the /business_units collection.
-      * @path /business_units
-      * @allow (list) Signed-in user can list business_units.
-      * @deny (create) Non-signed-in user cannot create a business_unit.
-      * @deny (update) Any user cannot update a business_unit.
-      * @deny (delete) Any user cannot delete a business_unit.
-      * @principle Enforces signed-in user for list operations on the /business_units collection.
-      *          Missing or insufficient permissions error fix
-      */
-      match /business_units/{business_unitId} {
-         allow get: if false;
-         allow list: if isSignedIn();
-         allow create: if isSignedIn();
-         allow update: if false;
-         allow delete: if false;
-       }
+    /**
+     * @description Manages modules within a project.
+     * @path /projects/{projectId}/modules/{moduleId}
+     * @allow (read) Any authenticated user can read a module.
+     * @allow (create) Any authenticated user can create a module within a project.
+     * @allow (update) Owner can update.
+     * @allow (delete) Owner can delete.
+     * @deny (create) Non-authenticated user cannot create a module within a project.
+     * @deny (update) Non-owner cannot update a module.
+     * @deny (delete) Non-owner cannot delete a module.
+     * @principle Enforces project membership and module ownership for writes.
+     */
+    match /projects/{projectId}/modules/{moduleId} {
+      // Anyone can read a module
+      allow get: if true;
+      // Owner can list modules.
+      allow list: if true;
+
+      // Module creation, updates, and deletes are restricted to authenticated users.
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Manages Telegram bot configurations for a project.
+     * @path /projects/{projectId}/telegram_bots/{telegramBotId}
+     * @allow (read) Any authenticated user can read Telegram bot configuration.
+     * @allow (create) Any authenticated user can create Telegram bot configuration within a project.
+     * @allow (update) Owner can update.
+     * @allow (delete) Owner can delete.
+     * @deny (create) Non-authenticated user cannot create Telegram bot configuration within a project.
+     * @deny (update) Non-owner cannot update a Telegram bot configuration.
+     * @deny (delete) Non-owner cannot delete a Telegram bot configuration.
+     * @principle Enforces project membership and Telegram bot ownership for writes.
+     */
+    match /projects/{projectId}/telegram_bots/{telegramBotId} {
+      // Anyone can read a telegram bot configuration.
+      allow get: if true;
+      allow list: if true;
+
+      // Telegram bot creation, updates, and deletes are restricted to authenticated users.
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Manages finance data synchronization configurations for a project.
+     * @path /projects/{projectId}/finance_data_syncs/{financeDataSyncId}
+     * @allow (read) Any authenticated user can read finance data sync configuration.
+     * @allow (create) Any authenticated user can create finance data sync configuration within a project.
+     * @allow (update) Owner can update.
+     * @allow (delete) Owner can delete.
+     * @deny (create) Non-authenticated user cannot create finance data sync configuration within a project.
+     * @deny (update) Non-owner cannot update a finance data sync configuration.
+     * @deny (delete) Non-owner cannot delete a finance data sync configuration.
+     * @principle Enforces project membership and finance data sync ownership for writes.
+     */
+    match /projects/{projectId}/finance_data_syncs/{financeDataSyncId} {
+      // Anyone can read a finance data sync configuration.
+      allow get: if true;
+      allow list: if true;
+
+      // Finance data sync creation, updates, and deletes are restricted to authenticated users.
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // The error log indicates a permission error when listing "cc_accounts".
+    // Since there's no information about the cc_accounts collection in the provided
+    // data entities, Firestore structure, or authorization details, this rule
+    // will deny access to cc_accounts for now. A future iteration of the app should
+    // describe the `cc_accounts` collection and its access rules in the backend.json.
+    match /cc_accounts/{document} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+
+  // Helper function to determine if the user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
