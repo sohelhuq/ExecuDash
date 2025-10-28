@@ -1,4 +1,3 @@
-
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, writeBatch, getDocs, doc, query, where } from 'firebase/firestore';
 import React, { useState, useMemo } from 'react';
 import { Loader2, Rocket } from 'lucide-react';
@@ -108,12 +107,19 @@ export default function PayrollPage() {
             const existingDocs = await getDocs(q);
             if (!existingDocs.empty) {
                 toast({ title: 'Payroll Already Run', description: `Payroll for ${period} has already been processed.` });
+                setIsRunning(false);
+                setIsDialogOpen(false);
                 return;
             }
 
             const batch = writeBatch(firestore);
             let processedCount = 0;
             for (const employee of employees) {
+                // Ensure employee has a valid ID before creating payroll doc
+                if (!employee.id) {
+                    console.warn('Skipping employee without ID:', employee);
+                    continue;
+                }
                 const payrollDoc: Omit<Payroll, 'id'> = {
                     employeeId: employee.id,
                     period: period,
@@ -122,7 +128,7 @@ export default function PayrollPage() {
                     netSalary: employee.salary, // Gross - deductions
                     status: 'pending',
                 };
-                const newDocRef = doc(payrollsRef);
+                const newDocRef = doc(collection(firestore, 'payroll'));
                 batch.set(newDocRef, payrollDoc);
                 processedCount++;
             }
