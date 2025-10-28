@@ -10,10 +10,12 @@ import {
   DollarSign,
   Fuel,
   Users,
-  Activity,
+  Archive, // Changed from Activity
   Bell,
   LineChart,
   ChevronRight,
+  Package, // Added
+  UserPlus, // Added
 } from "lucide-react";
 import {
   Bar,
@@ -37,28 +39,28 @@ import { Button } from "../ui/button";
 
 const kpiData = [
   {
-    title: "Total Revenue",
-    value: "৳45,231.89",
-    change: "+20.1% from last month",
-    icon: DollarSign,
-  },
-  {
-    title: "Fuel Volume",
-    value: "+2350 L",
-    change: "+180.1% from last month",
+    title: "Fuel Sales",
+    value: "৳1,250,000",
+    change: "+15.2% from last month",
     icon: Fuel,
   },
   {
-    title: "Hotel Occupancy",
-    value: "72%",
-    change: "+19% from last month",
-    icon: Users,
+    title: "Feed Sales",
+    value: "৳850,000",
+    change: "+12.1% from last month",
+    icon: Archive,
   },
   {
-    title: "Tech Uptime",
-    value: "99.98%",
-    change: "+0.2% from last month",
-    icon: Activity,
+    title: "Brick Sales",
+    value: "৳2,500,000",
+    change: "+25.0% from last month",
+    icon: Package,
+  },
+  {
+    title: "Tech Subscribers",
+    value: "1,200",
+    change: "+50 from last month",
+    icon: UserPlus,
   },
 ];
 
