@@ -480,6 +480,18 @@
         "amount": { "type": "number" }
       },
       "required": ["bank", "category", "amount"]
+    },
+    "Dps": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Dps",
+      "type": "object",
+      "description": "Represents a Deposit Pension Scheme (DPS).",
+      "properties": {
+        "bank": { "type": "string" },
+        "maturityDate": { "type": "string", "format": "date-time" },
+        "dpsBalance": { "type": "number" }
+      },
+      "required": ["bank", "maturityDate", "dpsBalance"]
     }
   },
   "auth": {
@@ -676,6 +688,14 @@
           "entityName": "Fdr",
           "schema": { "$ref": "#/backend/entities/Fdr" },
           "description": "Stores Fixed Deposit Receipt (FDR) records."
+        }
+      },
+       {
+        "path": "/dps/{dpsId}",
+        "definition": {
+          "entityName": "Dps",
+          "schema": { "$ref": "#/backend/entities/Dps" },
+          "description": "Stores Deposit Pension Scheme (DPS) records."
         }
       }
     ],
