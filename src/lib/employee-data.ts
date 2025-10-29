@@ -50,5 +50,3 @@ export const employeeData = [
   { name: 'Nurujjaman Vuttu', department: 'Bricks', jobRole: '', salary: 20000 },
   { name: 'Halim', department: 'Bricks', jobRole: '', salary: 10000 },
 ];
-
-    
