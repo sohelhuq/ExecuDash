@@ -43,6 +43,7 @@ import { Input } from '../ui/input';
 import { allBusinessUnits } from '@/lib/business-units';
 
 const navItems = [
+  { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
   { href: '/procurement', label: 'Procurement', icon: Briefcase },
   { href: '/project-management', label: 'Project management', icon: FileText },
   { href: '/reports', label: 'Reports', icon: LineChart },
