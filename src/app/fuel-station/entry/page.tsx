@@ -19,25 +19,26 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const dailyEntrySchema = z.object({
-  date: z.date(),
+  date: z.date({ required_error: 'Date is required.'}),
   shift: z.enum(['morning', 'day', 'night']),
+  nozzleNumber: z.string().min(1, 'Nozzle number is required.'),
   
-  petrolOpening: z.coerce.number().min(0),
-  petrolClosing: z.coerce.number().min(0),
-  dieselOpening: z.coerce.number().min(0),
-  dieselClosing: z.coerce.number().min(0),
-  octaneSalesLiters: z.coerce.number().optional(),
-  lubricantSalesAmount: z.coerce.number().optional(),
+  petrolOpening: z.coerce.number().min(0, "Value must not be negative."),
+  petrolClosing: z.coerce.number().min(0, "Value must not be negative."),
+  dieselOpening: z.coerce.number().min(0, "Value must not be negative."),
+  dieselClosing: z.coerce.number().min(0, "Value must not be negative."),
+  octaneSalesLiters: z.coerce.number().min(0, "Value must not be negative.").optional(),
+  lubricantSalesAmount: z.coerce.number().min(0, "Value must not be negative.").optional(),
 
-  cashSales: z.coerce.number().min(0),
-  cardSales: z.coerce.number().min(0),
-  creditSales: z.coerce.number().optional(),
-  creditCollection: z.coerce.number().optional(),
+  cashSales: z.coerce.number().min(0, "Value must not be negative."),
+  cardSales: z.coerce.number().min(0, "Value must not be negative."),
+  creditSales: z.coerce.number().min(0, "Value must not be negative.").optional(),
+  creditCollection: z.coerce.number().min(0, "Value must not be negative.").optional(),
 
-  fuelPurchase: z.coerce.number().min(0),
-  staffSalary: z.coerce.number().optional(),
-  utilityBills: z.coerce.number().optional(),
-  maintenance: z.coerce.number().optional(),
+  fuelPurchase: z.coerce.number().min(0, "Value must not be negative."),
+  staffSalary: z.coerce.number().min(0, "Value must not be negative.").optional(),
+  utilityBills: z.coerce.number().min(0, "Value must not be negative.").optional(),
+  maintenance: z.coerce.number().min(0, "Value must not be negative.").optional(),
 }).refine(data => data.petrolClosing >= data.petrolOpening, {
     message: "Petrol closing reading must be greater than or equal to opening.",
     path: ["petrolClosing"],
@@ -55,6 +56,7 @@ export default function FuelStationEntryPage() {
     defaultValues: {
       date: new Date(),
       shift: 'morning',
+      nozzleNumber: '',
       petrolOpening: 0,
       petrolClosing: 0,
       dieselOpening: 0,
@@ -78,7 +80,7 @@ export default function FuelStationEntryPage() {
     <AppShell>
       <div className="space-y-6 max-w-4xl mx-auto">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fuel Station Daily Entry</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Fuel Station Daily Entry / দৈনিক ডেটা এন্ট্রি</h1>
           <p className="text-muted-foreground">Enter daily operational data for the fuel station.</p>
         </div>
         
@@ -90,9 +92,9 @@ export default function FuelStationEntryPage() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                              <FormField control={form.control} name="date" render={({ field }) => (
-                                <FormItem className="flex flex-col"><FormLabel>Date</FormLabel>
+                                <FormItem className="flex flex-col"><FormLabel>Date / তারিখ</FormLabel>
                                   <Popover><PopoverTrigger asChild>
                                     <FormControl>
                                       <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
@@ -108,21 +110,27 @@ export default function FuelStationEntryPage() {
                             )} />
                             
                              <FormField control={form.control} name="shift" render={({ field }) => (
-                                <FormItem><FormLabel>Shift</FormLabel>
+                                <FormItem><FormLabel>Shift / শিফট</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select a shift" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                      <SelectItem value="morning">Morning</SelectItem>
-                                      <SelectItem value="day">Day</SelectItem>
-                                      <SelectItem value="night">Night</SelectItem>
+                                      <SelectItem value="morning">Morning / সকাল</SelectItem>
+                                      <SelectItem value="day">Day / দিন</SelectItem>
+                                      <SelectItem value="night">Night / রাত</SelectItem>
                                     </SelectContent>
                                   </Select>
+                                <FormMessage /></FormItem>
+                            )} />
+
+                             <FormField control={form.control} name="nozzleNumber" render={({ field }) => (
+                                <FormItem><FormLabel>Nozzle Number / নজেল নম্বর</FormLabel>
+                                <FormControl><Input placeholder="e.g. N-01" {...field} /></FormControl>
                                 <FormMessage /></FormItem>
                             )} />
                         </div>
                         
                         <Separator />
-                        <h3 className="text-lg font-medium">Fuel Sales (Meter Readings)</h3>
+                        <h3 className="text-lg font-medium">Fuel Sales (Meter Readings) / জ্বালানি বিক্রয় (মিটার রিডিং)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField control={form.control} name="petrolOpening" render={({ field }) => (<FormItem><FormLabel>Petrol Opening</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={form.control} name="petrolClosing" render={({ field }) => (<FormItem><FormLabel>Petrol Closing</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -133,21 +141,21 @@ export default function FuelStationEntryPage() {
                         </div>
 
                         <Separator />
-                        <h3 className="text-lg font-medium">Financial Information</h3>
+                        <h3 className="text-lg font-medium">Financial Information / আর্থিক তথ্য</h3>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="cashSales" render={({ field }) => (<FormItem><FormLabel>Cash Sales</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="cardSales" render={({ field }) => (<FormItem><FormLabel>Credit Card Sales</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="creditSales" render={({ field }) => (<FormItem><FormLabel>Credit Sales</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="creditCollection" render={({ field }) => (<FormItem><FormLabel>Credit Collection</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="cashSales" render={({ field }) => (<FormItem><FormLabel>Cash Sales / নগদ বিক্রয়</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="cardSales" render={({ field }) => (<FormItem><FormLabel>Credit Card Sales / কার্ড বিক্রয়</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="creditSales" render={({ field }) => (<FormItem><FormLabel>Credit Sales / বাকি বিক্রয়</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="creditCollection" render={({ field }) => (<FormItem><FormLabel>Credit Collection / বাকি আদায়</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </div>
                         
                         <Separator />
-                        <h3 className="text-lg font-medium">Expenses</h3>
+                        <h3 className="text-lg font-medium">Expenses / খরচ</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="fuelPurchase" render={({ field }) => (<FormItem><FormLabel>Fuel Purchase</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="staffSalary" render={({ field }) => (<FormItem><FormLabel>Staff Salary</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="utilityBills" render={({ field }) => (<FormItem><FormLabel>Utility Bills</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="maintenance" render={({ field }) => (<FormItem><FormLabel>Maintenance</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="fuelPurchase" render={({ field }) => (<FormItem><FormLabel>Fuel Purchase / জ্বালানি ক্রয়</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="staffSalary" render={({ field }) => (<FormItem><FormLabel>Staff Salary / কর্মচারী বেতন</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="utilityBills" render={({ field }) => (<FormItem><FormLabel>Utility Bills / ইউটিলিটি বিল</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="maintenance" render={({ field }) => (<FormItem><FormLabel>Maintenance / রক্ষণাবেক্ষণ</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </div>
                         
                         <div className="flex justify-end pt-4">
