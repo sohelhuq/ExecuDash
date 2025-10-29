@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useCollection, useDoc, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, where, serverTimestamp } from 'firebase/firestore';
-import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt, Pill, Droplet, Flame, GasPump, PlusCircle, Gauge, Users, CalendarClock } from 'lucide-react';
+import { Loader2, DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt, Pill, Droplet, Flame, PlusCircle, Gauge, Users, CalendarClock } from 'lucide-react';
 import type { BusinessUnit, FuelProduct, CngProduct, LpgProduct, MeterReading } from '@/lib/business-units-types';
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/select';
 
 const ICONS: { [key: string]: React.ElementType } = {
-  DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt, Pill, Droplet, Flame, GasPump, Gauge, Users, CalendarClock,
+  DollarSign, Banknote, Landmark, TrendingUp, Archive, Package, UserPlus, Fuel, ShoppingCart, ArrowRightLeft, Factory, Receipt, Pill, Droplet, Flame, Gauge, Users, CalendarClock,
 };
 
 

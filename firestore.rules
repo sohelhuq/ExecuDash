@@ -2,65 +2,71 @@
  * @fileoverview Firestore Security Rules for Prototyping.
  *
  * Core Philosophy:
- * This ruleset prioritizes rapid prototyping by focusing on authorization and skipping schema validation.
- * It uses a strict ownership model for user-specific data and public read access where appropriate.
+ * This ruleset prioritizes rapid prototyping by focusing on authorization and skipping data validation.
+ * It uses a strict ownership model where users can only access their own data trees, with no public data access.
  *
  * Data Structure:
- * - /attendance_points/{pointId}: Stores attendance points for employees.
- * - /employees/{employeeId}: Stores employee records.
+ * - /attendance_points/{pointId}: Stores attendance points for employees. No user scoping.
+ * - /employees/{employeeId}: Stores employee records. No user scoping.
  *
  * Key Security Decisions:
- * - Listing of rent entries is denied to all users for security reasons.
- * - Missing schema validation for rapid iteration.
+ * - No public data access: All read and write operations require authentication.
+ * - No user listing: Listing all users is disallowed for privacy.
+ * - Default deny: Any access not explicitly allowed is denied.
  *
- * Denormalization for Authorization: N/A
- * Structural Segregation: N/A
+ * Authorization Denormalization:
+ * - None needed: No shared access or role-based access is implemented in this version.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to the attendance_points collection.
+     * @description Controls access to attendance point records.
      * @path /attendance_points/{pointId}
-     * @allow (create, update, delete) if isSignedIn() : Allows authenticated users to create, update and delete an attendance point.
-     * @allow (get, list) if true: Allows public read access to all attendance points.
-     * @deny (create, update, delete) if !isSignedIn(): Denies unauthenticated users to create, update and delete an attendance point.
-     * @principle Allows authenticated users to manage attendance points.
+     * @allow (get) Any signed-in user can read any attendance point.
+     * @deny (create, update, delete) No one can create, update, or delete attendance points using client-side rules. These actions must be performed by trusted server-side code.
+     * @principle Restricts attendance point management to server-side code only.
      */
     match /attendance_points/{pointId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Controls access to the employees collection.
+     * @description Controls access to employee records.
      * @path /employees/{employeeId}
-     * @allow (create, update, delete) if isSignedIn() : Allows authenticated users to create, update and delete an employee.
-     * @allow get, list: if true : Allows public read access to all employees.
-     * @deny (create, update, delete) if !isSignedIn(): Denies unauthenticated users to create, update and delete an employee.
-     * @principle Allows authenticated users to manage employees.
+     * @allow (get) Any signed-in user can read any employee.
+     * @deny (create, update, delete) No one can create, update, or delete employee records using client-side rules. These actions must be performed by trusted server-side code.
+     * @principle Restricts employee management to server-side code only.
      */
     match /employees/{employeeId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Protects the /rent_entries collection from being listed.  This collection should not be directly exposed.
+     * @description Denies all access to the rent_entries collection.
      * @path /rent_entries
-     * @deny list: Denies listing of rent entries to all users.
-     * @principle Prevents unauthorized access to potentially sensitive rent entry data by disallowing list operations.
+     * @deny (get, list, create, update, delete) All operations are denied to all users.
+     * @principle Explicitly denies access to the collection, ensuring no accidental exposure.
      */
-    match /rent_entries {
-        allow get: if false;
-        allow list: if false;
-        allow create: if false;
-        allow update: if false;
-        allow delete: if false;
+    match /rent_entries/{document=**} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
 
+    // Helper function to determine if the user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
