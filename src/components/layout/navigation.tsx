@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Dot,
   User,
+  Library,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -157,6 +158,21 @@ export function AppSidebar() {
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
+
+          <SidebarMenuItem>
+            <Link href="/accounting">
+              <SidebarMenuButton
+                isActive={pathname.startsWith('/accounting')}
+                tooltip="Accounting"
+                className="justify-between"
+              >
+                  <div className="flex items-center gap-2">
+                      <Library />
+                      <span>Accounting</span>
+                  </div>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
           
           {navItems.filter(item => !['/dashboard', '/attendance', '/payroll', '/department', '/recruitment', '/notice-board'].includes(item.href)).map((item) => (
             <SidebarMenuItem key={item.label}>

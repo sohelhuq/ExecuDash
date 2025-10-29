@@ -39,7 +39,7 @@ export default function AccountingDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Accounting Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Accounts &gt; Accounting Dashboard</p>
+            <p className="text-sm text-muted-foreground">Accounts > Accounting Dashboard</p>
           </div>
           <div className="flex items-center gap-2">
             <DateRangePicker />
