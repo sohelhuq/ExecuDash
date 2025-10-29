@@ -69,10 +69,10 @@ export default function AccountingDashboard() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={incomeData} layout="vertical" margin={{ left: 100 }}>
+                <BarChart data={incomeData} layout="vertical" margin={{ left: 150, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" tickFormatter={(value) => `${value / 1000}k`} />
-                  <YAxis type="category" dataKey="name" width={200} interval={0} />
+                  <YAxis type="category" dataKey="name" interval={0} />
                   <Tooltip formatter={(value: number) => formatCurrency(value)} />
                   <Bar dataKey="value" fill="hsl(var(--primary))" />
                 </BarChart>
