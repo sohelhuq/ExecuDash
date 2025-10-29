@@ -52,7 +52,8 @@ export default function AttendancePage() {
   const { data: employees, isLoading: isLoadingEmployees } = useCollection<Employee>(employeesCollection);
 
   const leaveBalancesQuery = useMemoFirebase(() => {
-    return firestore ? query(collection(firestore, 'leave_balances'), where('year', '==', currentYear)) : null;
+    if (!firestore) return null;
+    return query(collection(firestore, 'leave_balances'), where('year', '==', currentYear));
   }, [firestore, currentYear]);
   const { data: leaveBalances, isLoading: isLoadingLeave } = useCollection<LeaveBalance>(leaveBalancesQuery);
 
@@ -187,7 +188,10 @@ export default function AttendancePage() {
               {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
               Seed Balances
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+                if (!isOpen) form.reset();
+                setIsDialogOpen(isOpen)
+            }}>
                 <DialogTrigger asChild><Button><PlusCircle className="mr-2 h-4 w-4" /> Record Leave</Button></DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
@@ -243,7 +247,7 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        {isLoadingEmployees || isLoadingLeave ? (
+        {(isLoadingEmployees || isLoadingLeave) && !combinedData.length ? (
              <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
