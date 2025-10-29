@@ -45,7 +45,7 @@ const salesModules = [
     icon: Files,
     title: "Invoice Management",
     description: "Keep a centralized record of all invoices, track payments, and manage due amounts for better financial accuracy.",
-    href: "#"
+    href: "/sales/invoices"
   },
   {
     icon: Undo2,
@@ -125,13 +125,13 @@ export default function SalesPage() {
 
             if (module.href !== '#') {
                 return (
-                    <Link href={module.href} key={module.title} className="flex">
+                    <Link href={module.href} key={module.title} className="flex no-underline">
                         {cardContent}
                     </Link>
                 )
             }
             
-            return <div key={module.title}>{cardContent}</div>
+            return <div key={module.title} className="flex">{cardContent}</div>
           })}
         </div>
       </div>
