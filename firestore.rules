@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
     function isExistingOwner(userId) {
@@ -43,7 +43,8 @@ service cloud.firestore {
      * @principle Allows public read access to business unit information.
      */
     match /business_units/{businessUnitId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if true;
       allow create, update, delete: if false;
     }
 
@@ -55,7 +56,8 @@ service cloud.firestore {
      * @principle Allows public read access to metric information.
      */
     match /business_units/{businessUnitId}/metrics/{metricId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if true;
       allow create, update, delete: if false;
     }
 
@@ -70,7 +72,8 @@ service cloud.firestore {
      */
     match /users/{userId}/dashboards/{dashboardId} {
       allow create: if isOwner(userId);
-      allow get, list: if isOwner(userId);
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
     }
@@ -86,7 +89,8 @@ service cloud.firestore {
      */
     match /users/{userId}/dashboards/{dashboardId}/widgets/{widgetId} {
       allow create: if isOwner(userId);
-      allow get, list: if isOwner(userId);
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
     }
@@ -99,7 +103,8 @@ service cloud.firestore {
      * @principle Allows public read access to alert information.
      */
     match /business_units/{businessUnitId}/alerts/{alertId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if true;
       allow create, update, delete: if false;
     }
 
@@ -112,7 +117,7 @@ service cloud.firestore {
      * @deny Any: All operations are denied.
      * @principle Default deny for an unknown collection to prevent unintended data access.
      */
-    match /employees/{document} {
+    match /employees/{employeeId} {
       allow get, list, create, update, delete: if false;
     }
   }
