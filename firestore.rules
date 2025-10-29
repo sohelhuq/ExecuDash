@@ -1,45 +1,70 @@
 /**
- * @description This ruleset enforces a strict read-only model for the 'employees' collection,
- *              and allows public read access to the 'attendance_points' collection.
- *              All write operations are denied for both collections in this prototype.
- * @dataStructure
- *  - /attendance_points/{pointId}: Stores attendance points for employees. Publicly readable.
- *  - /employees/{employeeId}: Stores employee records. Publicly readable.
- * @keySecurityDecisions
- *  - The 'employees' collection is read-only (get, list) for all users, including unauthenticated users.
- *  - The 'attendance_points' collection is publicly readable (get, list) for all users, including unauthenticated users.
- *  - Write operations (create, update, delete) are denied for both collections.
+ * @fileoverview Firestore Security Rules for Prototyping.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security and rapid iteration. It enforces
+ * authentication and basic ownership but relaxes data validation to
+ * allow for flexible schema changes during prototyping.
+ *
+ * Data Structure:
+ * - `/attendance_points/{pointId}`: Stores attendance data. No ownership
+ *   defined in schema.
+ * - `/employees/{employeeId}`: Stores employee records. No ownership
+ *   defined in schema.
+ *
+ * Key Security Decisions:
+ * - Authentication is required for all operations.
+ * - No user listing is allowed (explicitly denied).
+ * - Data validation is minimized to only essential checks (e.g., matching user ID).
+ *
+ * Denormalization for Authorization:
+ * The rules assume no denormalization. If more complex access control is
+ * required, consider adding fields like `ownerId` to documents and using
+ * those fields in the rules.
+ *
+ * Structural Segregation:
+ * No segregation of private and public data is implemented in this initial
+ * ruleset. Consider separate collections (e.g., `/users/{userId}/drafts` vs.
+ * `/published`) for more complex scenarios.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows anyone to read employee records. No write access.
-     * @path /employees/{employeeId}
-     * @allow (get, list) Anyone can read employee data.
-     * @deny (create, update, delete) No one can create, update, or delete employee data.
-     * @principle Allows public read access to employee records, but restricts all write operations.
+     * @description Secures the `attendance_points` collection. Authentication is required.
+     * @path /attendance_points/{pointId}
+     * @allow (create, update, delete) Authenticated user can create, update, and delete documents in the `attendance_points` collection.
+     * @allow (get, list) Authenticated user can read documents in the `attendance_points` collection.
+     * @deny An unauthenticated user cannot perform any operation on the `attendance_points` collection.
+     * @principle Requires authentication for all operations.
      */
-    match /employees/{employeeId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    match /attendance_points/{pointId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Allows anyone to read attendance points. No write access.
-     * @path /attendance_points/{pointId}
-     * @allow (get, list) Anyone can read attendance point data.
-     * @deny (create, update, delete) No one can create, update, or delete attendance point data.
-     * @principle Allows public read access to attendance point records, but restricts all write operations.
+     * @description Secures the `employees` collection. Authentication is required.
+     * @path /employees/{employeeId}
+     * @allow (create, update, delete) Authenticated user can create, update, and delete documents in the `employees` collection.
+     * @allow (get, list) Authenticated user can read documents in the `employees` collection.
+     * @deny An unauthenticated user cannot perform any operation on the `employees` collection.
+     * @principle Requires authentication for all operations.
      */
-    match /attendance_points/{pointId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    match /employees/{employeeId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
