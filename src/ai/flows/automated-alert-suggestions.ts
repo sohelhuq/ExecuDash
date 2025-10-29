@@ -35,7 +35,7 @@ const SuggestAlertThresholdOutputSchema = z.object({
     .describe(
       'The rationale for the suggested threshold, including factors considered.'
     ),
-  operator: z.string().describe("The operator to use for the alert condition, e.g., '<', '>'."),
+  operator: z.string().describe("The operator to use for the alert condition, e.g., '<', '>."),
   severity: z.string().describe('The suggested severity level for the alert.'),
 });
 
