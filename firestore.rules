@@ -2,57 +2,64 @@
  * @fileoverview Firestore Security Rules for Prototyping.
  *
  * Core Philosophy:
- * This ruleset prioritizes rapid prototyping by focusing on authorization and skipping data validation.
- * It assumes data integrity is managed at the application level.
+ * This ruleset prioritizes rapid prototyping by focusing on authorization and skipping schema validation.
+ * It uses a strict ownership model for user-specific data and public read access where appropriate.
  *
  * Data Structure:
- * The Firestore database stores employee records and attendance points.
- * - /attendance_points/{pointId}: Stores individual attendance point entries.
- * - /employees/{employeeId}: Stores employee profile information.
+ * - /attendance_points/{pointId}: Stores attendance points for employees.
+ * - /employees/{employeeId}: Stores employee records.
  *
  * Key Security Decisions:
- * - User listing is generally disallowed to prevent information disclosure.
- * - All write operations are restricted to authenticated users.
- * - No data validation is performed beyond ensuring essential relational integrity.
+ * - Listing of rent entries is denied to all users for security reasons.
+ * - Missing schema validation for rapid iteration.
  *
- * Denormalization for Authorization:
- * This ruleset doesn't currently use denormalization, but in a more complex application, consider adding fields like `ownerId` or `memberIds` directly to documents to simplify authorization logic and improve performance.
+ * Denormalization for Authorization: N/A
+ * Structural Segregation: N/A
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to attendance point documents.
+     * @description Controls access to the attendance_points collection.
      * @path /attendance_points/{pointId}
-     * @allow (create) - Authenticated users can create new attendance point entries. No data validation beyond authentication is enforced during the prototyping phase.
-     * @allow (get, list) - Public read access to all attendance point entries.
-     * @allow (update, delete) - Authenticated users can update or delete any attendance point entry.
-     * @deny (create) - Unauthenticated users cannot create attendance point entries.
-     * @principle Allows public read access but requires authentication for all write operations.
+     * @allow (create, update, delete) if isSignedIn() : Allows authenticated users to create, update and delete an attendance point.
+     * @allow (get, list) if true: Allows public read access to all attendance points.
+     * @deny (create, update, delete) if !isSignedIn(): Denies unauthenticated users to create, update and delete an attendance point.
+     * @principle Allows authenticated users to manage attendance points.
      */
     match /attendance_points/{pointId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Controls access to employee documents.
+     * @description Controls access to the employees collection.
      * @path /employees/{employeeId}
-     * @allow (create) - Authenticated users can create new employee records. No data validation beyond authentication is enforced during the prototyping phase.
-     * @allow (get, list) - Public read access to employee records.
-     * @allow (update, delete) - Authenticated users can update or delete any employee record.
-     * @deny (create) - Unauthenticated users cannot create employee records.
-     * @principle Allows public read access but requires authentication for all write operations.
+     * @allow (create, update, delete) if isSignedIn() : Allows authenticated users to create, update and delete an employee.
+     * @allow get, list: if true : Allows public read access to all employees.
+     * @deny (create, update, delete) if !isSignedIn(): Denies unauthenticated users to create, update and delete an employee.
+     * @principle Allows authenticated users to manage employees.
      */
     match /employees/{employeeId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
+
+    /**
+     * @description Protects the /rent_entries collection from being listed.  This collection should not be directly exposed.
+     * @path /rent_entries
+     * @deny list: Denies listing of rent entries to all users.
+     * @principle Prevents unauthorized access to potentially sensitive rent entry data by disallowing list operations.
+     */
+    match /rent_entries {
+        allow get: if false;
+        allow list: if false;
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+    }
+
 
     function isSignedIn() {
       return request.auth != null;
