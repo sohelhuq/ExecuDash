@@ -18,6 +18,9 @@ import {
   User,
   Library,
   Landmark,
+  ShoppingCart,
+  Building2,
+  FolderKanban,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -209,6 +212,51 @@ export function AppSidebar() {
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
+          
+          <SidebarMenuItem>
+            <Link href="/sales">
+              <SidebarMenuButton
+                isActive={pathname.startsWith('/sales')}
+                tooltip="Sales"
+                className="justify-between"
+              >
+                  <div className="flex items-center gap-2">
+                      <ShoppingCart />
+                      <span>Sales</span>
+                  </div>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <Link href="/collections">
+              <SidebarMenuButton
+                isActive={pathname.startsWith('/collections')}
+                tooltip="Collections"
+                className="justify-between"
+              >
+                  <div className="flex items-center gap-2">
+                      <FolderKanban />
+                      <span>Collections</span>
+                  </div>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <Link href="/properties">
+              <SidebarMenuButton
+                isActive={pathname.startsWith('/properties')}
+                tooltip="Properties"
+                className="justify-between"
+              >
+                  <div className="flex items-center gap-2">
+                      <Building2 />
+                      <span>Properties</span>
+                  </div>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
 
           {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
