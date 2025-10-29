@@ -8,11 +8,18 @@ import {
   PackageCheck,
   Recycle,
   DraftingCompass,
+  Brick,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const manufacturingModules = [
+  {
+    icon: Brick,
+    title: "ERP Dashboard",
+    description: "A comprehensive overview of your bricks business, from raw materials to sales.",
+    href: "/manufacturing/dashboard"
+  },
   {
     icon: ClipboardList,
     title: "Production Planning",
@@ -97,13 +104,13 @@ export default function ManufacturingPage() {
 
             if (module.href !== '#') {
                 return (
-                    <Link href={module.href} key={module.title} className="flex">
+                    <Link href={module.href} key={module.title} className="flex no-underline">
                         {cardContent}
                     </Link>
                 )
             }
             
-            return <div key={module.title}>{cardContent}</div>
+            return <div key={module.title} className="flex">{cardContent}</div>
           })}
         </div>
       </div>

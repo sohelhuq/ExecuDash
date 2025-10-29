@@ -22,6 +22,7 @@ import {
   Building2,
   FolderKanban,
   Factory,
+  Brick,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -43,7 +44,6 @@ import { Input } from '../ui/input';
 import { allBusinessUnits } from '@/lib/business-units';
 
 const navItems = [
-  { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
   { href: '/procurement', label: 'Procurement', icon: Briefcase },
   { href: '/project-management', label: 'Project management', icon: FileText },
   { href: '/reports', label: 'Reports', icon: LineChart },
@@ -62,6 +62,10 @@ const hrSubItems = [
     { href: '/recruitment', label: 'Recruitment', icon: Users },
     { href: '/department', label: 'Department', icon: Building },
     { href: '/notice-board', label: 'Notice Board', icon: Bell },
+];
+
+const manufacturingSubItems = [
+    { href: '/manufacturing/dashboard', label: 'ERP Dashboard' },
 ];
 
 export function AppSidebar() {
@@ -288,6 +292,34 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+
+          <Collapsible asChild>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/manufacturing')}>
+                      <div className="flex items-center gap-2">
+                          <Brick />
+                          <span>Bricks ERP</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                  <SidebarMenuSub>
+                       {manufacturingSubItems.map(subItem => (
+                         <SidebarMenuItem key={subItem.href}>
+                             <Link href={subItem.href}>
+                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                     <Dot />
+                                     <span>{subItem.label}</span>
+                                 </SidebarMenuSubButton>
+                             </Link>
+                         </SidebarMenuItem>
+                      ))}
+                  </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
 
           {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
