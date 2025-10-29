@@ -148,7 +148,7 @@ export default function BankingPage() {
             const ccSnapshot = await getDocs(collection(firestore, 'cc_accounts'));
             const savingsSnapshot = await getDocs(collection(firestore, 'savings_accounts'));
 
-            if (!ccSnapshot.empty && !savingsSnapshot.empty) {
+            if (!ccSnapshot.empty || !savingsSnapshot.empty) {
                 toast({ title: 'Data Already Exists', description: 'Banking data has already been seeded.' });
                 return;
             }
@@ -276,8 +276,8 @@ export default function BankingPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Banking Summary</h1>
-            <p className="text-muted-foreground">An overview of your CC and Savings accounts.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Banking & Finance</h1>
+            <p className="text-muted-foreground">An overview of your CC, Savings, and other accounts.</p>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/banking/deposits">

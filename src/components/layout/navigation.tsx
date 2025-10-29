@@ -17,6 +17,7 @@ import {
   Dot,
   User,
   Library,
+  Landmark,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -37,13 +38,6 @@ import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home, exactMatch: true },
-  { href: '/attendance', label: 'Attendance', icon: Users },
-  { href: '/award', label: 'Award', icon: Award },
-  { href: '/employee', label: 'Employee', icon: Users },
-  { href: '/leave', label: 'Leave', icon: Plane },
-  { href: '/loan', label: 'Loan', icon: CreditCard },
-  { href: '/payroll', label: 'Payroll', icon: Wallet },
   { href: '/procurement', label: 'Procurement', icon: Briefcase },
   { href: '/project-management', label: 'Project management', icon: FileText },
   { href: '/reports', label: 'Reports', icon: LineChart },
@@ -174,7 +168,49 @@ export function AppSidebar() {
             </Link>
           </SidebarMenuItem>
           
-          {navItems.filter(item => !['/dashboard', '/attendance', '/payroll', '/department', '/recruitment', '/notice-board'].includes(item.href)).map((item) => (
+           <Collapsible asChild>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/banking') || pathname.startsWith('/fdr') || pathname.startsWith('/dps')}>
+                      <div className="flex items-center gap-2">
+                          <Landmark />
+                          <span>Banking & Finance</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                  <SidebarMenuSub>
+                        <SidebarMenuItem>
+                            <Link href="/banking">
+                                <SidebarMenuSubButton isActive={pathname.startsWith('/banking')}>
+                                    <Dot />
+                                    <span>Accounts Summary</span>
+                                </SidebarMenuSubButton>
+                            </Link>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <Link href="/fdr">
+                                <SidebarMenuSubButton isActive={pathname.startsWith('/fdr')}>
+                                    <Dot />
+                                    <span>FDR</span>
+                                </SidebarMenuSubButton>
+                            </Link>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <Link href="/dps">
+                                <SidebarMenuSubButton isActive={pathname.startsWith('/dps')}>
+                                    <Dot />
+                                    <span>DPS</span>
+                                </SidebarMenuSubButton>
+                            </Link>
+                        </SidebarMenuItem>
+                  </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+
+          {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
               <Link href={item.href}>
                 <SidebarMenuButton
