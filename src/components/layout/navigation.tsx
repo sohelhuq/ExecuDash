@@ -23,6 +23,7 @@ import {
   FolderKanban,
   Factory,
   ToyBrick,
+  Fuel,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -66,6 +67,10 @@ const hrSubItems = [
 
 const manufacturingSubItems = [
     { href: '/manufacturing/dashboard', label: 'ERP Dashboard' },
+];
+
+const fuelStationSubItems = [
+    { href: '/fuel-station/entry', label: 'Daily Entry Form' },
 ];
 
 export function AppSidebar() {
@@ -307,6 +312,34 @@ export function AppSidebar() {
               <CollapsibleContent>
                   <SidebarMenuSub>
                        {manufacturingSubItems.map(subItem => (
+                         <SidebarMenuItem key={subItem.href}>
+                             <Link href={subItem.href}>
+                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                     <Dot />
+                                     <span>{subItem.label}</span>
+                                 </SidebarMenuSubButton>
+                             </Link>
+                         </SidebarMenuItem>
+                      ))}
+                  </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+          
+          <Collapsible asChild>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/fuel-station')}>
+                      <div className="flex items-center gap-2">
+                          <Fuel />
+                          <span>Fuel Station</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                  <SidebarMenuSub>
+                       {fuelStationSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
                              <Link href={subItem.href}>
                                  <SidebarMenuSubButton isActive={pathname === subItem.href}>
