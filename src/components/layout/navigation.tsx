@@ -357,12 +357,12 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {fuelStationSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
+                           <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
                              <Link href={subItem.href}>
-                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
-                                     <Dot />
-                                     <span>{subItem.label}</span>
-                                 </SidebarMenuSubButton>
+                               <Dot />
+                               <span>{subItem.label}</span>
                              </Link>
+                           </SidebarMenuSubButton>
                          </SidebarMenuItem>
                       ))}
                   </SidebarMenuSub>
