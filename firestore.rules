@@ -1,52 +1,147 @@
 /**
- * @fileoverview Firestore Security Rules for the Attendance Tracker application.
+ * @fileoverview Firestore Security Rules for ExecuDash application.
  *
  * Core Philosophy:
- * This ruleset provides completely open access to all data for prototyping purposes.
- * In a production application, this would be heavily restricted to enforce data ownership and access control.
+ * This ruleset prioritizes secure data access based on ownership and group membership,
+ * using path-based authorization and explicit ownership checks.  It assumes a strict
+ * separation between user-specific data and shared data.
  *
  * Data Structure:
- * - /attendance_points/{pointId}: Stores attendance records, openly accessible.
- * - /employees/{employeeId}: Stores employee records, openly accessible.
+ * - Business Unit data is stored under `/business_units/{businessUnitId}`.
+ * - Metrics are stored under `/business_units/{businessUnitId}/metrics/{metricId}`.
+ * - User dashboards are stored under `/users/{userId}/dashboards/{dashboardId}`.
+ * - Widgets are stored under `/users/{userId}/dashboards/{dashboardId}/widgets/{widgetId}`.
+ * - Alerts are stored under `/business_units/{businessUnitId}/alerts/{alertId}`.
  *
  * Key Security Decisions:
- * - All read and write operations are currently allowed without authentication.
- * - No data validation is enforced. This is intentional for prototyping and must be added later.
+ * - Users can only manage their own dashboards and widgets.
+ * - Business Unit and Metric data is not editable through the client and read-only for the application (no rules provided).
+ * - List operations on user-owned subcollections are allowed for the owner.
+ * - No public listing of business units or alerts is allowed.
+ *
+ * Denormalization for Authorization:
+ * - Authorization data (e.g., user roles, group memberships) should be denormalized
+ *   onto the documents being secured to avoid costly `get()` calls in rules.
+ *   For example, a `members` map on a dashboard document can grant access to specific users.
+ *
+ * Structural Segregation:
+ * - User-specific data (dashboards, widgets) is segregated under `/users/{userId}` to
+ *   simplify access control and prevent unintended data exposure.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows any user to read or write attendance points.
-     * @path /attendance_points/{pointId}
-     * @allow (get, list) User can read attendance points.
-     * @allow (create, update, delete) User can create, update, or delete attendance points.
-     * @deny User cannot be restricted.
-     * @principle Allows any read or write operation.
+     * @description Checks if the request is authenticated.
+     * @returns {boolean} True if the request is authenticated, false otherwise.
      */
-    match /attendance_points/{pointId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+    function isSignedIn() {
+      return request.auth != null;
     }
 
     /**
-     * @description Allows any user to read or write employee records.
-     * @path /employees/{employeeId}
-     * @allow (get, list) User can read employee records.
-     * @allow (create, update, delete) User can create, update, or delete employee records.
-     * @deny User cannot be restricted.
-     * @principle Allows any read or write operation.
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId - The user ID to compare against the authenticated user ID.
+     * @returns {boolean} True if the user is signed in and the user ID matches, false otherwise.
      */
-    match /employees/{employeeId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID and the resource exists.
+     * @param {string} userId - The user ID to compare against the authenticated user ID.
+     * @returns {boolean} True if the user is signed in, the user ID matches, and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description BusinessUnit collection access rules.
+     * @path /business_units/{businessUnitId}
+     * @allow (get, list): Public read access.
+     * @deny (create, update, delete): No client-side write access.
+     * @principle Public read-only access with no client-side modifications.
+     */
+    match /business_units/{businessUnitId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Metric collection access rules.
+     * @path /business_units/{businessUnitId}/metrics/{metricId}
+     * @allow (get, list): Public read access.
+     * @deny (create, update, delete): No client-side write access.
+     * @principle Public read-only access with no client-side modifications.
+     */
+    match /business_units/{businessUnitId}/metrics/{metricId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Dashboard collection access rules.
+     * @path /users/{userId}/dashboards/{dashboardId}
+     * @allow (get, list): Owner can read their own dashboards.
+     * @allow (create): Owner can create a dashboard with a matching userId.
+     * @allow (update, delete): Owner can update/delete their own existing dashboards.
+     * @deny (get, list): Non-owners cannot read dashboards.
+     * @deny (create): Non-owners cannot create dashboards.
+     * @deny (update, delete): Non-owners cannot update/delete dashboards.
+     * @principle Enforces document ownership for writes; restricts access to a user's own data tree.
+     */
+    match /users/{userId}/dashboards/{dashboardId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == dashboardId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == dashboardId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Widget collection access rules.
+     * @path /users/{userId}/dashboards/{dashboardId}/widgets/{widgetId}
+     * @allow (get, list): Owner can read their own widgets.
+     * @allow (create): Owner can create a widget with a matching userId and dashboardId.
+     * @allow (update, delete): Owner can update/delete their own existing widgets.
+     * @deny (get, list): Non-owners cannot read widgets.
+     * @deny (create): Non-owners cannot create widgets.
+     * @deny (update, delete): Non-owners cannot update/delete widgets.
+     * @principle Enforces document ownership for writes; restricts access to a user's own data tree.
+     */
+    match /users/{userId}/dashboards/{dashboardId}/widgets/{widgetId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.dashboardId == dashboardId;
+      allow update: if isExistingOwner(userId) && request.resource.data.dashboardId == dashboardId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Alert collection access rules.
+     * @path /business_units/{businessUnitId}/alerts/{alertId}
+     * @allow get, list: if false;
+     * @allow create, update, delete: if false;
+     * @principle No client-side access to alert data.
+     */
+    match /business_units/{businessUnitId}/alerts/{alertId} {
+      allow get, list: if false;
+      allow create, update, delete: if false;
+    }
+    
+    /**
+     * @description Rent entries collection access rules.  The error log indicates the app attempted to 'list' this collection
+     * @path /rent_entries
+     * @allow get, list: if false;
+     * @allow create, update, delete: if false;
+     * @principle Client has no access to the rent_entries collection.
+     */
+    match /rent_entries {
+        allow get, list: if false;
+        allow create, update, delete: if false;
     }
   }
 }

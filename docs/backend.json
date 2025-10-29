@@ -1,70 +1,303 @@
 {
   "entities": {
-    "AttendancePoint": {
-      "title": "Attendance Point",
+    "BusinessUnit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BusinessUnit",
       "type": "object",
-      "description": "Represents points awarded for employee attendance.",
+      "description": "Represents a business unit within the Shetue Group.",
       "properties": {
-        "employeeName": {
-          "type": "string"
-        },
-        "inTime": {
+        "id": {
           "type": "string",
-          "format": "time"
+          "description": "Unique identifier for the BusinessUnit entity."
         },
-        "points": {
-          "type": "number"
-        },
-        "date": {
-          "type": "string",
-          "format": "date"
-        }
-      }
-    },
-    "Employee": {
-      "title": "Employee",
-      "type": "object",
-      "description": "Represents an employee record.",
-      "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "The canonical name of the business unit (e.g., Setu Filling Station)."
         },
-        "department": {
-          "type": "string"
-        },
-        "jobRole": {
-          "type": "string"
+        "aliases": {
+          "type": "array",
+          "description": "An array of aliases or alternative names for the business unit.",
+          "items": {
+            "type": "string"
+          }
         }
-      }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Metric": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Metric",
+      "type": "object",
+      "description": "Represents a performance metric tracked for a specific business unit.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Metric entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The canonical name of the metric (e.g., daily_sales)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of what the metric measures."
+        },
+        "unit": {
+          "type": "string",
+          "description": "The unit of measurement for the metric (e.g., liters, count, percentage)."
+        },
+        "businessUnitId": {
+          "type": "string",
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Metric)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "businessUnitId"
+      ]
+    },
+    "Dashboard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Dashboard",
+      "type": "object",
+      "description": "Represents a user-customized dashboard configuration.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Dashboard entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the dashboard (e.g., Fuel Dashboard)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the dashboard's purpose."
+        },
+        "layout": {
+          "type": "string",
+          "description": "The layout configuration of the dashboard widgets (e.g., grid-auto)."
+        },
+        "widgetIds": {
+          "type": "array",
+          "description": "References to Widgets. (Relationship: Dashboard 1:N Widget)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "layout"
+      ]
+    },
+    "Widget": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Widget",
+      "type": "object",
+      "description": "Represents a single widget on a dashboard, displaying a specific metric.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Widget entity."
+        },
+        "businessUnitId": {
+          "type": "string",
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Widget)"
+        },
+        "metricId": {
+          "type": "string",
+          "description": "Reference to Metric. (Relationship: Metric 1:N Widget)"
+        },
+        "visualization": {
+          "type": "string",
+          "description": "The type of visualization used for the widget (e.g., line, bar, kpi)."
+        },
+        "timeframe": {
+          "type": "string",
+          "description": "The timeframe for the data displayed in the widget (e.g., past_30d, today)."
+        },
+        "dashboardId": {
+          "type": "string",
+          "description": "Reference to Dashboard. (Relationship: Dashboard 1:N Widget)"
+        }
+      },
+      "required": [
+        "id",
+        "businessUnitId",
+        "metricId",
+        "visualization",
+        "timeframe",
+        "dashboardId"
+      ]
+    },
+    "Alert": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Alert",
+      "type": "object",
+      "description": "Represents an alert rule that triggers notifications when specific conditions are met.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Alert entity."
+        },
+        "businessUnitId": {
+          "type": "string",
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Alert)"
+        },
+        "metricId": {
+          "type": "string",
+          "description": "Reference to Metric. (Relationship: Metric 1:N Alert)"
+        },
+        "conditionOperator": {
+          "type": "string",
+          "description": "The operator used in the alert condition (e.g., <, >, ==)."
+        },
+        "conditionValue": {
+          "type": "number",
+          "description": "The value used in the alert condition."
+        },
+        "durationMinutes": {
+          "type": "number",
+          "description": "The duration for which the condition must be met before the alert is triggered."
+        },
+        "notifyChannels": {
+          "type": "array",
+          "description": "An array of notification channels to use (e.g., telegram, email, sms).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "severity": {
+          "type": "string",
+          "description": "The severity level of the alert (e.g., low, medium, high)."
+        }
+      },
+      "required": [
+        "id",
+        "businessUnitId",
+        "metricId",
+        "conditionOperator",
+        "conditionValue",
+        "notifyChannels",
+        "severity"
+      ]
     }
   },
   "auth": {
     "providers": [
-      "password"
+      "password",
+      "anonymous"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/attendance_points/{pointId}",
+        "path": "/business_units/{businessUnitId}",
         "definition": {
-          "entityName": "AttendancePoint",
+          "entityName": "BusinessUnit",
           "schema": {
-            "$ref": "#/backend/entities/AttendancePoint"
+            "$ref": "#/backend/entities/BusinessUnit"
           },
-          "description": "Stores attendance points for employees."
+          "description": "Stores business unit data. Each document represents a single business unit.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier of the business unit."
+            }
+          ]
         }
       },
       {
-        "path": "/employees/{employeeId}",
+        "path": "/business_units/{businessUnitId}/metrics/{metricId}",
         "definition": {
-            "entityName": "Employee",
-            "schema": {
-                "$ref": "#/backend/entities/Employee"
+          "entityName": "Metric",
+          "schema": {
+            "$ref": "#/backend/entities/Metric"
+          },
+          "description": "Stores metrics associated with a business unit. Each document represents a specific metric for the business unit.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier of the business unit."
             },
-            "description": "Stores employee records."
+            {
+              "name": "metricId",
+              "description": "The unique identifier of the metric."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/dashboards/{dashboardId}",
+        "definition": {
+          "entityName": "Dashboard",
+          "schema": {
+            "$ref": "#/backend/entities/Dashboard"
+          },
+          "description": "Stores user-specific dashboard configurations.  Owned by the user identified by userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "dashboardId",
+              "description": "The unique identifier of the dashboard."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/dashboards/{dashboardId}/widgets/{widgetId}",
+        "definition": {
+          "entityName": "Widget",
+          "schema": {
+            "$ref": "#/backend/entities/Widget"
+          },
+          "description": "Stores widgets belonging to a dashboard, owned by the user.  Denormalize 'members' map from the dashboard if collaborative access is required.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "dashboardId",
+              "description": "The unique identifier of the dashboard."
+            },
+            {
+              "name": "widgetId",
+              "description": "The unique identifier of the widget."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/business_units/{businessUnitId}/alerts/{alertId}",
+        "definition": {
+          "entityName": "Alert",
+          "schema": {
+            "$ref": "#/backend/entities/Alert"
+          },
+          "description": "Stores alert configurations for a business unit. Each document represents an alert rule.",
+          "params": [
+            {
+              "name": "businessUnitId",
+              "description": "The unique identifier of the business unit."
+            },
+            {
+              "name": "alertId",
+              "description": "The unique identifier of the alert."
+            }
+          ]
         }
       }
-    ]
+    ],
+    "reasoning": "The Firestore structure is designed to provide a secure, scalable, and debuggable solution for the ExecuDash application, focusing on authorization independence and clear access patterns.\n\nAuthorization Independence:\nTo avoid hierarchical authorization dependencies, the design denormalizes authorization context where necessary. For example, if access to widgets depends on the dashboard's members, the `members` map is copied into each widget document. This eliminates the need for `get()` calls in security rules, enabling atomic operations and simplifying debugging.\n\nStructural Segregation:\nThe design segregates data based on access requirements. User-specific data (dashboards) is stored under the `/users/{userId}` path, while business unit data is stored at the root level. This ensures that all documents in a collection share the same security requirements, simplifying the rules.\n\nAccess Modeling:\nThe structure employs consistent access modeling patterns:\n- Path-Based Ownership: Dashboards are owned by users, using the `/users/{userId}/dashboards/{dashboardId}` path.\n- Membership Map: If collaborative access is needed (not explicitly defined but good practice), this can be implemented in the dashboard or widget level (if necessary).\n\nQAPs (Rules are not Filters):\nThe structure supports secure `list` operations by ensuring that rules do not act as filters. Data segregation and denormalization (if necessary) allow efficient queries without compromising security."
   }
 }
