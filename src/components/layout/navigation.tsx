@@ -39,15 +39,12 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home, exactMatch: true },
   { href: '/attendance', label: 'Attendance', icon: Users },
   { href: '/award', label: 'Award', icon: Award },
-  { href: '/department', label: 'Department', icon: Building },
   { href: '/employee', label: 'Employee', icon: Users },
   { href: '/leave', label: 'Leave', icon: Plane },
   { href: '/loan', label: 'Loan', icon: CreditCard },
-  { href: '/notice-board', label: 'Notice board', icon: Bell },
   { href: '/payroll', label: 'Payroll', icon: Wallet },
   { href: '/procurement', label: 'Procurement', icon: Briefcase },
   { href: '/project-management', label: 'Project management', icon: FileText },
-  { href: '/recruitment', label: 'Recruitment', icon: Users },
   { href: '/reports', label: 'Reports', icon: LineChart },
 ];
 
@@ -61,6 +58,9 @@ const hrSubItems = [
     { href: '/hr/employees', label: 'Employee Management' },
     { href: '/hr/attendance', label: 'Absence Tracking' },
     { href: '/hr/payroll', label: 'Payroll Processing' },
+    { href: '/recruitment', label: 'Recruitment', icon: Users },
+    { href: '/department', label: 'Department', icon: Building },
+    { href: '/notice-board', label: 'Notice Board', icon: Bell },
 ];
 
 export function AppSidebar() {
@@ -97,7 +97,7 @@ export function AppSidebar() {
           <Collapsible asChild>
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                  <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/hr')}>
+                  <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/hr') || pathname.startsWith('/reward') || ['/recruitment', '/department', '/notice-board'].includes(pathname)}>
                       <div className="flex items-center gap-2">
                           <Users />
                           <span>HR Management</span>
@@ -117,48 +117,48 @@ export function AppSidebar() {
                              </Link>
                          </SidebarMenuItem>
                       ))}
+
+                      <Collapsible asChild>
+                          <SidebarMenuItem>
+                            <CollapsibleTrigger asChild>
+                                <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/reward')}>
+                                    <div className="flex items-center gap-2">
+                                        <Dot />
+                                        <span>Reward points</span>
+                                    </div>
+                                    <ChevronRight className="h-4 w-4" />
+                                </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <SidebarMenuSub>
+                                    <SidebarMenuItem>
+                                        <Link href="/reward/attendance">
+                                            <SidebarMenuSubButton isActive={pathname === '/reward/attendance'}>
+                                                <Dot />
+                                                <span>Attendance points</span>
+                                            </SidebarMenuSubButton>
+                                        </Link>
+                                    </SidebarMenuItem>
+                                     {rewardPointsSubItems.map(subItem => (
+                                       <SidebarMenuItem key={subItem.href}>
+                                           <Link href={subItem.href}>
+                                               <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                                   <Dot />
+                                                   <span>{subItem.label}</span>
+                                               </SidebarMenuSubButton>
+                                           </Link>
+                                       </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </SidebarMenuItem>
+                      </Collapsible>
                   </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
           
-          <Collapsible asChild>
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/reward')}>
-                        <div className="flex items-center gap-2">
-                            <Star />
-                            <span>Reward points</span>
-                        </div>
-                        <ChevronRight className="h-4 w-4" />
-                    </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                    <SidebarMenuSub>
-                        <SidebarMenuItem>
-                            <Link href="/reward/attendance">
-                                <SidebarMenuSubButton isActive={pathname === '/reward/attendance'}>
-                                    <Dot />
-                                    <span>Point settings</span>
-                                </SidebarMenuSubButton>
-                            </Link>
-                        </SidebarMenuItem>
-                         {rewardPointsSubItems.map(subItem => (
-                           <SidebarMenuItem key={subItem.href}>
-                               <Link href={subItem.href}>
-                                   <SidebarMenuSubButton isActive={pathname === subItem.href}>
-                                       <Dot />
-                                       <span>{subItem.label}</span>
-                                   </SidebarMenuSubButton>
-                               </Link>
-                           </SidebarMenuItem>
-                        ))}
-                    </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-          </Collapsible>
-
-          {navItems.filter(item => !['/dashboard', '/attendance', '/payroll'].includes(item.href)).map((item) => (
+          {navItems.filter(item => !['/dashboard', '/attendance', '/payroll', '/department', '/recruitment', '/notice-board'].includes(item.href)).map((item) => (
             <SidebarMenuItem key={item.label}>
               <Link href={item.href}>
                 <SidebarMenuButton
