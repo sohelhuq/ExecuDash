@@ -43,7 +43,9 @@ const unitIcons: {[key: string]: React.ElementType} = {
     'setu-filling-station': Fuel,
     'huq-bricks': Factory,
     'hridoy-tara-pharmacy': Pill,
+    'hotel-midway': Building,
     'setu-tech': LayoutDashboard,
+    'setu-feed-mills': Archive,
 }
 
 export function Dashboard() {
