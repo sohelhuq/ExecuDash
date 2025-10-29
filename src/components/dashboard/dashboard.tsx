@@ -20,7 +20,9 @@ import {
     Users,
     CalendarCheck,
     FileCheck,
-    Clock
+    Clock,
+    Building,
+    Archive
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
