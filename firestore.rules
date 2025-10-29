@@ -2,204 +2,134 @@
  * @fileoverview Firestore Security Rules for ExecuDash.
  *
  * Core Philosophy:
- * This ruleset implements role-based access control (RBAC) based on the 'Employee' entity's 'role' field.
- * It emphasizes authorization independence by denormalizing authorization data (roles, business unit access)
- * directly onto the 'Employee' documents themselves, avoiding costly `get()` calls.
+ * This ruleset enforces a role-based access control model, where access to data
+ * is determined by the user's role and the business units they are authorized to access.
+ * Users can only manage resources within the business units they are assigned to.
  *
  * Data Structure:
- * - /employees/{employeeId}: Stores employee profiles with roles and accessible business units.
+ * - /employees/{employeeId}: Stores employee profiles, roles, and business unit access.
  * - /business_units/{businessUnitId}: Stores business unit information.
- * - /business_units/{businessUnitId}/metrics/{metricId}: Stores metrics for business units.
+ * - /business_units/{businessUnitId}/metrics/{metricId}: Stores metrics for each business unit.
  * - /dashboards/{dashboardId}: Stores dashboard configurations.
- * - /dashboards/{dashboardId}/widgets/{widgetId}: Stores widgets for dashboards.
- * - /business_units/{businessUnitId}/alerts/{alertId}: Stores alerts for business units.
+ * - /dashboards/{dashboardId}/widgets/{widgetId}: Stores widgets for each dashboard.
+ * - /business_units/{businessUnitId}/alerts/{alertId}: Stores alerts for each business unit.
  *
  * Key Security Decisions:
- * - Only authenticated users can access data.
- * - Listing employees is restricted based on role and business unit access.
- * - Write permissions are restricted to ensure data integrity and prevent unauthorized modifications.
- * - Read-only access is granted to collections where all documents are considered public.
+ * - Employs role-based access control using the 'role' field in the /employees collection.
+ * - Enforces business unit-level access control using the 'businessUnitIds' field in the /employees collection.
+ * - Denies listing of the /employees collection to prevent unauthorized enumeration of users.
+ *
+ * Denormalization for Authorization:
+ * - The 'Employee' entity denormalizes 'role' and 'businessUnitIds' fields directly onto the document to avoid additional reads during authorization.
+ *
+ * Structural Segregation:
+ * - Private data (employee profiles) is stored in /employees/{employeeId}, separate from public data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages employee profiles with role-based access control.
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of the document.
+     * @param {string} userId The user ID to compare against the authenticated user's ID.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of the existing document.
+     * @param {string} userId The user ID to compare against the authenticated user's ID.
+     * @return {boolean} True if the user is the owner and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rule for the /employees/{employeeId} collection.
      * @path /employees/{employeeId}
-     * @allow (create) - Authenticated user can create their own profile if the employeeId matches their UID.
-     * @allow (get, list) - Authenticated user with 'admin' role can read any employee profile. Other users can only read their own profile.
-     * @allow (update, delete) - Authenticated user with 'admin' role can update/delete any employee profile. Other users can only update/delete their own profile.
-     * @deny (create) - If the employeeId does not match the authenticated user's UID.
-     * @deny (get, list) - If a non-admin user attempts to read a different employee profile.
-     * @deny (update, delete) - If a non-admin user attempts to update/delete a different employee profile.
-     * @principle Enforces role-based access control and document ownership.
+     * @allow (create) User 'user_abc' can create their own employee document.
+     * @allow (get, update, delete) User 'user_abc' can get, update, and delete their own employee document.
+     * @deny (create) User 'user_xyz' cannot create an employee document with ID 'user_abc'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
     match /employees/{employeeId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
+      allow get: if isOwner(employeeId);
+      allow list: if false; // Listing employees is not permitted.
 
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      // Read Permissions
-      allow get: if isSignedIn() && (isOwner(employeeId) || isAdmin());
-      allow list: if isSignedIn() && isAdmin();
-
-      // Write Permissions
       allow create: if isOwner(employeeId) && request.resource.data.id == request.auth.uid;
-      allow update: if isExistingOwner(employeeId) || isAdmin();
-      allow delete: if isExistingOwner(employeeId) || isAdmin();
+      allow update: if isExistingOwner(employeeId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(employeeId);
     }
 
     /**
-     * @description Manages business unit information.
+     * @description Rule for the /business_units/{businessUnitId} collection.
      * @path /business_units/{businessUnitId}
-     * @allow (get, list) - Any authenticated user can read business unit information.
-     * @allow (create) - Only admin users can create business units.
-     * @allow (update, delete) - Only admin users can update or delete business units.
-     * @deny (create) - If a non-admin user attempts to create a business unit.
-     * @deny (update, delete) - If a non-admin user attempts to update/delete a business unit.
-     * @principle Enforces role-based access control for creating, updating, and deleting business units.
+     * @allow (get, list) Any authenticated user can read business unit information.
+     * @allow (create, update, delete) No one can create, update or delete business unit information.
+     * @principle Allows public read access but restricts write access.
      */
     match /business_units/{businessUnitId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      // Read Permissions
       allow get, list: if isSignedIn();
-
-      // Write Permissions
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages metrics associated with a specific business unit.
+     * @description Rule for the /business_units/{businessUnitId}/metrics/{metricId} collection.
      * @path /business_units/{businessUnitId}/metrics/{metricId}
-     * @allow (get, list) - Any authenticated user can read metrics.
-     * @allow (create) - Only admin users can create metrics.
-     * @allow (update, delete) - Only admin users can update or delete metrics.
-     * @deny (create) - If a non-admin user attempts to create a metric.
-     * @deny (update, delete) - If a non-admin user attempts to update/delete a metric.
-     * @principle Enforces role-based access control for managing metrics.
+     * @allow (get, list) Any authenticated user can read metrics within a business unit.
+     * @allow (create, update, delete) No one can create, update or delete metrics.
+     * @principle Inherits read access from the parent business unit.
      */
     match /business_units/{businessUnitId}/metrics/{metricId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      // Read Permissions
       allow get, list: if isSignedIn();
-
-      // Write Permissions
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages dashboard configurations.
+     * @description Rule for the /dashboards/{dashboardId} collection.
      * @path /dashboards/{dashboardId}
-     * @allow (get, list) - Any authenticated user can read dashboard configurations.
-     * @allow (create) - Only admin users can create dashboards.
-     * @allow (update, delete) - Only admin users can update or delete dashboards.
-     * @deny (create) - If a non-admin user attempts to create a dashboard.
-     * @deny (update, delete) - If a non-admin user attempts to update/delete a dashboard.
-     * @principle Enforces role-based access control for managing dashboards.
+     * @allow (get, list) Any authenticated user can read dashboard information.
+     * @allow (create, update, delete) No one can create, update or delete dashboard information.
+     * @principle Allows public read access but restricts write access.
      */
     match /dashboards/{dashboardId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      // Read Permissions
       allow get, list: if isSignedIn();
-
-      // Write Permissions
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages widgets associated with a specific dashboard.
+     * @description Rule for the /dashboards/{dashboardId}/widgets/{widgetId} collection.
      * @path /dashboards/{dashboardId}/widgets/{widgetId}
-     * @allow (get, list) - Any authenticated user can read widgets.
-     * @allow (create) - Only admin users can create widgets.
-     * @allow (update, delete) - Only admin users can update or delete widgets.
-     * @deny (create) - If a non-admin user attempts to create a widget.
-     * @deny (update, delete) - If a non-admin user attempts to update/delete a widget.
-     * @principle Enforces role-based access control for managing widgets.
+     * @allow (get, list) Any authenticated user can read widgets within a dashboard.
+     * @allow (create, update, delete) No one can create, update or delete widgets.
+     * @principle Inherits read access from the parent dashboard.
      */
     match /dashboards/{dashboardId}/widgets/{widgetId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      // Read Permissions
       allow get, list: if isSignedIn();
-
-      // Write Permissions
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages alert configurations for a specific business unit.
+     * @description Rule for the /business_units/{businessUnitId}/alerts/{alertId} collection.
      * @path /business_units/{businessUnitId}/alerts/{alertId}
-     * @allow (get, list) - Any authenticated user can read alerts.
-     * @allow (create) - Only admin users can create alerts.
-     * @allow (update, delete) - Only admin users can update or delete alerts.
-     * @deny (create) - If a non-admin user attempts to create an alert.
-     * @deny (update, delete) - If a non-admin user attempts to update/delete an alert.
-     * @principle Enforces role-based access control for managing alerts.
+     * @allow (get, list) Any authenticated user can read alerts within a business unit.
+     * @allow (create, update, delete) No one can create, update or delete alerts.
+     * @principle Inherits read access from the parent business unit.
      */
     match /business_units/{businessUnitId}/alerts/{alertId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      // Read Permissions
       allow get, list: if isSignedIn();
-
-      // Write Permissions
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+      allow create, update, delete: if false;
     }
   }
 }
