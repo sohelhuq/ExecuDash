@@ -77,7 +77,6 @@ export function Header() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon"><Grid /></Button>
         <UserNav />
-         <Button variant="ghost" size="icon" className="hidden md:flex"><AlignJustify /></Button>
       </div>
     </header>
   );
