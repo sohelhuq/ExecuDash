@@ -120,10 +120,10 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {allBusinessUnits.map(unit => (
                          <SidebarMenuItem key={unit.id}>
-                             <Link href={`/dashboard/${unit.id}`} legacyBehavior passHref>
-                                 <SidebarMenuSubButton asChild isActive={pathname === `/dashboard/${unit.id}`}>
-                                     <a><Dot />
-                                     <span>{unit.name}</span></a>
+                             <Link href={`/dashboard/${unit.id}`}>
+                                 <SidebarMenuSubButton isActive={pathname === `/dashboard/${unit.id}`}>
+                                     <Dot />
+                                     <span>{unit.name}</span>
                                  </SidebarMenuSubButton>
                              </Link>
                          </SidebarMenuItem>
@@ -148,10 +148,10 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {hrSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
-                             <Link href={subItem.href} legacyBehavior passHref>
-                                 <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                     <a><Dot />
-                                     <span>{subItem.label}</span></a>
+                             <Link href={subItem.href}>
+                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                     <Dot />
+                                     <span>{subItem.label}</span>
                                  </SidebarMenuSubButton>
                              </Link>
                          </SidebarMenuItem>
@@ -171,19 +171,19 @@ export function AppSidebar() {
                             <CollapsibleContent>
                                 <SidebarMenuSub>
                                     <SidebarMenuItem>
-                                        <Link href="/reward/attendance" legacyBehavior passHref>
-                                            <SidebarMenuSubButton asChild isActive={pathname === '/reward/attendance'}>
-                                                <a><Dot />
-                                                <span>Attendance points</span></a>
+                                        <Link href="/reward/attendance">
+                                            <SidebarMenuSubButton isActive={pathname === '/reward/attendance'}>
+                                                <Dot />
+                                                <span>Attendance points</span>
                                             </SidebarMenuSubButton>
                                         </Link>
                                     </SidebarMenuItem>
                                      {rewardPointsSubItems.map(subItem => (
                                        <SidebarMenuItem key={subItem.href}>
-                                           <Link href={subItem.href} legacyBehavior passHref>
-                                               <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                                   <a><Dot />
-                                                   <span>{subItem.label}</span></a>
+                                           <Link href={subItem.href}>
+                                               <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                                   <Dot />
+                                                   <span>{subItem.label}</span>
                                                </SidebarMenuSubButton>
                                            </Link>
                                        </SidebarMenuItem>
@@ -226,26 +226,26 @@ export function AppSidebar() {
               <CollapsibleContent>
                   <SidebarMenuSub>
                         <SidebarMenuItem>
-                            <Link href="/banking" legacyBehavior passHref>
-                                <SidebarMenuSubButton asChild isActive={pathname.startsWith('/banking')}>
-                                    <a><Dot />
-                                    <span>Accounts Summary</span></a>
+                            <Link href="/banking">
+                                <SidebarMenuSubButton isActive={pathname.startsWith('/banking')}>
+                                    <Dot />
+                                    <span>Accounts Summary</span>
                                 </SidebarMenuSubButton>
                             </Link>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/fdr" legacyBehavior passHref>
-                                <SidebarMenuSubButton asChild isActive={pathname.startsWith('/fdr')}>
-                                    <a><Dot />
-                                    <span>FDR</span></a>
+                            <Link href="/fdr">
+                                <SidebarMenuSubButton isActive={pathname.startsWith('/fdr')}>
+                                    <Dot />
+                                    <span>FDR</span>
                                 </SidebarMenuSubButton>
                             </Link>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/dps" legacyBehavior passHref>
-                                <SidebarMenuSubButton asChild isActive={pathname.startsWith('/dps')}>
-                                    <a><Dot />
-                                    <span>DPS</span></a>
+                            <Link href="/dps">
+                                <SidebarMenuSubButton isActive={pathname.startsWith('/dps')}>
+                                    <Dot />
+                                    <span>DPS</span>
                                 </SidebarMenuSubButton>
                             </Link>
                         </SidebarMenuItem>
@@ -329,10 +329,10 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {manufacturingSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
-                             <Link href={subItem.href} legacyBehavior passHref>
-                                 <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                     <a><Dot />
-                                     <span>{subItem.label}</span></a>
+                             <Link href={subItem.href}>
+                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                     <Dot />
+                                     <span>{subItem.label}</span>
                                  </SidebarMenuSubButton>
                              </Link>
                          </SidebarMenuItem>
@@ -357,10 +357,10 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {fuelStationSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
-                             <Link href={subItem.href} legacyBehavior passHref>
-                                 <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                     <a><Dot />
-                                     <span>{subItem.label}</span></a>
+                             <Link href={subItem.href}>
+                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                                     <Dot />
+                                     <span>{subItem.label}</span>
                                  </SidebarMenuSubButton>
                              </Link>
                          </SidebarMenuItem>
