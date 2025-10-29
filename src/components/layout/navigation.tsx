@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   Building2,
   FolderKanban,
+  Factory,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -39,6 +40,7 @@ import * as React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
+import { allBusinessUnits } from '@/lib/business-units';
 
 const navItems = [
   { href: '/procurement', label: 'Procurement', icon: Briefcase },
@@ -91,6 +93,34 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+
+          <Collapsible asChild>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/dashboard/')}>
+                      <div className="flex items-center gap-2">
+                          <Factory />
+                          <span>Business Units</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                  </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                  <SidebarMenuSub>
+                       {allBusinessUnits.map(unit => (
+                         <SidebarMenuItem key={unit.id}>
+                             <Link href={`/dashboard/${unit.id}`}>
+                                 <SidebarMenuSubButton isActive={pathname === `/dashboard/${unit.id}`}>
+                                     <Dot />
+                                     <span>{unit.name}</span>
+                                 </SidebarMenuSubButton>
+                             </Link>
+                         </SidebarMenuItem>
+                      ))}
+                  </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
 
           <Collapsible asChild>
             <SidebarMenuItem>
