@@ -24,6 +24,7 @@ import {
   Factory,
   ToyBrick,
   Fuel,
+  Archive,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -263,6 +264,21 @@ export function AppSidebar() {
                   <div className="flex items-center gap-2">
                       <ShoppingCart />
                       <span>Sales</span>
+                  </div>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <Link href="/inventory">
+              <SidebarMenuButton
+                isActive={pathname.startsWith('/inventory')}
+                tooltip="Inventory"
+                className="justify-between"
+              >
+                  <div className="flex items-center gap-2">
+                      <Archive />
+                      <span>Inventory</span>
                   </div>
               </SidebarMenuButton>
             </Link>
