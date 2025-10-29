@@ -1,118 +1,45 @@
 /**
- * @fileOverview Firestore Security Rules for Firestudio.
- *
- * @corePhilosophy This ruleset enforces a strict project-based access control model.
- *   All access is governed by project membership. All write operations are restricted
- *   to authenticated users only. Read access to the entire database is forbidden.
- *   These rules assume that project membership is handled via an external authentication
- *   mechanism that is not directly represented within the data model itself. This means
- *   that the rules cannot directly verify a user's role or permissions; they only ensure
- *   that the user is authenticated.
- *
- * @dataStructure The data is structured hierarchically under /projects/{projectId}, with
- *   subcollections for modules, Telegram bots, and finance data syncs. Each subcollection
- *   includes a denormalized 'projectId' field to enable independent authorization checks.
- *
+ * @description This ruleset enforces a strict read-only model for the 'employees' collection,
+ *              and allows public read access to the 'attendance_points' collection.
+ *              All write operations are denied for both collections in this prototype.
+ * @dataStructure
+ *  - /attendance_points/{pointId}: Stores attendance points for employees. Publicly readable.
+ *  - /employees/{employeeId}: Stores employee records. Publicly readable.
  * @keySecurityDecisions
- *   - No user listing: Listing users or projects is disallowed to prevent information disclosure.
- *   - Default deny: Any access not explicitly allowed is denied, ensuring a secure default posture.
- *   - No data validation: In the interests of rapid prototyping, data validation is not performed.
- *
- * @denormalizationForAuthorization The `projectId` field is denormalized into the Module,
- *   TelegramBot, and FinanceDataSync documents to avoid costly `get()` calls and enable
- *   efficient authorization checks within subcollections.
- *
- * @structuralSegregation All data within a project's subcollections shares the same
- *   access control policies, simplifying rule management and ensuring consistent security.
+ *  - The 'employees' collection is read-only (get, list) for all users, including unauthenticated users.
+ *  - The 'attendance_points' collection is publicly readable (get, list) for all users, including unauthenticated users.
+ *  - Write operations (create, update, delete) are denied for both collections.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the user is signed in.
-     * @param {string} userId The user's ID.
-     * @returns {boolean} True if the user is signed in, false otherwise.
+     * @description Allows anyone to read employee records. No write access.
+     * @path /employees/{employeeId}
+     * @allow (get, list) Anyone can read employee data.
+     * @deny (create, update, delete) No one can create, update, or delete employee data.
+     * @principle Allows public read access to employee records, but restricts all write operations.
      */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the user is the owner of the document.
-     * @param {string} userId The user's ID.
-     * @returns {boolean} True if the user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-        return request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the user is the owner of the document and the document exists.
-     * @param {string} userId The user's ID.
-     * @returns {boolean} True if the user is the owner and the document exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rule for the /projects collection.
-     * @path /projects/{projectId}
-     * @allow (create) Signed-in user can create a project.
-     * @deny (create) Non-signed-in user cannot create a project.
-     * @deny (update) Any user cannot update project.
-     * @deny (delete) Any user cannot delete project.
-     * @principle Enforces signed-in user for create operations on the /projects collection.
-     */
-    match /projects/{projectId} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if isSignedIn();
+    match /employees/{employeeId} {
+      allow get, list: if true;
+      allow create: if false;
       allow update: if false;
       allow delete: if false;
-
-       match /modules/{moduleId} {
-          allow get: if false;
-          allow list: if false;
-          allow create: if isSignedIn();
-          allow update: if false;
-          allow delete: if false;
-        }
-
-       match /telegram_bots/{telegramBotId} {
-          allow get: if false;
-          allow list: if false;
-          allow create: if isSignedIn();
-          allow update: if false;
-          allow delete: if false;
-        }
-
-        match /finance_data_syncs/{financeDataSyncId} {
-          allow get: if false;
-          allow list: if false;
-          allow create: if isSignedIn();
-          allow update: if false;
-          allow delete: if false;
-        }
     }
 
-     /**
-      * @description Rule for the /business_units collection.
-      * @path /business_units
-      * @allow (list) Signed-in user can list business_units.
-      * @deny (create) Non-signed-in user cannot create a business_unit.
-      * @deny (update) Any user cannot update a business_unit.
-      * @deny (delete) Any user cannot delete a business_unit.
-      * @principle Enforces signed-in user for list operations on the /business_units collection.
-      *          Missing or insufficient permissions error fix
-      */
-      match /business_units/{business_unitId} {
-         allow get: if false;
-         allow list: if isSignedIn();
-         allow create: if !isSignedIn();
-         allow update: if false;
-         allow delete: if false;
-       }
+    /**
+     * @description Allows anyone to read attendance points. No write access.
+     * @path /attendance_points/{pointId}
+     * @allow (get, list) Anyone can read attendance point data.
+     * @deny (create, update, delete) No one can create, update, or delete attendance point data.
+     * @principle Allows public read access to attendance point records, but restricts all write operations.
+     */
+    match /attendance_points/{pointId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
   }
 }
