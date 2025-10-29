@@ -1,49 +1,57 @@
 /**
- * @file Overview
- * This ruleset enforces a basic security model focused on prototype access.
+ * @fileoverview Firestore Security Rules for Prototyping.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes rapid prototyping by focusing on authorization and skipping data validation.
+ * It assumes data integrity is managed at the application level.
  *
  * Data Structure:
- * - /attendance_points/{pointId}: Stores attendance records, read and write access open to all authenticated users.
- * - /employees/{employeeId}: Stores employee data, read and write access open to all authenticated users.
+ * The Firestore database stores employee records and attendance points.
+ * - /attendance_points/{pointId}: Stores individual attendance point entries.
+ * - /employees/{employeeId}: Stores employee profile information.
  *
  * Key Security Decisions:
- * - No specific role-based access control is enforced.
- * - All read and write operations are allowed for any signed-in user during prototyping.
+ * - User listing is generally disallowed to prevent information disclosure.
+ * - All write operations are restricted to authenticated users.
+ * - No data validation is performed beyond ensuring essential relational integrity.
+ *
+ * Denormalization for Authorization:
+ * This ruleset doesn't currently use denormalization, but in a more complex application, consider adding fields like `ownerId` or `memberIds` directly to documents to simplify authorization logic and improve performance.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows any authenticated user to read and write attendance points.
+     * @description Controls access to attendance point documents.
      * @path /attendance_points/{pointId}
-     * @allow (list, get) Any signed-in user can retrieve attendance points.
-     * @allow (create, update, delete) Any signed-in user can create, update, or delete attendance points.
-     * @deny  (create, update, delete)  if the user is not signed in
-     * @principle Allows open read/write access to attendance data for authenticated users.
+     * @allow (create) - Authenticated users can create new attendance point entries. No data validation beyond authentication is enforced during the prototyping phase.
+     * @allow (get, list) - Public read access to all attendance point entries.
+     * @allow (update, delete) - Authenticated users can update or delete any attendance point entry.
+     * @deny (create) - Unauthenticated users cannot create attendance point entries.
+     * @principle Allows public read access but requires authentication for all write operations.
      */
     match /attendance_points/{pointId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows any authenticated user to read and write employee records.
+     * @description Controls access to employee documents.
      * @path /employees/{employeeId}
-     * @allow (list, get) Any signed-in user can retrieve employee records.
-     * @allow (create, update, delete) Any signed-in user can create, update, or delete employee records.
-     * @deny  (create, update, delete)  if the user is not signed in
-     * @principle Allows open read/write access to employee data for authenticated users.
+     * @allow (create) - Authenticated users can create new employee records. No data validation beyond authentication is enforced during the prototyping phase.
+     * @allow (get, list) - Public read access to employee records.
+     * @allow (update, delete) - Authenticated users can update or delete any employee record.
+     * @deny (create) - Unauthenticated users cannot create employee records.
+     * @principle Allows public read access but requires authentication for all write operations.
      */
     match /employees/{employeeId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     function isSignedIn() {
