@@ -12,11 +12,11 @@
         },
         "name": {
           "type": "string",
-          "description": "The canonical name of the business unit (e.g., Setu Filling Station)."
+          "description": "The canonical name of the business unit (e.g., 'Setu Filling Station')."
         },
         "aliases": {
           "type": "array",
-          "description": "An array of aliases or alternative names for the business unit.",
+          "description": "Alternative names or abbreviations for the business unit (e.g., ['fuel station', 'the pump']).",
           "items": {
             "type": "string"
           }
@@ -31,7 +31,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Metric",
       "type": "object",
-      "description": "Represents a performance metric tracked for a specific business unit.",
+      "description": "Represents a measurable quantity or indicator for a specific business unit.",
       "properties": {
         "id": {
           "type": "string",
@@ -39,19 +39,15 @@
         },
         "name": {
           "type": "string",
-          "description": "The canonical name of the metric (e.g., daily_sales)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of what the metric measures."
-        },
-        "unit": {
-          "type": "string",
-          "description": "The unit of measurement for the metric (e.g., liters, count, percentage)."
+          "description": "The name of the metric (e.g., 'daily_sales')."
         },
         "businessUnitId": {
           "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Metric)"
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Metric). Indicates which business unit this metric belongs to."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of what the metric is."
         }
       },
       "required": [
@@ -64,7 +60,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Dashboard",
       "type": "object",
-      "description": "Represents a user-customized dashboard configuration.",
+      "description": "Represents a dashboard configuration, including the widgets and layout.",
       "properties": {
         "id": {
           "type": "string",
@@ -72,22 +68,15 @@
         },
         "name": {
           "type": "string",
-          "description": "The name of the dashboard (e.g., Fuel Dashboard)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the dashboard's purpose."
+          "description": "The name of the dashboard."
         },
         "layout": {
           "type": "string",
-          "description": "The layout configuration of the dashboard widgets (e.g., grid-auto)."
+          "description": "The layout configuration of the dashboard (e.g., JSON string)."
         },
-        "widgetIds": {
-          "type": "array",
-          "description": "References to Widgets. (Relationship: Dashboard 1:N Widget)",
-          "items": {
-            "type": "string"
-          }
+        "description": {
+          "type": "string",
+          "description": "A description of the dashboard."
         }
       },
       "required": [
@@ -106,41 +95,40 @@
           "type": "string",
           "description": "Unique identifier for the Widget entity."
         },
-        "businessUnitId": {
+        "dashboardId": {
           "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Widget)"
+          "description": "Reference to Dashboard. (Relationship: Dashboard 1:N Widget). Indicates which dashboard this widget belongs to."
         },
         "metricId": {
           "type": "string",
-          "description": "Reference to Metric. (Relationship: Metric 1:N Widget)"
+          "description": "Reference to Metric. (Relationship: Metric 1:N Widget). The metric displayed by this widget."
         },
         "visualization": {
           "type": "string",
-          "description": "The type of visualization used for the widget (e.g., line, bar, kpi)."
+          "description": "The type of visualization used for the widget (e.g., 'line', 'bar')."
+        },
+        "position": {
+          "type": "string",
+          "description": "The position of the widget on the dashboard (e.g., JSON string with coordinates)."
         },
         "timeframe": {
           "type": "string",
-          "description": "The timeframe for the data displayed in the widget (e.g., past_30d, today)."
-        },
-        "dashboardId": {
-          "type": "string",
-          "description": "Reference to Dashboard. (Relationship: Dashboard 1:N Widget)"
+          "description": "The default timeframe for this widget (e.g., 'past_30d')."
         }
       },
       "required": [
         "id",
-        "businessUnitId",
+        "dashboardId",
         "metricId",
         "visualization",
-        "timeframe",
-        "dashboardId"
+        "position"
       ]
     },
     "Alert": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Alert",
       "type": "object",
-      "description": "Represents an alert rule that triggers notifications when specific conditions are met.",
+      "description": "Represents an alert rule that triggers when a specific condition is met.",
       "properties": {
         "id": {
           "type": "string",
@@ -148,15 +136,15 @@
         },
         "businessUnitId": {
           "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Alert)"
+          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Alert). The business unit to monitor."
         },
         "metricId": {
           "type": "string",
-          "description": "Reference to Metric. (Relationship: Metric 1:N Alert)"
+          "description": "Reference to Metric. (Relationship: Metric 1:N Alert). The metric to monitor."
         },
         "conditionOperator": {
           "type": "string",
-          "description": "The operator used in the alert condition (e.g., <, >, ==)."
+          "description": "The operator used in the alert condition (e.g., '<', '>')."
         },
         "conditionValue": {
           "type": "number",
@@ -164,18 +152,22 @@
         },
         "durationMinutes": {
           "type": "number",
-          "description": "The duration for which the condition must be met before the alert is triggered."
+          "description": "The duration (in minutes) for which the condition must be true before the alert is triggered."
         },
         "notifyChannels": {
           "type": "array",
-          "description": "An array of notification channels to use (e.g., telegram, email, sms).",
+          "description": "The channels to use for sending notifications (e.g., ['telegram', 'email']).",
           "items": {
             "type": "string"
           }
         },
         "severity": {
           "type": "string",
-          "description": "The severity level of the alert (e.g., low, medium, high)."
+          "description": "The severity level of the alert (e.g., 'low', 'medium', 'high')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of what the alert is monitoring."
         }
       },
       "required": [
@@ -184,8 +176,47 @@
         "metricId",
         "conditionOperator",
         "conditionValue",
+        "durationMinutes",
         "notifyChannels",
         "severity"
+      ]
+    },
+    "Employee": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Employee",
+      "type": "object",
+      "description": "Represents an employee with access to the ExecuDash application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Employee entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the employee."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the employee.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the employee within the organization (e.g., 'admin', 'manager', 'analyst')."
+        },
+        "businessUnitIds": {
+          "type": "array",
+          "description": "References to BusinessUnits. (Relationship: Employee N:N BusinessUnit). The business units the employee has access to.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "role"
       ]
     }
   },
@@ -198,17 +229,33 @@
   "firestore": {
     "structure": [
       {
+        "path": "/employees/{employeeId}",
+        "definition": {
+          "entityName": "Employee",
+          "schema": {
+            "$ref": "#/backend/entities/Employee"
+          },
+          "description": "Stores employee profiles, including their roles and accessible business units. This collection is central to role-based access control and business unit authorization. Includes denormalized 'role' and 'businessUnitIds' fields for authorization independence.",
+          "params": [
+            {
+              "name": "employeeId",
+              "description": "Unique identifier for the employee."
+            }
+          ]
+        }
+      },
+      {
         "path": "/business_units/{businessUnitId}",
         "definition": {
           "entityName": "BusinessUnit",
           "schema": {
             "$ref": "#/backend/entities/BusinessUnit"
           },
-          "description": "Stores business unit data. Each document represents a single business unit.",
+          "description": "Stores business unit information.  No denormalized authorization fields required at this level.",
           "params": [
             {
               "name": "businessUnitId",
-              "description": "The unique identifier of the business unit."
+              "description": "Unique identifier for the business unit."
             }
           ]
         }
@@ -220,59 +267,51 @@
           "schema": {
             "$ref": "#/backend/entities/Metric"
           },
-          "description": "Stores metrics associated with a business unit. Each document represents a specific metric for the business unit.",
+          "description": "Stores metrics associated with a specific business unit. Inherits security context from the parent business_units collection.",
           "params": [
             {
               "name": "businessUnitId",
-              "description": "The unique identifier of the business unit."
+              "description": "Unique identifier for the business unit."
             },
             {
               "name": "metricId",
-              "description": "The unique identifier of the metric."
+              "description": "Unique identifier for the metric."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/dashboards/{dashboardId}",
+        "path": "/dashboards/{dashboardId}",
         "definition": {
           "entityName": "Dashboard",
           "schema": {
             "$ref": "#/backend/entities/Dashboard"
           },
-          "description": "Stores user-specific dashboard configurations.  Owned by the user identified by userId.",
+          "description": "Stores dashboard configurations.  No denormalized authorization fields required at this level.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
               "name": "dashboardId",
-              "description": "The unique identifier of the dashboard."
+              "description": "Unique identifier for the dashboard."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/dashboards/{dashboardId}/widgets/{widgetId}",
+        "path": "/dashboards/{dashboardId}/widgets/{widgetId}",
         "definition": {
           "entityName": "Widget",
           "schema": {
             "$ref": "#/backend/entities/Widget"
           },
-          "description": "Stores widgets belonging to a dashboard, owned by the user.  Denormalize 'members' map from the dashboard if collaborative access is required.",
+          "description": "Stores widgets associated with a specific dashboard. Inherits security context from the parent dashboards collection.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
               "name": "dashboardId",
-              "description": "The unique identifier of the dashboard."
+              "description": "Unique identifier for the dashboard."
             },
             {
               "name": "widgetId",
-              "description": "The unique identifier of the widget."
+              "description": "Unique identifier for the widget."
             }
           ]
         }
@@ -284,20 +323,20 @@
           "schema": {
             "$ref": "#/backend/entities/Alert"
           },
-          "description": "Stores alert configurations for a business unit. Each document represents an alert rule.",
+          "description": "Stores alert configurations for a specific business unit. Inherits security context from the parent business_units collection.",
           "params": [
             {
               "name": "businessUnitId",
-              "description": "The unique identifier of the business unit."
+              "description": "Unique identifier for the business unit."
             },
             {
               "name": "alertId",
-              "description": "The unique identifier of the alert."
+              "description": "Unique identifier for the alert."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to provide a secure, scalable, and debuggable solution for the ExecuDash application, focusing on authorization independence and clear access patterns.\n\nAuthorization Independence:\nTo avoid hierarchical authorization dependencies, the design denormalizes authorization context where necessary. For example, if access to widgets depends on the dashboard's members, the `members` map is copied into each widget document. This eliminates the need for `get()` calls in security rules, enabling atomic operations and simplifying debugging.\n\nStructural Segregation:\nThe design segregates data based on access requirements. User-specific data (dashboards) is stored under the `/users/{userId}` path, while business unit data is stored at the root level. This ensures that all documents in a collection share the same security requirements, simplifying the rules.\n\nAccess Modeling:\nThe structure employs consistent access modeling patterns:\n- Path-Based Ownership: Dashboards are owned by users, using the `/users/{userId}/dashboards/{dashboardId}` path.\n- Membership Map: If collaborative access is needed (not explicitly defined but good practice), this can be implemented in the dashboard or widget level (if necessary).\n\nQAPs (Rules are not Filters):\nThe structure supports secure `list` operations by ensuring that rules do not act as filters. Data segregation and denormalization (if necessary) allow efficient queries without compromising security."
+    "reasoning": "The Firestore structure is designed to address the 'Missing or insufficient permissions' error by ensuring authorization independence and supporting secure list operations. The key is to use Structural Segregation (Homogeneous Security Posture) and Access Modeling (Standardization and Consistency) to make it work. The error indicates a 'list' operation on the 'employees' collection is failing because of permission issues. We need to grant appropriate permissions to list employees based on their role and business unit access.\n\n**Authorization Independence:** The structure will leverage roles stored in `/employees/{employeeId}` (DBAC: Database-Based Access Control), eliminating the need for `get()` calls to other documents for authorization. This ensures atomic operations and simplifies security rules.\n\n**QAPs (Rules are not Filters):**  The structure separates employee data into a top-level collection `/employees`, all documents in this collection share the same security requirements.\n\n**Employee Roles and Business Unit Access:** Employee documents contain an array of `businessUnitIds` they have access to. This is critical for implementing role-based and business-unit-based authorization. Each employee document contains all the information required to make authorization decisions without reading other documents.\n\n**Security Rules:** The security rules will use `request.auth.uid` to determine the requesting user and then check the user's role and `businessUnitIds` within the `/employees/{employeeId}` document. This allows secure listing of employees based on role and business unit access. This ensures only authorized users can access the employee data."
   }
 }
