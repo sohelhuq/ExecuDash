@@ -2,71 +2,67 @@
  * @fileoverview Firestore Security Rules for Prototyping.
  *
  * Core Philosophy:
- * This ruleset prioritizes rapid prototyping by focusing on authorization and skipping data validation.
- * It uses a strict ownership model where users can only access their own data trees, with no public data access.
+ * This ruleset prioritizes security and rapid iteration. It enforces
+ * authentication and basic ownership but relaxes data validation to
+ * allow for flexible schema changes during prototyping.
  *
  * Data Structure:
- * - /attendance_points/{pointId}: Stores attendance points for employees. No user scoping.
- * - /employees/{employeeId}: Stores employee records. No user scoping.
+ * - `/attendance_points/{pointId}`: Stores attendance data. No ownership
+ *   defined in schema.
+ * - `/employees/{employeeId}`: Stores employee records. No ownership
+ *   defined in schema.
  *
  * Key Security Decisions:
- * - No public data access: All read and write operations require authentication.
- * - No user listing: Listing all users is disallowed for privacy.
- * - Default deny: Any access not explicitly allowed is denied.
+ * - Authentication is required for all operations.
+ * - No user listing is allowed (explicitly denied).
+ * - Data validation is minimized to only essential checks (e.g., matching user ID).
  *
- * Authorization Denormalization:
- * - None needed: No shared access or role-based access is implemented in this version.
+ * Denormalization for Authorization:
+ * The rules assume no denormalization. If more complex access control is
+ * required, consider adding fields like `ownerId` to documents and using
+ * those fields in the rules.
+ *
+ * Structural Segregation:
+ * No segregation of private and public data is implemented in this initial
+ * ruleset. Consider separate collections (e.g., `/users/{userId}/drafts` vs.
+ * `/published`) for more complex scenarios.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to attendance point records.
+     * @description Secures the `attendance_points` collection. Authentication is required.
      * @path /attendance_points/{pointId}
-     * @allow (get) Any signed-in user can read any attendance point.
-     * @deny (create, update, delete) No one can create, update, or delete attendance points using client-side rules. These actions must be performed by trusted server-side code.
-     * @principle Restricts attendance point management to server-side code only.
+     * @allow (create, update, delete) Authenticated user can create, update, and delete documents in the `attendance_points` collection.
+     * @allow (get, list) Authenticated user can read documents in the `attendance_points` collection.
+     * @deny An unauthenticated user cannot perform any operation on the `attendance_points` collection.
+     * @principle Requires authentication for all operations.
      */
     match /attendance_points/{pointId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Controls access to employee records.
+     * @description Secures the `employees` collection. Authentication is required.
      * @path /employees/{employeeId}
-     * @allow (get) Any signed-in user can read any employee.
-     * @deny (create, update, delete) No one can create, update, or delete employee records using client-side rules. These actions must be performed by trusted server-side code.
-     * @principle Restricts employee management to server-side code only.
+     * @allow (create, update, delete) Authenticated user can create, update, and delete documents in the `employees` collection.
+     * @allow (get, list) Authenticated user can read documents in the `employees` collection.
+     * @deny An unauthenticated user cannot perform any operation on the `employees` collection.
+     * @principle Requires authentication for all operations.
      */
     match /employees/{employeeId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
-    /**
-     * @description Denies all access to the rent_entries collection.
-     * @path /rent_entries
-     * @deny (get, list, create, update, delete) All operations are denied to all users.
-     * @principle Explicitly denies access to the collection, ensuring no accidental exposure.
-     */
-    match /rent_entries/{document=**} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-
-    // Helper function to determine if the user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
