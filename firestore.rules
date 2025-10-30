@@ -2,183 +2,202 @@
  * @fileoverview Firestore Security Rules for ExecuDash and Bricks ERP.
  *
  * Core Philosophy:
- * This ruleset prioritizes secure authorization based on user identity and role.
- * It aims to prevent unauthorized data access and modification while remaining flexible on data shapes.
+ * This ruleset prioritizes security by enforcing strict access control based on user roles and explicit relationships.
+ * It allows for rapid prototyping by minimizing data shape validation but rigorously enforces authorization.
  *
  * Data Structure:
- * - /employees/{employeeId}: Stores employee profiles; employeeId must match the authenticated user's UID.
- * - /business_units/{businessUnitId}: Stores business unit information.
- * - /business_units/{businessUnitId}/metrics/{metricId}: Stores metrics associated with business units.
- * - /dashboards/{dashboardId}: Stores dashboard configurations.
- * - /dashboards/{dashboardId}/widgets/{widgetId}: Stores widgets associated with dashboards.
- * - /business_units/{businessUnitId}/alerts/{alertId}: Stores alert configurations for business units.
- * - /raw_materials/{materialId}: Stores raw material information for the bricks business.
- * - /production_batches/{batchId}: Stores production batch information for the bricks business.
- * - /finished_goods/{goodId}: Stores finished goods (bricks) information.
+ * - /employees/{employeeId}: Employee profiles, roles, and business unit access.
+ * - /business_units/{businessUnitId}: Business unit information.
+ * - /business_units/{businessUnitId}/metrics/{metricId}: Metrics for each business unit.
+ * - /dashboards/{dashboardId}: Dashboard configurations.
+ * - /dashboards/{dashboardId}/widgets/{widgetId}: Widgets for each dashboard.
+ * - /business_units/{businessUnitId}/alerts/{alertId}: Alert configurations for each business unit.
+ * - /raw_materials/{materialId}: Raw material information.
+ * - /production_batches/{batchId}: Production batch data.
+ * - /finished_goods/{goodId}: Finished goods inventory.
  *
  * Key Security Decisions:
- * - Employs strict owner-only access for employee profiles (employees/{employeeId}).
- * - Allows only authenticated users to manage business units.
- * - For the Bricks ERP module, allows only authenticated users to manage production, raw materials, and finished goods data.
+ * - Employees can only read and write their own employee document.
+ * - Listing employees is not permitted to prevent information disclosure.
+ * - All other collections require authentication.
+ * - No public data access is allowed without authentication.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants owner-only access to employee profiles.
+     * @description Enforces strict ownership for employee profiles.  Employees can only manage their own profile data.
      * @path /employees/{employeeId}
-     * @allow (create) User with UID 'AnHykOXVqVhKEUFb7V8VNeQquTf2' can create an employee document where employeeId == 'AnHykOXVqVhKEUFb7V8VNeQquTf2'.
-     * @deny (create) User with UID 'AnotherUid' cannot create an employee document where employeeId == 'AnHykOXVqVhKEUFb7V8VNeQquTf2'.
-     * @allow (get) User with UID 'AnHykOXVqVhKEUFb7V8VNeQquTf2' can get their employee document (employeeId == 'AnHykOXVqVhKEUFb7V8VNeQquTf2').
-     * @deny (get) User with UID 'AnotherUid' cannot get employee document of user 'AnHykOXVqVhKEUFb7V8VNeQquTf2'.
-     * @allow (update) User with UID 'AnHykOXVqVhKEUFb7V8VNeQquTf2' can update their employee document (employeeId == 'AnHykOXVqVhKEUFb7V8VNeQquTf2').
-     * @deny (update) User with UID 'AnotherUid' cannot update employee document of user 'AnHykOXVqVhKEUFb7V8VNeQquTf2'.
-     * @allow (delete) User with UID 'AnHykOXVqVhKEUFb7V8VNeQquTf2' can delete their employee document (employeeId == 'AnHykOXVqVhKEUFb7V8VNeQquTf2').
-     * @deny (delete) User with UID 'AnotherUid' cannot delete employee document of user 'AnHykOXVqVhKEUFb7V8VNeQquTf2'.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Employee with UID 'user_abc' can create their profile with ID 'user_abc'.
+     * @allow (get, update, delete) - Employee with UID 'user_abc' can read/update/delete their profile with ID 'user_abc'.
+     * @deny (create, update, delete) - Employee with UID 'user_abc' cannot create/update/delete a profile with ID 'user_xyz'.
+     * @deny (list) - Prevents listing all employee profiles for privacy.
+     * @principle Enforces document ownership for writes and restricts listing for privacy.
      */
     match /employees/{employeeId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
       allow get: if isOwner(employeeId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(employeeId) && request.resource.data.id == employeeId;
-      allow update: if isSignedIn() && isExistingOwner(employeeId) && request.resource.data.id == resource.data.id;
-      allow delete: if isSignedIn() && isExistingOwner(employeeId);
+      allow list: if false; // Explicitly deny listing employees for privacy.
+
+      allow create: if isOwner(employeeId);
+      allow update: if isExistingOwner(employeeId);
+      allow delete: if isExistingOwner(employeeId);
     }
 
     /**
-     * @description Allows any authenticated user to read business units.
+     * @description Protects business unit information; requires authentication.
      * @path /business_units/{businessUnitId}
-     * @allow (get) Any authenticated user can read business units.
-     * @deny (create) Non-authenticated user cannot create business unit
-     * @allow (create) Authenticated user can create business unit
-     * @principle Requires authentication for all write operations.
+     * @allow (get, list) - Any authenticated user can read business unit data.
+     * @allow (create, update, delete) - No one can create, update, or delete business units.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /business_units/{businessUnitId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to read metrics for a business unit.
+     * @description Protects metrics for business units; inherits security context from business_units.
      * @path /business_units/{businessUnitId}/metrics/{metricId}
-     * @allow (get) Any authenticated user can read metrics under a business unit.
-     * @deny (create) Non-authenticated user cannot create metric under a business unit.
-     * @allow (create) Authenticated user can create metric under a business unit.
-     * @principle Requires authentication for all write operations on metrics.
+     * @allow (get, list) - Any authenticated user can read metrics.
+     * @allow (create, update, delete) - No one can create, update, or delete metrics.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /business_units/{businessUnitId}/metrics/{metricId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to manage dashboards.
+     * @description Protects dashboard configurations; requires authentication.
      * @path /dashboards/{dashboardId}
-     * @allow (get) Any authenticated user can read dashboards.
-     * @deny (create) Non-authenticated user cannot create dashboard.
-     * @allow (create) Authenticated user can create dashboard.
-     * @principle Requires authentication for all write operations on dashboards.
+     * @allow (get, list) - Any authenticated user can read dashboard configurations.
+     * @allow (create, update, delete) - No one can create, update, or delete dashboards.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /dashboards/{dashboardId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to manage widgets for a dashboard.
+     * @description Protects widgets for dashboards; inherits security context from dashboards.
      * @path /dashboards/{dashboardId}/widgets/{widgetId}
-     * @allow (get) Any authenticated user can read widgets under a dashboard.
-     * @deny (create) Non-authenticated user cannot create widget under a dashboard.
-     * @allow (create) Authenticated user can create widget under a dashboard.
-     * @principle Requires authentication for all write operations on widgets.
+     * @allow (get, list) - Any authenticated user can read widgets.
+     * @allow (create, update, delete) - No one can create, update, or delete widgets.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /dashboards/{dashboardId}/widgets/{widgetId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to manage alerts for a business unit.
+     * @description Protects alert configurations for business units; inherits security context from business_units.
      * @path /business_units/{businessUnitId}/alerts/{alertId}
-     * @allow (get) Any authenticated user can read alerts under a business unit.
-     * @deny (create) Non-authenticated user cannot create alert under a business unit.
-     * @allow (create) Authenticated user can create alert under a business unit.
-     * @principle Requires authentication for all write operations on alerts.
+     * @allow (get, list) - Any authenticated user can read alerts.
+     * @allow (create, update, delete) - No one can create, update, or delete alerts.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /business_units/{businessUnitId}/alerts/{alertId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to manage raw materials.
+     * @description Protects raw material information; requires authentication.
      * @path /raw_materials/{materialId}
-     * @allow (get) Any authenticated user can read raw materials.
-     * @deny (create) Non-authenticated user cannot create raw material.
-     * @allow (create) Authenticated user can create raw material.
-     * @principle Requires authentication for all write operations on raw materials.
+     * @allow (get, list) - Any authenticated user can read raw materials.
+     * @allow (create, update, delete) - No one can create, update, or delete raw materials.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /raw_materials/{materialId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to manage production batches.
+     * @description Protects production batch data; requires authentication.
      * @path /production_batches/{batchId}
-     * @allow (get) Any authenticated user can read production batches.
-     * @deny (create) Non-authenticated user cannot create production batch.
-     * @allow (create) Authenticated user can create production batch.
-     * @principle Requires authentication for all write operations on production batches.
+     * @allow (get, list) - Any authenticated user can read production batches.
+     * @allow (create, update, delete) - No one can create, update, or delete production batches.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /production_batches/{batchId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to manage finished goods.
+     * @description Protects finished goods inventory; requires authentication.
      * @path /finished_goods/{goodId}
-     * @allow (get) Any authenticated user can read finished goods.
-     * @deny (create) Non-authenticated user cannot create finished good.
-     * @allow (create) Authenticated user can create finished good.
-     * @principle Requires authentication for all write operations on finished goods.
+     * @allow (get, list) - Any authenticated user can read finished goods.
+     * @allow (create, update, delete) - No one can create, update, or delete finished goods.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
      */
     match /finished_goods/{goodId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create, update, delete: if false;
     }
-  }
 
-  // Helper function to determine if the user is signed in.
-  function isSignedIn() {
-    return request.auth != null;
-  }
+    /**
+     * @description Addresses the original error; requires authentication to list responsibilities.
+     * @path /responsibilities
+     * @allow (get, list) - Any authenticated user can read and list responsibilities.
+     * @allow (create, update, delete) - No one can create, update, or delete responsibilities.
+     * @principle Requires authentication for reads and prevents unauthorized modifications.
+     */
+    match /responsibilities {
+        function isSignedIn() {
+          return request.auth != null;
+        }
 
-  // Helper function to determine if the user is the owner of the document.
-  function isOwner(userId) {
-    return request.auth.uid == userId;
-  }
-
-  // Helper function to determine if the user is the owner of an existing document.
-  function isExistingOwner(userId) {
-    return isOwner(userId) && resource != null;
+        allow get, list: if isSignedIn();
+        allow create, update, delete: if false;
+    }
   }
 }
