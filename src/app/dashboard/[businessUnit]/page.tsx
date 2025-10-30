@@ -1,7 +1,7 @@
 
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +40,10 @@ const ICONS: { [key: string]: React.ElementType } = {
 };
 
 
-export default function BusinessUnitPage({ params }: { params: { businessUnit: string } }) {
+export default function BusinessUnitPage() {
+  const params = useParams();
+  const businessUnitId = params.businessUnit as string;
+
   const firestore = useFirestore();
   const { toast } = useToast();
   
@@ -48,13 +51,13 @@ export default function BusinessUnitPage({ params }: { params: { businessUnit: s
   const [newReading, setNewReading] = React.useState<{product?: string, nozzle?: string, reading?: string}>({});
 
   const unitDocRef = useMemoFirebase(() => {
-    return firestore ? doc(firestore, 'business_units', params.businessUnit) : null;
-  }, [firestore, params.businessUnit]);
+    return firestore ? doc(firestore, 'business_units', businessUnitId) : null;
+  }, [firestore, businessUnitId]);
   const { data: unit, isLoading: isLoadingUnit } = useDoc<BusinessUnit>(unitDocRef);
   
   const readingsCollectionRef = useMemoFirebase(() => {
-    return firestore ? collection(firestore, 'business_units', params.businessUnit, 'meter_readings') : null;
-  }, [firestore, params.businessUnit]);
+    return firestore ? collection(firestore, 'business_units', businessUnitId, 'meter_readings') : null;
+  }, [firestore, businessUnitId]);
   const { data: readings, isLoading: isLoadingReadings } = useCollection<MeterReading>(readingsCollectionRef);
 
   if (isLoadingUnit) {
