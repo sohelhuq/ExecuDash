@@ -88,9 +88,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-bold">YRM</CardTitle>
+          <CardTitle className="text-2xl font-bold">ExecuDash</CardTitle>
           <CardDescription>
-            Employee Management Dashboard
+            Intelligent Command Center for Shetue Group
           </CardDescription>
         </CardHeader>
         <Form {...form}>

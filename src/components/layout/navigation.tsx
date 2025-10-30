@@ -82,7 +82,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-3 p-2">
           <Logo />
-          <span className="text-xl font-bold text-sidebar-foreground">YRM</span>
+          <span className="text-xl font-bold text-sidebar-foreground">ExecuDash</span>
         </div>
         <div className="p-2">
           <Input placeholder="Menu Search..." />

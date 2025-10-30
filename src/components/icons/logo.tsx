@@ -8,9 +8,9 @@ export function Logo({ className }: { className?: string }) {
       height="32"
       viewBox="0 0 100 100"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="YRM Logo"
+      aria-label="ExecuDash Logo"
     >
-        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontSize="60" fontWeight="bold" fill="hsl(var(--primary))">YRM</text>
+        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontSize="60" fontWeight="bold" fill="hsl(var(--primary))">ED</text>
     </svg>
   );
 }
