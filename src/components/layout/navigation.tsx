@@ -120,12 +120,12 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {allBusinessUnits.map(unit => (
                          <SidebarMenuItem key={unit.id}>
+                           <SidebarMenuSubButton asChild isActive={pathname === `/dashboard/${unit.id}`}>
                              <Link href={`/dashboard/${unit.id}`}>
-                                 <SidebarMenuSubButton isActive={pathname === `/dashboard/${unit.id}`}>
-                                     <Dot />
-                                     <span>{unit.name}</span>
-                                 </SidebarMenuSubButton>
+                               <Dot />
+                               <span>{unit.name}</span>
                              </Link>
+                           </SidebarMenuSubButton>
                          </SidebarMenuItem>
                       ))}
                   </SidebarMenuSub>
@@ -148,12 +148,12 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {hrSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
+                           <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
                              <Link href={subItem.href}>
-                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
-                                     <Dot />
-                                     <span>{subItem.label}</span>
-                                 </SidebarMenuSubButton>
+                               <Dot />
+                               <span>{subItem.label}</span>
                              </Link>
+                           </SidebarMenuSubButton>
                          </SidebarMenuItem>
                       ))}
 
@@ -171,21 +171,21 @@ export function AppSidebar() {
                             <CollapsibleContent>
                                 <SidebarMenuSub>
                                     <SidebarMenuItem>
+                                      <SidebarMenuSubButton asChild isActive={pathname === '/reward/attendance'}>
                                         <Link href="/reward/attendance">
-                                            <SidebarMenuSubButton isActive={pathname === '/reward/attendance'}>
-                                                <Dot />
-                                                <span>Attendance points</span>
-                                            </SidebarMenuSubButton>
+                                            <Dot />
+                                            <span>Attendance points</span>
                                         </Link>
+                                      </SidebarMenuSubButton>
                                     </SidebarMenuItem>
                                      {rewardPointsSubItems.map(subItem => (
                                        <SidebarMenuItem key={subItem.href}>
+                                         <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
                                            <Link href={subItem.href}>
-                                               <SidebarMenuSubButton isActive={pathname === subItem.href}>
-                                                   <Dot />
-                                                   <span>{subItem.label}</span>
-                                               </SidebarMenuSubButton>
+                                               <Dot />
+                                               <span>{subItem.label}</span>
                                            </Link>
+                                         </SidebarMenuSubButton>
                                        </SidebarMenuItem>
                                     ))}
                                 </SidebarMenuSub>
@@ -226,28 +226,28 @@ export function AppSidebar() {
               <CollapsibleContent>
                   <SidebarMenuSub>
                         <SidebarMenuItem>
+                          <SidebarMenuSubButton asChild isActive={pathname.startsWith('/banking')}>
                             <Link href="/banking">
-                                <SidebarMenuSubButton isActive={pathname.startsWith('/banking')}>
-                                    <Dot />
-                                    <span>Accounts Summary</span>
-                                </SidebarMenuSubButton>
+                                <Dot />
+                                <span>Accounts Summary</span>
                             </Link>
+                          </SidebarMenuSubButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
+                          <SidebarMenuSubButton asChild isActive={pathname.startsWith('/fdr')}>
                             <Link href="/fdr">
-                                <SidebarMenuSubButton isActive={pathname.startsWith('/fdr')}>
-                                    <Dot />
-                                    <span>FDR</span>
-                                </SidebarMenuSubButton>
+                                <Dot />
+                                <span>FDR</span>
                             </Link>
+                          </SidebarMenuSubButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
+                          <SidebarMenuSubButton asChild isActive={pathname.startsWith('/dps')}>
                             <Link href="/dps">
-                                <SidebarMenuSubButton isActive={pathname.startsWith('/dps')}>
-                                    <Dot />
-                                    <span>DPS</span>
-                                </SidebarMenuSubButton>
+                                <Dot />
+                                <span>DPS</span>
                             </Link>
+                          </SidebarMenuSubButton>
                         </SidebarMenuItem>
                   </SidebarMenuSub>
               </CollapsibleContent>
@@ -329,12 +329,12 @@ export function AppSidebar() {
                   <SidebarMenuSub>
                        {manufacturingSubItems.map(subItem => (
                          <SidebarMenuItem key={subItem.href}>
+                           <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
                              <Link href={subItem.href}>
-                                 <SidebarMenuSubButton isActive={pathname === subItem.href}>
-                                     <Dot />
-                                     <span>{subItem.label}</span>
-                                 </SidebarMenuSubButton>
+                               <Dot />
+                               <span>{subItem.label}</span>
                              </Link>
+                           </SidebarMenuSubButton>
                          </SidebarMenuItem>
                       ))}
                   </SidebarMenuSub>
