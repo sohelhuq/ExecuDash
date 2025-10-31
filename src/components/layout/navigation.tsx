@@ -22,7 +22,6 @@ import {
   Building2,
   FolderKanban,
   Factory,
-  ToyBrick,
   Fuel,
   Archive,
 } from 'lucide-react';
@@ -319,7 +318,7 @@ export function AppSidebar() {
               <CollapsibleTrigger asChild>
                   <SidebarMenuButton className="justify-between w-full" isActive={pathname.startsWith('/manufacturing')}>
                       <div className="flex items-center gap-2">
-                          <ToyBrick />
+                          <Factory />
                           <span>Bricks ERP</span>
                       </div>
                       <ChevronRight className="h-4 w-4" />

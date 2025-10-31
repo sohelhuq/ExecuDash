@@ -8,14 +8,14 @@ import {
   PackageCheck,
   Recycle,
   DraftingCompass,
-  Brick,
+  Factory,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const manufacturingModules = [
   {
-    icon: Brick,
+    icon: Factory,
     title: "ERP Dashboard",
     description: "A comprehensive overview of your bricks business, from raw materials to sales.",
     href: "/manufacturing/dashboard"
