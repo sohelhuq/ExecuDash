@@ -114,13 +114,15 @@ export function AppSidebar() {
             if (item.adminOnly && userProfile?.userType !== 'Admin') {
               return null;
             }
+            const isParentActive = item.subItems ? item.subItems.some(si => pathname.startsWith(si.href)) : false;
+
             return (
             <SidebarMenuItem key={item.label}>
               {item.subItems ? (
                 <Collapsible>
                   <CollapsibleTrigger asChild>
                      <SidebarMenuButton
-                        isActive={item.href ? pathname.startsWith(item.href) : item.subItems.some(si => pathname.startsWith(si.href))}
+                        isActive={isParentActive}
                         tooltip={item.label}
                         className="justify-start w-full"
                       >
@@ -145,7 +147,7 @@ export function AppSidebar() {
               ) : (
                 <Link href={item.href!}>
                   <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href!)}
+                    isActive={pathname === item.href}
                     tooltip={item.label}
                     className="justify-start"
                   >
