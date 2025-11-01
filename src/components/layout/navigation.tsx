@@ -44,10 +44,14 @@ import Link from 'next/link';
 import * as React from 'react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { useUserProfile } from '@/hooks/use-user-profile';
+import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+
+type BusinessUnit = { id: string; name: string; location: string };
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/units', label: 'Units', icon: Building },
+  // { href: '/units', label: 'Units', icon: Building },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   {
     label: 'Sales',
@@ -96,6 +100,62 @@ const navItems = [
   { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
 ];
 
+function UnitsNavAccordion() {
+  const pathname = usePathname();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const unitsRef = useMemoFirebase(
+    () => (user ? collection(firestore, `users/${user.uid}/businessUnits`) : null),
+    [firestore, user]
+  );
+  const { data: units, isLoading } = useCollection<BusinessUnit>(unitsRef);
+
+  const isParentActive = pathname.startsWith('/units');
+
+  return (
+    <SidebarMenuItem>
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton
+            isActive={isParentActive}
+            tooltip="Business Units"
+            className="justify-start w-full"
+          >
+            <Building className="h-4 w-4" />
+            <span>Units</span>
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            <li>
+              <Link href="/units">
+                <SidebarMenuSubButton isActive={pathname === '/units'}>
+                  All Units
+                </SidebarMenuSubButton>
+              </Link>
+            </li>
+            {isLoading && (
+              <li>
+                <SidebarMenuSubButton disabled>Loading...</SidebarMenuSubButton>
+              </li>
+            )}
+            {units?.map((unit) => (
+              <li key={unit.id}>
+                <Link href={`/units/${unit.id}`}>
+                  <SidebarMenuSubButton isActive={pathname === `/units/${unit.id}`}>
+                    {unit.name}
+                  </SidebarMenuSubButton>
+                </Link>
+              </li>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </Collapsible>
+    </SidebarMenuItem>
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const { userProfile } = useUserProfile();
@@ -110,7 +170,23 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <Link href="/dashboard">
+              <SidebarMenuButton
+                isActive={pathname === '/dashboard'}
+                tooltip="Dashboard"
+                className="justify-start"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+
+          <UnitsNavAccordion />
+
           {navItems.map((item) => {
+            if (item.href === '/dashboard' || item.href === '/units') return null; // Already handled
             if (item.adminOnly && userProfile?.userType !== 'Admin') {
               return null;
             }
