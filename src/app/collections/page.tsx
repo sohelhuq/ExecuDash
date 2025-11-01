@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Circle, Loader2, PlusCircle, Upload, TrendingDown, Users, FileStack } from 'lucide-react';
+import { CheckCircle, Circle, Loader2, PlusCircle, Upload, TrendingDown, Users, FileStack, Database } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
@@ -29,8 +29,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase';
+import { collection, doc, writeBatch, getDocs } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -41,11 +41,19 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { initialAssignedAccounts, initialResponsibilities } from '@/lib/collections-data';
 
 const officer = {
+  id: 'collections-officer',
   name: 'Ahmed Rahman',
   avatarId: 'officer-avatar',
 };
+
+type Officer = {
+  id: string;
+  name: string;
+  avatarId: string;
+}
 
 type AssignedAccount = {
   unit: string;
@@ -71,14 +79,19 @@ const accountFormSchema = z.object({
 });
 
 export default function CollectionsPage() {
-  const [officerState, setOfficerState] = React.useState(officer);
   const [assignOfficerOpen, setAssignOfficerOpen] = React.useState(false);
   const [newAccountOpen, setNewAccountOpen] = React.useState(false);
   const [bulkUploadOpen, setBulkUploadOpen] = React.useState(false);
   const [newOfficerName, setNewOfficerName] = React.useState('');
+  const [isSeeding, setIsSeeding] = React.useState(false);
   const { toast } = useToast();
   
   const firestore = useFirestore();
+
+  const officerDocRef = useMemoFirebase(() => {
+    return firestore ? doc(firestore, 'officers', officer.id) : null;
+  }, [firestore]);
+  const { data: officerState, isLoading: isLoadingOfficer } = useDoc<Officer>(officerDocRef);
   
   const accountsCollection = useMemoFirebase(() => {
     return firestore ? collection(firestore, 'assigned_accounts') : null;
@@ -101,7 +114,7 @@ export default function CollectionsPage() {
     },
   });
   
-  const officerAvatar = PlaceHolderImages.find((p) => p.id === officerState.avatarId);
+  const officerAvatar = PlaceHolderImages.find((p) => p.id === officer.avatarId);
   const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
   
   const kpiData = React.useMemo(() => {
@@ -116,10 +129,50 @@ export default function CollectionsPage() {
     return { totalAssigned, totalOverdue, overdueAccounts };
   }, [assignedAccounts]);
 
+  const seedData = async () => {
+    if (!firestore) return;
+    setIsSeeding(true);
+    try {
+        const batch = writeBatch(firestore);
+        
+        // Seed officer
+        const officerRef = doc(firestore, 'officers', officer.id);
+        const officerSnap = await getDocs(query(collection(firestore, 'officers'), where('id', '==', officer.id)));
+        if(officerSnap.empty) batch.set(officerRef, officer);
+
+        // Seed responsibilities
+        const respCollectionRef = collection(firestore, 'responsibilities');
+        const respSnap = await getDocs(respCollectionRef);
+        if (respSnap.empty) {
+            initialResponsibilities.forEach(item => {
+                const docRef = doc(respCollectionRef);
+                batch.set(docRef, item);
+            });
+        }
+
+        // Seed accounts
+        const acctsCollectionRef = collection(firestore, 'assigned_accounts');
+        const acctsSnap = await getDocs(acctsCollectionRef);
+        if (acctsSnap.empty) {
+            initialAssignedAccounts.forEach(item => {
+                const docRef = doc(acctsCollectionRef);
+                batch.set(docRef, item);
+            });
+        }
+        
+        await batch.commit();
+        toast({ title: 'Seeding Complete', description: `Initial collections data has been added.` });
+    } catch (error) {
+        console.error('Error seeding data:', error);
+        toast({ variant: 'destructive', title: 'Seeding Failed', description: 'Could not seed collections data.' });
+    } finally {
+        setIsSeeding(false);
+    }
+};
 
   const handleAssignOfficer = () => {
-    if (newOfficerName.trim()) {
-      setOfficerState(prev => ({...prev, name: newOfficerName}));
+    if (newOfficerName.trim() && officerDocRef) {
+      setDocumentNonBlocking(officerDocRef, { name: newOfficerName }, { merge: true });
       setNewOfficerName('');
       setAssignOfficerOpen(false);
       toast({
@@ -171,6 +224,10 @@ export default function CollectionsPage() {
             <p className="text-muted-foreground">Centralized Performance Hub</p>
           </div>
            <div className="flex gap-2">
+             <Button variant="outline" onClick={seedData} disabled={isSeeding}>
+                {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                Seed Data
+            </Button>
              <Dialog open={assignOfficerOpen} onOpenChange={setAssignOfficerOpen}>
               <DialogTrigger asChild>
                   <Button variant="outline">Assign Officer</Button>
@@ -263,12 +320,16 @@ export default function CollectionsPage() {
           <div className="space-y-6 lg:col-span-1">
             <Card className="bg-card/80 border-border/60">
               <CardContent className="pt-6 flex flex-col items-center text-center">
-                 {officerAvatar && <Avatar className="w-20 h-20 mb-4 border-2 border-primary">
-                    <AvatarImage src={officerAvatar.imageUrl} alt={officerState.name} data-ai-hint={officerAvatar.imageHint} />
-                    <AvatarFallback>{officerState.name.charAt(0)}</AvatarFallback>
-                </Avatar>}
-                <p className="text-sm text-muted-foreground">Responsible Officer:</p>
-                <p className="text-lg font-semibold">{officerState.name}</p>
+                {isLoadingOfficer ? <Loader2 className="w-20 h-20 mb-4 animate-spin" /> : (
+                  <>
+                    {officerAvatar && <Avatar className="w-20 h-20 mb-4 border-2 border-primary">
+                        <AvatarImage src={officerAvatar.imageUrl} alt={officerState?.name || ''} data-ai-hint={officerAvatar.imageHint} />
+                        <AvatarFallback>{officerState?.name.charAt(0)}</AvatarFallback>
+                    </Avatar>}
+                    <p className="text-sm text-muted-foreground">Responsible Officer:</p>
+                    <p className="text-lg font-semibold">{officerState?.name}</p>
+                  </>
+                )}
               </CardContent>
             </Card>
             
@@ -306,7 +367,7 @@ export default function CollectionsPage() {
           <div className="lg:col-span-3">
             <Card className="bg-card/80 border-border/60 h-full">
               <CardHeader>
-                <CardTitle>{officerState.name} - Job Responsibilities & Timeline</CardTitle>
+                <CardTitle>{officerState?.name || 'Officer'} - Job Responsibilities & Timeline</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {isLoadingResponsibilities ? (
@@ -396,7 +457,7 @@ export default function CollectionsPage() {
                             <TableCell>{account.dueDate}</TableCell>
                             <TableCell className="text-right font-mono">{formatCurrency(account.amountDue)}</TableCell>
                             <TableCell>
-                                <Badge variant={account.status === 'Overdue' ? 'destructive' : 'secondary'} className={account.status === 'Pending' ? 'bg-accent/80 text-accent-foreground' : ''}>
+                                <Badge variant={account.status === 'Overdue' ? 'destructive' : 'secondary'} className={account.status === 'Pending' ? 'bg-amber-100 text-amber-800' : account.status === 'Paid' ? 'bg-green-100 text-green-800' : ''}>
                                     {account.status}
                                 </Badge>
                             </TableCell>
@@ -410,3 +471,5 @@ export default function CollectionsPage() {
     </AppShell>
   );
 }
+
+    
