@@ -6,6 +6,9 @@ import {
   FileText,
   BarChart2,
   Settings,
+  Users,
+  Banknote,
+  Landmark,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,10 +25,13 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/customers', label: 'Customers', icon: Users },
+  { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/tax-center', label: 'Tax Center', icon: FileText },
   { href: '/analytics', label: 'Analytics', icon: BarChart2 },
+  { href: '/finance-tax', label: 'ফিনান্স ও ট্যাক্স', icon: Landmark },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

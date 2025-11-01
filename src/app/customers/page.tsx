@@ -1,5 +1,5 @@
 'use client';
-import *s React from 'react';
+import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,7 +12,7 @@ const customers = [
   { id: 'cust1', name: "ABC Corporation", agent: "Rahim Sheikh", email: "contact@abccorp.com", status: "Approved", registrationDate: "2024-02-10" },
   { id: 'cust2', name: "XYZ Ltd", agent: "Rahim Sheikh", email: "info@xyz.com", status: "Pending", registrationDate: "2024-07-20" },
   { id: 'cust3', name: "DEF Industries", agent: "Fatima Ahmed", email: "accounts@def.com", status: "Approved", registrationDate: "2024-05-01" },
-  { id: 'cust4', name "GHI Solutions", agent: "Fatima Ahmed", email: "support@ghi.com", status: "Rejected", registrationDate: "2024-06-15" },
+  { id: 'cust4', name: "GHI Solutions", agent: "Fatima Ahmed", email: "support@ghi.com", status: "Rejected", registrationDate: "2024-06-15" },
 ];
 
 export default function CustomersPage() {
