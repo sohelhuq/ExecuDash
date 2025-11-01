@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Contact,
   Fuel,
+  ClipboardList,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,6 +43,7 @@ const navItems = [
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
+  { href: '/notice-board', label: 'Notice Board', icon: ClipboardList },
   { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
   { href: '/banking', label: 'Banking', icon: Landmark },
   { href: '/collections', label: 'Collections', icon: BookOpenCheck },
