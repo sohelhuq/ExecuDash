@@ -1,14 +1,14 @@
-
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FilePlus, Loader2 } from 'lucide-react';
+import { FilePlus, Loader2, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as React from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, writeBatch, getDocs, doc } from 'firebase/firestore';
+import { initialRentEntries } from '@/lib/properties-data';
 
 
 type RentEntry = {
@@ -105,6 +105,7 @@ const SummaryCard = ({ title, value }: { title: string; value: string }) => (
 export default function PropertiesPage() {
     const { toast } = useToast();
     const firestore = useFirestore();
+    const [isSeeding, setIsSeeding] = React.useState(false);
 
     const vangaDokanQuery = useMemoFirebase(() => {
         return firestore ? query(collection(firestore, 'rent_entries'), where('category', '==', 'shetue_vanga_dokan')) : null;
@@ -127,6 +128,33 @@ export default function PropertiesPage() {
             description: `${action} functionality will be implemented here.`,
         });
     };
+    
+    const seedData = async () => {
+        if (!firestore) return;
+        setIsSeeding(true);
+        try {
+            const rentCollectionRef = collection(firestore, 'rent_entries');
+            const snapshot = await getDocs(rentCollectionRef);
+            if (!snapshot.empty) {
+                toast({ title: 'Data Already Exists', description: 'Rent entry data has already been seeded.' });
+                return;
+            }
+
+            const batch = writeBatch(firestore);
+            initialRentEntries.forEach((entry) => {
+                const docRef = doc(rentCollectionRef);
+                batch.set(docRef, entry);
+            });
+            await batch.commit();
+            toast({ title: 'Seeding Complete', description: `${initialRentEntries.length} rent entries have been added.` });
+        } catch (error) {
+            console.error('Error seeding data:', error);
+            toast({ variant: 'destructive', title: 'Seeding Failed', description: 'Could not seed rent entry data.' });
+        } finally {
+            setIsSeeding(false);
+        }
+    };
+
 
     const grandTotalOpening = (shetueVangaDokanData?.reduce((a,c) => a+c.opening, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.opening, 0) || 0) + (othersData?.reduce((a,c) => a+c.opening, 0) || 0);
     const grandTotalRent = (shetueVangaDokanData?.reduce((a,c) => a+c.rent, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.rent, 0) || 0) + (othersData?.reduce((a,c) => a+c.rent, 0) || 0);
@@ -141,10 +169,16 @@ export default function PropertiesPage() {
             <h1 className="text-3xl font-bold tracking-tight">Rent Collection Dashboard</h1>
             <p className="text-muted-foreground">Vara collection & Due as of 31-12-24</p>
           </div>
-          <Button size="lg" onClick={() => handleButtonClick('Data Entry')}>
-              <FilePlus className="mr-2 h-5 w-5" />
-              Data Entry
-          </Button>
+          <div className='flex gap-2'>
+            <Button variant="outline" onClick={seedData} disabled={isSeeding}>
+                {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                Seed Data
+            </Button>
+            <Button size="lg" onClick={() => handleButtonClick('Data Entry')}>
+                <FilePlus className="mr-2 h-5 w-5" />
+                Data Entry
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
