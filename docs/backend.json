@@ -5,61 +5,98 @@
       "description": "Represents a user in the system, storing their personal information and preferences.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "User's Firebase Auth UID" },
+        "id": { "type": "string", "description": "User's Firebase Auth UID (UserID)" },
         "name": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "createdAt": { "type": "string", "format": "date-time" },
+        "userType": { "type": "string", "enum": ["Individual", "Business", "Admin"], "description": "Type of the user account" },
         "subscriptionTier": { "type": "string", "enum": ["Free", "Basic", "Premium", "Enterprise"] },
-        "currency": { "type": "string", "default": "BDT" }
+        "settings": { 
+          "type": "object",
+          "description": "User-specific settings",
+          "properties": {
+            "currency": { "type": "string", "default": "BDT" },
+            "language": { "type": "string", "default": "en" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "email", "createdAt", "subscriptionTier"]
+      "required": ["id", "email", "createdAt", "userType", "subscriptionTier"]
     },
     "FinancialTransaction": {
       "title": "Financial Transaction",
       "description": "Represents a single financial transaction, such as income or an expense.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "description": "Transaction ID (TxID)" },
         "userId": { "type": "string", "description": "UID of the user who owns the transaction" },
-        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
         "amount": { "type": "number" },
         "type": { "type": "string", "enum": ["income", "expense"] },
         "category": { "type": "string", "description": "e.g., 'Salary', 'Rent', 'Groceries', 'Utilities'" },
-        "date": { "type": "string", "format": "date-time" },
-        "source": { "type": "string", "description": "e.g., 'Bank Transfer', 'Credit Card', 'Cash'" }
+        "source": { "type": "string", "description": "e.g., 'Bank Transfer', 'Credit Card', 'Cash'" },
+        "description": { "type": "string" },
+        "linkedDocument": { "type": "string", "format": "uri", "description": "Link to a related document like an invoice (Link)"}
       },
-      "required": ["id", "userId", "description", "amount", "type", "category", "date"]
+      "required": ["id", "userId", "date", "amount", "type", "category"]
     },
     "TaxRecord": {
       "title": "Tax Record",
       "description": "Represents a tax-related record or document for a user.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "description": "Tax Record ID (TaxID)" },
         "userId": { "type": "string" },
         "year": { "type": "number" },
-        "recordType": { "type": "string", "description": "e.g., 'Tax Return', 'Compliance Report', 'Deduction Receipt'" },
-        "description": { "type": "string" },
-        "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Filed", "Pending", "Audit"] },
-        "date": { "type": "string", "format": "date-time" }
+        "deductions": { "type": "number", "description": "Total deductions claimed for the year" },
+        "status": { "type": "string", "enum": ["Not Filed", "Filed", "Pending", "Audit"] },
+        "filingDate": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "userId", "year", "recordType", "status", "date"]
+      "required": ["id", "userId", "year", "status"]
     },
     "Goal": {
       "title": "Goal",
       "description": "Represents a financial goal set by a user.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "description": "Goal ID" },
         "userId": { "type": "string" },
         "name": { "type": "string" },
         "targetAmount": { "type": "number" },
         "currentAmount": { "type": "number" },
-        "targetDate": { "type": "string", "format": "date" },
+        "duration": { "type": "string", "description": "Estimated duration to reach the goal, e.g., '6 months', '1 year'" },
+        "status": { "type": "string", "enum": ["Active", "Completed", "Cancelled"] },
         "category": { "type": "string", "enum": ["Savings", "Investment", "Debt Repayment"] }
       },
-      "required": ["id", "userId", "name", "targetAmount", "currentAmount"]
+      "required": ["id", "userId", "name", "targetAmount", "currentAmount", "status"]
+    },
+    "ComplianceLog": {
+      "title": "Compliance Log",
+      "description": "Records an audit trail of significant actions and approvals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Log ID" },
+        "entityType": { "type": "string", "description": "The type of entity being acted upon (e.g., 'TaxRecord', 'Withdrawal')" },
+        "entityId": { "type": "string", "description": "The ID of the entity" },
+        "action": { "type": "string", "description": "The action performed (e.g., 'Created', 'Approved', 'Rejected')" },
+        "actorUserId": { "type": "string", "description": "The ID of the user who performed the action" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string", "description": "Additional details about the action" }
+      },
+      "required": ["id", "entityType", "entityId", "action", "actorUserId", "timestamp"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Represents an alert or message sent to a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Notification ID" },
+        "userId": { "type": "string" },
+        "message": { "type": "string" },
+        "readStatus": { "type": "boolean", "default": false },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["Info", "Warning", "Success", "Error"] }
+      },
+      "required": ["id", "userId", "message", "readStatus", "createdAt"]
     }
   },
   "auth": {
@@ -93,6 +130,20 @@
         "definition": {
           "entityName": "Goal",
           "schema": { "$ref": "#/entities/Goal" }
+        }
+      },
+      {
+        "path": "/complianceLogs/{logId}",
+        "definition": {
+          "entityName": "ComplianceLog",
+          "schema": { "$ref": "#/entities/ComplianceLog" }
+        }
+      },
+      {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": { "$ref": "#/entities/Notification" }
         }
       }
     ]
