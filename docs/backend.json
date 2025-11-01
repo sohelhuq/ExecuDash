@@ -1,77 +1,65 @@
 {
   "entities": {
-    "AgentProfile": {
-      "title": "Agent Profile",
-      "description": "Represents an agent in the system.",
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user in the system, storing their personal information and preferences.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "Agent's Firebase Auth UID" },
+        "id": { "type": "string", "description": "User's Firebase Auth UID" },
         "name": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "address": { "type": "string" },
-        "commissionRate": { "type": "number", "description": "Commission rate as a percentage (e.g., 5 for 5%)" },
-        "status": { "type": "string", "enum": ["Active", "Inactive", "Pending"] },
-        "joiningDate": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "subscriptionTier": { "type": "string", "enum": ["Free", "Basic", "Premium", "Enterprise"] },
+        "currency": { "type": "string", "default": "BDT" }
       },
-      "required": ["id", "name", "email", "status", "joiningDate"]
+      "required": ["id", "email", "createdAt", "subscriptionTier"]
     },
-    "Customer": {
-      "title": "Customer",
-      "description": "Represents a customer registered by an agent.",
+    "FinancialTransaction": {
+      "title": "Financial Transaction",
+      "description": "Represents a single financial transaction, such as income or an expense.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "agentId": { "type": "string", "description": "UID of the agent who registered the customer" },
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
-        "registrationDate": { "type": "string", "format": "date-time" }
+        "userId": { "type": "string", "description": "UID of the user who owns the transaction" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["income", "expense"] },
+        "category": { "type": "string", "description": "e.g., 'Salary', 'Rent', 'Groceries', 'Utilities'" },
+        "date": { "type": "string", "format": "date-time" },
+        "source": { "type": "string", "description": "e.g., 'Bank Transfer', 'Credit Card', 'Cash'" }
       },
-      "required": ["id", "agentId", "name", "status", "registrationDate"]
+      "required": ["id", "userId", "description", "amount", "type", "category", "date"]
     },
-    "Commission": {
-      "title": "Commission",
-      "description": "Represents a commission earned by an agent.",
+    "TaxRecord": {
+      "title": "Tax Record",
+      "description": "Represents a tax-related record or document for a user.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "agentId": { "type": "string" },
-        "customerId": { "type": "string" },
-        "transactionAmount": { "type": "number" },
-        "commissionAmount": { "type": "number" },
+        "userId": { "type": "string" },
+        "year": { "type": "number" },
+        "recordType": { "type": "string", "description": "e.g., 'Tax Return', 'Compliance Report', 'Deduction Receipt'" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Filed", "Pending", "Audit"] },
         "date": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "agentId", "transactionAmount", "commissionAmount", "date"]
+      "required": ["id", "userId", "year", "recordType", "status", "date"]
     },
-    "WithdrawalRequest": {
-      "title": "Withdrawal Request",
-      "description": "Represents a request from an agent to withdraw their earnings.",
+    "Goal": {
+      "title": "Goal",
+      "description": "Represents a financial goal set by a user.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "agentId": { "type": "string" },
-        "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
-        "requestDate": { "type": "string", "format": "date-time" },
-        "processedDate": { "type": "string", "format": "date-time" }
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "targetDate": { "type": "string", "format": "date" },
+        "category": { "type": "string", "enum": ["Savings", "Investment", "Debt Repayment"] }
       },
-      "required": ["id", "agentId", "amount", "status", "requestDate"]
-    },
-    "ActivityLog": {
-        "title": "Activity Log",
-        "description": "Records significant actions performed by users.",
-        "type": "object",
-        "properties": {
-            "id": { "type": "string" },
-            "actorId": { "type": "string", "description": "UID of the user who performed the action" },
-            "action": { "type": "string", "description": "e.g., 'CUSTOMER_APPROVE', 'WITHDRAWAL_REQUEST'" },
-            "targetId": { "type": "string", "description": "ID of the entity being acted upon" },
-            "timestamp": { "type": "string", "format": "date-time" },
-            "details": { "type": "string", "description": "A brief description of the activity." }
-        },
-        "required": ["id", "actorId", "action", "timestamp"]
+      "required": ["id", "userId", "name", "targetAmount", "currentAmount"]
     }
   },
   "auth": {
@@ -80,38 +68,31 @@
   "firestore": {
     "structure": [
       {
-        "path": "/agents/{agentId}",
+        "path": "/users/{userId}",
         "definition": {
-          "entityName": "AgentProfile",
-          "schema": { "$ref": "#/entities/AgentProfile" }
+          "entityName": "UserProfile",
+          "schema": { "$ref": "#/entities/UserProfile" }
         }
       },
       {
-        "path": "/customers/{customerId}",
+        "path": "/users/{userId}/transactions/{transactionId}",
         "definition": {
-          "entityName": "Customer",
-          "schema": { "$ref": "#/entities/Customer" }
+          "entityName": "FinancialTransaction",
+          "schema": { "$ref": "#/entities/FinancialTransaction" }
         }
       },
       {
-        "path": "/agents/{agentId}/commissions/{commissionId}",
+        "path": "/users/{userId}/taxRecords/{recordId}",
         "definition": {
-          "entityName": "Commission",
-          "schema": { "$ref": "#/entities/Commission" }
+          "entityName": "TaxRecord",
+          "schema": { "$ref": "#/entities/TaxRecord" }
         }
       },
       {
-        "path": "/agents/{agentId}/withdrawals/{withdrawalId}",
+        "path": "/users/{userId}/goals/{goalId}",
         "definition": {
-          "entityName": "WithdrawalRequest",
-          "schema": { "$ref": "#/entities/WithdrawalRequest" }
-        }
-      },
-      {
-        "path": "/activity_logs/{logId}",
-        "definition": {
-          "entityName": "ActivityLog",
-          "schema": { "$ref": "#/entities/ActivityLog" }
+          "entityName": "Goal",
+          "schema": { "$ref": "#/entities/Goal" }
         }
       }
     ]

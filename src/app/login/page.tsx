@@ -37,7 +37,7 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "agent@demo.com",
+      email: "demo@example.com",
       password: "password",
     },
   });
@@ -65,7 +65,7 @@ export default function LoginPage() {
           await createUserWithEmailAndPassword(auth, values.email, values.password);
           toast({
             title: "Account Created",
-            description: "Welcome to ExecuDash! Your agent account has been created.",
+            description: "Welcome! Your account has been created.",
           });
         } catch (signUpError: any) {
           toast({
@@ -102,9 +102,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-bold">ExecuDash</CardTitle>
+          <CardTitle className="text-2xl font-bold">FinanSage AI</CardTitle>
           <CardDescription>
-            Agent Management System
+            Your AI-Powered Finance & Tax Assistant
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -117,7 +117,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="agent@demo.com" {...field} />
+                      <Input placeholder="demo@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

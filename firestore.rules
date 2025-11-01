@@ -11,34 +11,14 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    // Admins can read all agent profiles, agents can only read/write their own.
-    match /agents/{agentId} {
-      allow read, write: if isSignedIn() && isOwner(agentId);
-      // allow read: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Agents can create customers. Admins can read all customers.
-    match /customers/{customerId} {
-      allow create: if isSignedIn();
-      allow read: if isSignedIn() && resource.data.agentId == request.auth.uid;
-      // allow read, update: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    // Users can read and write their own profile
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && isOwner(userId);
     }
     
-    // Agents can only read their own commissions.
-    match /agents/{agentId}/commissions/{commissionId} {
-      allow read, create: if isSignedIn() && isOwner(agentId);
-    }
-    
-    // Agents can only manage their own withdrawal requests.
-    match /agents/{agentId}/withdrawals/{withdrawalId} {
-       allow read, create: if isSignedIn() && isOwner(agentId);
-       // allow update: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Activity logs can be created by any signed in user, but only read by admins.
-    match /activity_logs/{logId} {
-      allow create: if isSignedIn();
-      // allow read: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    // Users can manage their own financial data (transactions, goals, tax records)
+    match /users/{userId}/{collection}/{docId} {
+       allow read, write, delete: if isSignedIn() && isOwner(userId);
     }
   }
 }

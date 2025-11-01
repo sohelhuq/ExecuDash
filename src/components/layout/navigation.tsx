@@ -1,13 +1,11 @@
 'use client';
 import {
   LayoutDashboard,
-  Users,
-  UserPlus,
-  Receipt,
-  HandCoins,
-  History,
+  ArrowRightLeft,
+  Target,
+  FileText,
+  BarChart2,
   Settings,
-  Landmark,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -24,13 +22,11 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/agents', label: 'Agents', icon: Users },
-  { href: '/customers', label: 'Customers', icon: UserPlus },
-  { href: '/commissions', label: 'Commission History', icon: Receipt },
-  { href: '/withdrawals', label: 'Withdrawals', icon: HandCoins },
-  { href: '/activity', label: 'Activity Log', icon: History },
+  { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
+  { href: '/goals', label: 'Goals', icon: Target },
+  { href: '/tax-center', label: 'Tax Center', icon: FileText },
+  { href: '/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/finance-tax', label: 'ফিনান্স ও ট্যাক্স ম্যানেজমেন্ট', icon: Landmark },
 ];
 
 export function AppSidebar() {
@@ -41,7 +37,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-3 p-2">
           <Logo />
-          <span className="text-xl font-bold text-sidebar-foreground">ExecuDash</span>
+          <span className="text-xl font-bold text-sidebar-foreground">FinanSage</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
