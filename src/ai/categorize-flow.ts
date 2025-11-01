@@ -15,7 +15,7 @@ const TransactionCategoryOutputSchema = z.object({
   category: z
     .string()
     .describe(
-      'The most likely category for the transaction. Examples: Salary, Rent, Groceries, Utilities, Software, Client Payment, Marketing, Travel.'
+      'The most likely category for the transaction. Examples: Salary, Rent, Groceries, Utilities, Software, Client Payment, Marketing, Travel, Meals & Entertainment.'
     ),
 });
 export type TransactionCategoryOutput = z.infer<
