@@ -24,6 +24,7 @@ import {
   UserPlus,
   Gem,
   TrendingUp,
+  Factory,
   CircleDollarSign,
 } from 'lucide-react';
 import {
@@ -46,7 +47,6 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/units', label: 'Units', icon: Building },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
-  { href: '/hr', label: 'HR Management', icon: Users },
   {
     label: 'Sales',
     icon: TrendingUp,
@@ -56,6 +56,9 @@ const navItems = [
       { href: '/sales/debtors', label: 'Debtors' },
     ],
   },
+  { href: '/hr', label: 'HR Management', icon: Users },
+  { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
+  { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
   {
     label: 'Points',
     icon: Gem,
@@ -77,7 +80,6 @@ const navItems = [
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
   { href: '/notice-board', label: 'Notice Board', icon: ClipboardList },
-  { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
   { href: '/banking', label: 'Banking', icon: Landmark },
   { href: '/collections', label: 'Collections', icon: BookOpenCheck },
   { href: '/dps', label: 'DPS', icon: ShieldCheck },
