@@ -19,6 +19,7 @@ import {
   Fuel,
   ClipboardList,
   ShoppingCart,
+  ClipboardCheck,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,6 +43,7 @@ const navItems = [
   { href: '/employee', label: 'Employee', icon: Contact },
   { href: '/payroll', label: 'Payroll', icon: Banknote },
   { href: '/procurement', label: 'Procurement', icon: ShoppingCart },
+  { href: '/project-management', label: 'Project Management', icon: ClipboardCheck },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
