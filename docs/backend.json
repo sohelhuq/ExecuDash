@@ -557,6 +557,19 @@
         "expense": { "type": "number" }
       },
       "required": ["category", "location", "tenant", "rent", "collection", "expense"]
+    },
+    "AttendancePoint": {
+      "title": "Attendance Point",
+      "description": "Represents points awarded for an employee's attendance.",
+      "type": "object",
+      "properties": {
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "inTime": { "type": "string", "format": "time" },
+        "points": { "type": "number" }
+      },
+      "required": ["employeeId", "employeeName", "date", "inTime", "points"]
     }
   },
   "auth": {
@@ -725,6 +738,13 @@
           "schema": {
             "$ref": "#/entities/RentalEntry"
           }
+        }
+      },
+      {
+        "path": "/users/{userId}/attendance_points/{pointId}",
+        "definition": {
+          "entityName": "AttendancePoint",
+          "schema": { "$ref": "#/entities/AttendancePoint" }
         }
       }
     ]

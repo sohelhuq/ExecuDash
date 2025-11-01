@@ -22,6 +22,7 @@ import {
   ClipboardCheck,
   Home,
   UserPlus,
+  Gem,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,17 +31,30 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import * as React from 'react';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/units', label: 'Units', icon: Building },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   { href: '/hr', label: 'HR Management', icon: Users },
+  {
+    label: 'Points',
+    icon: Gem,
+    subItems: [
+      { href: '/points/dashboard', label: 'Attendance' },
+      { href: '/points/categories', label: 'Categories' },
+      { href: '/points/management', label: 'Management' },
+      { href: '/points/settings', label: 'Settings' },
+    ],
+  },
   { href: '/department', label: 'Department', icon: Briefcase },
   { href: '/employee', label: 'Employee', icon: Contact },
   { href: '/payroll', label: 'Payroll', icon: Banknote },
@@ -81,16 +95,44 @@ export function AppSidebar() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href}>
-                <SidebarMenuButton
-                  isActive={pathname.startsWith(item.href)}
-                  tooltip={item.label}
-                  className="justify-start"
-                >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
+              {item.subItems ? (
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                     <SidebarMenuButton
+                        isActive={item.subItems.some(si => pathname.startsWith(si.href))}
+                        tooltip={item.label}
+                        className="justify-start w-full"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {item.subItems.map(subItem => (
+                        <li key={subItem.label}>
+                          <Link href={subItem.href}>
+                             <SidebarMenuSubButton isActive={pathname.startsWith(subItem.href)}>
+                                {subItem.label}
+                             </SidebarMenuSubButton>
+                          </Link>
+                        </li>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              ) : (
+                <Link href={item.href!}>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith(item.href!)}
+                    tooltip={item.label}
+                    className="justify-start"
+                  >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
+              )}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
