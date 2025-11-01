@@ -16,6 +16,7 @@ import {
   Briefcase,
   ShieldCheck,
   Contact,
+  Fuel,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -33,6 +34,7 @@ import * as React from 'react';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/units', label: 'Units', icon: Building },
+  { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   { href: '/department', label: 'Department', icon: Briefcase },
   { href: '/employee', label: 'Employee', icon: Contact },
   { href: '/customers', label: 'Customers', icon: Users },
