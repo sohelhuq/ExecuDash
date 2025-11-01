@@ -39,8 +39,8 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /employees/{employeeId} {
-      allow get: if isOwner(employeeId);
-      allow list: if false;
+      allow read: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isOwner(employeeId) && request.resource.data.id == employeeId;
       allow update: if isSignedIn() && isExistingOwner(employeeId) && request.resource.data.id == resource.data.id;
       allow delete: if isSignedIn() && isExistingOwner(employeeId);
@@ -164,6 +164,16 @@ service cloud.firestore {
       allow create: if isSignedIn();
       allow update: if isSignedIn();
       allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage leave balances.
+     * @path /leave_balances/{leaveBalanceId}
+     * @allow (get, list, create, update, delete) Any authenticated user can manage leave balances.
+     * @principle Requires authentication for all operations.
+     */
+    match /leave_balances/{leaveBalanceId} {
+      allow read, write: if isSignedIn();
     }
   }
 
