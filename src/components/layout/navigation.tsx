@@ -13,6 +13,7 @@ import {
   FilePieChart,
   UserCheck,
   Building,
+  Briefcase,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,6 +31,7 @@ import * as React from 'react';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/units', label: 'Units', icon: Building },
+  { href: '/department', label: 'Department', icon: Briefcase },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
