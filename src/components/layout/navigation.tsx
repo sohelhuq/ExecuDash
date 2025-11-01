@@ -10,6 +10,7 @@ import {
   Banknote,
   Landmark,
   BookOpenCheck,
+  FilePieChart,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,6 +32,7 @@ const navItems = [
   { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
+  { href: '/reports', label: 'Reports', icon: FilePieChart },
   { href: '/tax-center', label: 'Tax Center', icon: FileText },
   { href: '/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/finance-tax', label: 'ফিনান্স ও ট্যাক্স', icon: Landmark },
