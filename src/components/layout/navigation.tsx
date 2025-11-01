@@ -33,6 +33,7 @@ const navItems = [
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
   { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
   { href: '/banking', label: 'Banking', icon: Landmark },
+  { href: '/collections', label: 'Collections', icon: BookOpenCheck },
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/reports', label: 'Reports', icon: FilePieChart },

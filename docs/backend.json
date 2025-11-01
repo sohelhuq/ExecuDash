@@ -358,6 +358,64 @@
         "totalDeposit",
         "totalWithdrawal"
       ]
+    },
+    "AssignedAccount": {
+      "title": "Assigned Due Account",
+      "description": "Represents a customer account assigned for due collection.",
+      "type": "object",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "description": "Business Unit"
+        },
+        "customer": {
+          "type": "string"
+        },
+        "invoice": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "amountDue": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Overdue",
+            "Paid"
+          ]
+        }
+      },
+      "required": [
+        "unit",
+        "customer",
+        "invoice",
+        "dueDate",
+        "amountDue",
+        "status"
+      ]
+    },
+    "JobResponsibility": {
+      "title": "Job Responsibility",
+      "description": "A task or responsibility for a collections officer.",
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "text",
+        "completed"
+      ]
     }
   },
   "auth": {
@@ -438,8 +496,27 @@
             "$ref": "#/entities/SavingsAccount"
           }
         }
+      },
+      {
+        "path": "/users/{userId}/assignedAccounts/{accountId}",
+        "definition": {
+          "entityName": "AssignedAccount",
+          "schema": {
+            "$ref": "#/entities/AssignedAccount"
+          }
+        }
+      },
+      {
+        "path": "/users/{userId}/jobResponsibilities/{responsibilityId}",
+        "definition": {
+          "entityName": "JobResponsibility",
+          "schema": {
+            "$ref": "#/entities/JobResponsibility"
+          }
+        }
       }
     ]
   }
 }
+
     
