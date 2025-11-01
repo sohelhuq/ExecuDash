@@ -19,9 +19,9 @@ service cloud.firestore {
       allow read, write, delete: if isSignedIn() && isOwner(userId);
     }
     
-    // Users can manage their own financial data (transactions, goals, tax records)
+    // Users can manage their own financial data (transactions, goals, tax records, etc.)
     match /users/{userId}/{collection}/{docId} {
-       allow read, write, delete: if isSignedIn() && (collection in ['transactions', 'taxRecords', 'goals']) && isOwner(userId);
+       allow read, write, delete: if isSignedIn() && (collection in ['transactions', 'taxRecords', 'goals', 'ccAccounts', 'savingsAccounts']) && isOwner(userId);
     }
 
     // Compliance logs are immutable and can only be created. For now, any signed-in user can create them.
@@ -33,3 +33,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
