@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
 
 const formSchema = z.object({
@@ -60,14 +60,31 @@ export default function LoginPage() {
         title: "Signed In",
         description: "You have successfully signed in.",
       });
-      // The useEffect will handle redirection
     } catch (error: any) {
-      console.error("Sign-in error:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign In Failed",
-        description: error.message || "An unknown error occurred.",
-      });
+      // If sign-in fails, try to sign up the user with the same credentials
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+        try {
+          await createUserWithEmailAndPassword(auth, values.email, values.password);
+          toast({
+            title: "Account Created",
+            description: "New account created and signed in successfully.",
+          });
+        } catch (signUpError: any) {
+          console.error("Sign-up error:", signUpError);
+          toast({
+            variant: "destructive",
+            title: "Sign Up Failed",
+            description: signUpError.message || "Could not create a new account.",
+          });
+        }
+      } else {
+        console.error("Sign-in error:", error);
+        toast({
+          variant: "destructive",
+          title: "Sign In Failed",
+          description: error.message || "An unknown error occurred.",
+        });
+      }
     } finally {
         setIsSubmitting(false);
     }
@@ -125,7 +142,7 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter className="flex flex-col">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in / Sign up"}
               </Button>
             </CardFooter>
           </form>
