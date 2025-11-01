@@ -12,6 +12,7 @@ import {
   BookOpenCheck,
   FilePieChart,
   UserCheck,
+  Building,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,6 +29,7 @@ import * as React from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/units', label: 'Units', icon: Building },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
@@ -75,5 +77,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
-    

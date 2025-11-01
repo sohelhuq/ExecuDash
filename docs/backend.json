@@ -416,6 +416,48 @@
         "text",
         "completed"
       ]
+    },
+    "BusinessUnit": {
+      "title": "Business Unit",
+      "description": "Represents a business unit, e.g., a specific fuel station.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "managerId": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "location"]
+    },
+    "MeterReading": {
+      "title": "Meter Reading",
+      "description": "Represents a meter or dip reading for a specific product.",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "readingType": { "type": "string", "enum": ["nozzle", "dip"] },
+        "readingValue": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["productId", "productName", "readingType", "readingValue", "timestamp"]
+    },
+    "StockItem": {
+      "title": "Stock Item",
+      "description": "Represents the stock level of a product.",
+      "type": "object",
+      "properties": {
+        "productName": { "type": "string" },
+        "openingStock": { "type": "number" },
+        "purchase": { "type": "number" },
+        "sales": { "type": "number" }
+      },
+      "required": ["productName", "openingStock", "purchase", "sales"]
     }
   },
   "auth": {
@@ -514,9 +556,37 @@
             "$ref": "#/entities/JobResponsibility"
           }
         }
+      },
+      {
+        "path": "/users/{userId}/businessUnits/{unitId}",
+        "definition": {
+          "entityName": "BusinessUnit",
+          "schema": { "$ref": "#/entities/BusinessUnit" }
+        }
+      },
+      {
+        "path": "/users/{userId}/businessUnits/{unitId}/meterReadings/{readingId}",
+        "definition": {
+          "entityName": "MeterReading",
+          "schema": { "$ref": "#/entities/MeterReading" }
+        }
+      },
+      {
+        "path": "/users/{userId}/businessUnits/{unitId}/stockItems/{stockItemId}",
+        "definition": {
+          "entityName": "StockItem",
+          "schema": { "$ref": "#/entities/StockItem" }
+        }
+      },
+       {
+        "path": "/users/{userId}/businessUnits/{unitId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "FinancialTransaction",
+          "schema": {
+            "$ref": "#/entities/FinancialTransaction"
+          }
+        }
       }
     ]
   }
 }
-
-    
