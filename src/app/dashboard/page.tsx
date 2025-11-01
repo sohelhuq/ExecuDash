@@ -2,22 +2,39 @@
 import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Banknote, Users, CheckCircle, Clock } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { DollarSign, Archive, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 
 const kpiData = [
-  { title: "Total Agents", value: "125", icon: Users, color: "text-blue-500" },
-  { title: "Approved Customers", value: "2,350", icon: CheckCircle, color: "text-green-500" },
-  { title: "Pending Customers", value: "150", icon: Clock, color: "text-yellow-500" },
-  { title: "Total Commission", value: "৳450,800", icon: Banknote, color: "text-indigo-500" },
+  { title: "Total Sales (Today)", value: "$15,200", icon: DollarSign },
+  { title: "Stock Value (Current)", value: "$850,000", icon: Archive },
+  { title: "Outstanding Invoices", value: "45", icon: FileText },
+  { title: "Inventory Turnover Rate", value: "4.2", icon: RefreshCw },
 ];
 
-const recentActivities = [
-  { id: 'act1', description: "New customer 'ABC Corp' registered by Agent Rahim.", time: "10 minutes ago" },
-  { id: 'act2', description: "Withdrawal request for ৳15,000 approved for Agent Fatima.", time: "1 hour ago" },
-  { id: 'act3', description: "Customer 'GHI Solutions' status changed to Rejected.", time: "3 hours ago" },
-  { id: 'act4', description: "Agent Karim just signed in.", time: "Yesterday" },
-  { id: 'act5', description: "New agent 'Rehana' joined the team.", time: "Yesterday" },
+const revenueData = [
+  { month: 'Jan', revenue: 2000 },
+  { month: 'Feb', revenue: 1800 },
+  { month: 'Mar', revenue: 2200 },
+  { month: 'Apr', revenue: 2500 },
+  { month: 'May', revenue: 2300 },
+  { month: 'Jun', revenue: 3000 },
+  { month: 'Jul', revenue: 3200 },
+];
+
+const salesDistributionData = [
+  { name: 'Fuel', value: 45 },
+  { name: 'Pharmacy', value: 25 },
+  { name: 'ISP', value: 10 },
+  { name: 'Feed', value: 5 },
+  { name: 'Others', value: 15 },
+];
+
+const COLORS = ['#FFC107', '#00C49F', '#0088FE', '#FF8042', '#8884d8'];
+
+const lowStockAlerts = [
+    { item: 'Diesel Fuel', status: 'Low' },
+    { item: 'Red Bricks', status: 'Critical' },
 ];
 
 export default function DashboardPage() {
@@ -25,47 +42,105 @@ export default function DashboardPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Agent Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to the agent management command center.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Shetue Group Unified ERP System</h1>
+          <p className="text-muted-foreground">Centralized Performance Hub</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {kpiData.map((kpi) => {
+          {kpiData.map((kpi, index) => {
             const Icon = kpi.icon;
             return (
-              <Card key={kpi.title}>
+              <Card key={index} className="shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-                  <Icon className={`h-4 w-4 ${kpi.color}`} />
+                  <Icon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{kpi.value}</div>
+                  <div className="text-3xl font-bold">{kpi.value}</div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
-
-        <Card>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 shadow">
             <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>A log of the most recent activities in the system.</CardDescription>
+              <CardTitle>Monthly Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
-                <Table>
-                     <TableBody>
-                        {recentActivities.map(activity => (
-                            <TableRow key={activity.id}>
-                                <TableCell>
-                                    <div className="font-medium">{activity.description}</div>
-                                </TableCell>
-                                <TableCell className="text-right text-sm text-muted-foreground">
-                                    {activity.time}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                  <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
+                  <Tooltip 
+                     contentStyle={{
+                        background: 'hsl(var(--background))',
+                        borderColor: 'hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                     }}
+                  />
+                  <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 5 }} activeDot={{ r: 8 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow">
+            <CardHeader>
+              <CardTitle>Sales Distribution by Unit</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={salesDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    paddingAngle={5}
+                    dataKey="value"
+                    nameKey="name"
+                  >
+                    {salesDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                     contentStyle={{
+                        background: 'hsl(var(--background))',
+                        borderColor: 'hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                     }}
+                  />
+                  <Legend iconSize={10} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+        
+         <Card className="shadow">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="text-destructive"/>
+                    Low Stock Alerts
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-2">
+                    {lowStockAlerts.map((alert, index) => (
+                        <li key={index} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                            <span className="font-medium">{alert.item}</span>
+                             <span className={`font-semibold ${alert.status === 'Critical' ? 'text-red-500' : 'text-yellow-500'}`}>
+                                {alert.status}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
             </CardContent>
         </Card>
       </div>
