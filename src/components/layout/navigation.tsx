@@ -7,6 +7,7 @@ import {
   HandCoins,
   History,
   Settings,
+  Landmark,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/withdrawals', label: 'Withdrawals', icon: HandCoins },
   { href: '/activity', label: 'Activity Log', icon: History },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/finance-tax', label: 'ফিনান্স ও ট্যাক্স ম্যানেজমেন্ট', icon: Landmark },
 ];
 
 export function AppSidebar() {
