@@ -29,6 +29,11 @@ service cloud.firestore {
         allow read, write, delete: if isSignedIn() && isOwner(userId) && (subCollection in ['meterReadings', 'stockItems', 'transactions']);
     }
 
+    // Pharmacy specific rules
+    match /users/{userId}/pharmacy/{subCollection}/{recordId} {
+        allow read, write, delete: if isSignedIn() && isOwner(userId) && (subCollection in ['products', 'sales']);
+    }
+
     // Compliance logs are immutable and can only be created. For now, any signed-in user can create them.
     // You might want to restrict this to admin users in the future.
     match /complianceLogs/{logId} {
@@ -38,3 +43,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

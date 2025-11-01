@@ -27,6 +27,7 @@ import {
   Factory,
   CircleDollarSign,
   Shield,
+  HeartPulse
 } from 'lucide-react';
 import {
   Sidebar,
@@ -61,6 +62,13 @@ const navItems = [
       { href: '/sales/invoices', label: 'Invoices' },
       { href: '/sales/debtors', label: 'Debtors' },
     ],
+  },
+  {
+    label: 'Pharmacy',
+    icon: HeartPulse,
+    subItems: [
+      { href: '/pharmacy', label: 'POS Dashboard' },
+    ]
   },
   { href: '/hr', label: 'HR Management', icon: Users },
   { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
@@ -239,3 +247,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
