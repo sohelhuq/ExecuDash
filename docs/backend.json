@@ -480,6 +480,65 @@
         "amount": { "type": "number" }
       },
       "required": ["bank", "category", "amount"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Represents an employee in the company.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "grossSalary": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "grossSalary"
+      ]
+    },
+    "Payroll": {
+      "title": "Payroll",
+      "description": "Represents a single payroll record for an employee for a specific period.",
+      "type": "object",
+      "properties": {
+        "employeeId": {
+          "type": "string"
+        },
+        "employeeName": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string",
+          "description": "The payroll period in YYYY-MM format."
+        },
+        "grossSalary": {
+          "type": "number"
+        },
+        "deductions": {
+          "type": "number"
+        },
+        "netSalary": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "paid"
+          ]
+        }
+      },
+      "required": [
+        "employeeId",
+        "employeeName",
+        "period",
+        "grossSalary",
+        "deductions",
+        "netSalary",
+        "status"
+      ]
     }
   },
   "auth": {
@@ -620,6 +679,24 @@
           "entityName": "FinancialTransaction",
           "schema": {
             "$ref": "#/entities/FinancialTransaction"
+          }
+        }
+      },
+      {
+        "path": "/users/{userId}/employees/{employeeId}",
+        "definition": {
+          "entityName": "Employee",
+          "schema": {
+            "$ref": "#/entities/Employee"
+          }
+        }
+      },
+      {
+        "path": "/users/{userId}/payrolls/{payrollId}",
+        "definition": {
+          "entityName": "Payroll",
+          "schema": {
+            "$ref": "#/entities/Payroll"
           }
         }
       }

@@ -37,6 +37,7 @@ const navItems = [
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   { href: '/department', label: 'Department', icon: Briefcase },
   { href: '/employee', label: 'Employee', icon: Contact },
+  { href: '/payroll', label: 'Payroll', icon: Banknote },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
