@@ -489,13 +489,21 @@
         "name": {
           "type": "string"
         },
-        "grossSalary": {
+        "department": {
+          "type": "string"
+        },
+        "jobRole": {
+          "type": "string"
+        },
+        "salary": {
           "type": "number"
         }
       },
       "required": [
         "name",
-        "grossSalary"
+        "department",
+        "jobRole",
+        "salary"
       ]
     },
     "Payroll": {
@@ -528,6 +536,10 @@
             "pending",
             "paid"
           ]
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
         }
       },
       "required": [
@@ -537,7 +549,8 @@
         "grossSalary",
         "deductions",
         "netSalary",
-        "status"
+        "status",
+        "createdAt"
       ]
     },
     "RentalEntry": {
