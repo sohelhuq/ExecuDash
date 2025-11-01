@@ -165,6 +165,16 @@ service cloud.firestore {
       allow update: if isSignedIn();
       allow delete: if isSignedIn();
     }
+    
+    /**
+     * @description Allows any authenticated user to manage rent entries.
+     * @path /rent_entries/{rentEntryId}
+     * @allow (get, list, create, update, delete) Any authenticated user can manage rent entries.
+     * @principle Requires authentication for all operations.
+     */
+    match /rent_entries/{rentEntryId} {
+      allow read, write: if isSignedIn();
+    }
 
     /**
      * @description Allows any authenticated user to manage leave balances.
