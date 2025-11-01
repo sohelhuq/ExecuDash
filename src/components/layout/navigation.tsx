@@ -42,7 +42,9 @@ import * as React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
-import { allBusinessUnits } from '@/lib/business-units';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { BusinessUnit } from '@/lib/business-units-types';
 
 const navItems = [
   { href: '/procurement', label: 'Procurement', icon: Briefcase },
@@ -75,6 +77,12 @@ const fuelStationSubItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const firestore = useFirestore();
+
+  const businessUnitsCollection = useMemoFirebase(() => {
+    return firestore ? collection(firestore, 'business_units') : null;
+  }, [firestore]);
+  const { data: businessUnits, isLoading } = useCollection<BusinessUnit>(businessUnitsCollection);
 
   return (
     <Sidebar>
@@ -117,7 +125,7 @@ export function AppSidebar() {
               </CollapsibleTrigger>
               <CollapsibleContent>
                   <SidebarMenuSub>
-                       {allBusinessUnits.map(unit => (
+                       {businessUnits?.map(unit => (
                          <SidebarMenuItem key={unit.id}>
                            <SidebarMenuSubButton asChild isActive={pathname === `/dashboard/${unit.id}`}>
                              <Link href={`/dashboard/${unit.id}`}>
