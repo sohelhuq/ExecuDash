@@ -539,6 +539,24 @@
         "netSalary",
         "status"
       ]
+    },
+    "RentalEntry": {
+      "title": "Rental Entry",
+      "description": "Represents a single rental income/expense entry for a property.",
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["shetue_vanga_dokan", "jaman_tower", "others"]
+        },
+        "location": { "type": "string" },
+        "tenant": { "type": "string" },
+        "opening": { "type": "number" },
+        "rent": { "type": "number" },
+        "collection": { "type": "number" },
+        "expense": { "type": "number" }
+      },
+      "required": ["category", "location", "tenant", "rent", "collection", "expense"]
     }
   },
   "auth": {
@@ -697,6 +715,15 @@
           "entityName": "Payroll",
           "schema": {
             "$ref": "#/entities/Payroll"
+          }
+        }
+      },
+      {
+        "path": "/users/{userId}/rentalEntries/{entryId}",
+        "definition": {
+          "entityName": "RentalEntry",
+          "schema": {
+            "$ref": "#/entities/RentalEntry"
           }
         }
       }
