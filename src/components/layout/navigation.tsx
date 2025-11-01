@@ -23,6 +23,8 @@ import {
   Home,
   UserPlus,
   Gem,
+  TrendingUp,
+  CircleDollarSign,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -45,6 +47,15 @@ const navItems = [
   { href: '/units', label: 'Units', icon: Building },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   { href: '/hr', label: 'HR Management', icon: Users },
+  {
+    label: 'Sales',
+    icon: TrendingUp,
+    subItems: [
+      { href: '/sales', label: 'Sales Hub' },
+      { href: '/sales/invoices', label: 'Invoices' },
+      { href: '/sales/debtors', label: 'Debtors' },
+    ],
+  },
   {
     label: 'Points',
     icon: Gem,
@@ -99,7 +110,7 @@ export function AppSidebar() {
                 <Collapsible>
                   <CollapsibleTrigger asChild>
                      <SidebarMenuButton
-                        isActive={item.subItems.some(si => pathname.startsWith(si.href))}
+                        isActive={item.href ? pathname.startsWith(item.href) : item.subItems.some(si => pathname.startsWith(si.href))}
                         tooltip={item.label}
                         className="justify-start w-full"
                       >
