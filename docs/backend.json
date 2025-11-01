@@ -314,9 +314,6 @@
         },
         "dr": {
           "type": "number"
-        },
-        "balance": {
-          "type": "number"
         }
       },
       "required": [
@@ -325,8 +322,7 @@
         "no",
         "opening",
         "cr",
-        "dr",
-        "balance"
+        "dr"
       ]
     },
     "SavingsAccount": {
@@ -351,9 +347,6 @@
         },
         "dr": {
           "type": "number"
-        },
-        "balance": {
-          "type": "number"
         }
       },
       "required": [
@@ -362,8 +355,7 @@
         "no",
         "opening",
         "cr",
-        "dr",
-        "balance"
+        "dr"
       ]
     },
     "AssignedAccount": {
