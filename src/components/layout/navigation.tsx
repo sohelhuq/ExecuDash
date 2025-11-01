@@ -99,7 +99,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-3 p-2">
           <Logo />
-          <span className="text-xl font-bold text-sidebar-foreground">FinanSage</span>
+          <span className="text-xl font-bold text-sidebar-foreground">ExecuDash</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

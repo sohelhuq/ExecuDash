@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address.").min(1, "Email is required."),
@@ -52,36 +52,24 @@ export default function LoginPage() {
     if (!auth) return;
     setIsSubmitting(true);
     try {
-      // First, try to sign in
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
         title: "Signed In",
         description: "Welcome back!",
       });
+      // On success, the useEffect will handle the redirect
     } catch (error: any) {
-      // If user does not exist, create a new account
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        try {
-          await createUserWithEmailAndPassword(auth, values.email, values.password);
-          toast({
-            title: "Account Created",
-            description: "Welcome! Your account has been created.",
-          });
-        } catch (signUpError: any) {
-          toast({
-            variant: "destructive",
-            title: "Sign Up Failed",
-            description: signUpError.message,
-          });
+        let errorMessage = "An unknown error occurred.";
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            errorMessage = "Invalid email or password. Please try again.";
+        } else {
+            errorMessage = error.message;
         }
-      } else {
-        // Handle other sign-in errors
         toast({
-          variant: "destructive",
-          title: "Sign In Failed",
-          description: error.message,
+            variant: "destructive",
+            title: "Sign In Failed",
+            description: errorMessage,
         });
-      }
     } finally {
       setIsSubmitting(false);
     }
@@ -102,9 +90,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-bold">FinanSage AI</CardTitle>
+          <CardTitle className="text-2xl font-bold">ExecuDash</CardTitle>
           <CardDescription>
-            Your AI-Powered Finance & Tax Assistant
+            Your AI-Powered Executive Dashboard
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -139,7 +127,7 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter className="flex flex-col">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in / Sign up"}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
               </Button>
             </CardFooter>
           </form>

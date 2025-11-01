@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'FinanSage - AI-Powered Finance & Tax Management',
+  title: 'ExecuDash - AI-Powered Executive Dashboard',
   description: 'AI-based SaaS for SME and large businesses',
 };
 

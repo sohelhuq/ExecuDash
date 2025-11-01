@@ -9,7 +9,7 @@ export function Logo({ className }: { className?: string }) {
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="FinanSage AI Logo"
+      aria-label="ExecuDash Logo"
     >
       <rect width="100" height="100" rx="20" fill="hsl(var(--primary))"/>
       <path d="M30 70L30 55C30 46.7157 36.7157 40 45 40L55 40C63.2843 40 70 46.7157 70 55L70 70" stroke="hsl(var(--primary-foreground))" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
