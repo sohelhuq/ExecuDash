@@ -294,36 +294,39 @@
       "description": "Represents a Cash Credit (Loan) account for a user.",
       "type": "object",
       "properties": {
-        "bankName": {
+        "bank": {
           "type": "string"
         },
-        "accountName": {
+        "name": {
           "type": "string"
         },
-        "accountNumber": {
+        "no": {
           "type": "string"
         },
-        "interestRate": {
+        "interest": {
           "type": "number"
         },
-        "openingBalance": {
+        "opening": {
           "type": "number"
         },
-        "totalDeposit": {
+        "cr": {
           "type": "number"
         },
-        "totalWithdrawal": {
+        "dr": {
+          "type": "number"
+        },
+        "balance": {
           "type": "number"
         }
       },
       "required": [
-        "bankName",
-        "accountName",
-        "accountNumber",
-        "interestRate",
-        "openingBalance",
-        "totalDeposit",
-        "totalWithdrawal"
+        "bank",
+        "name",
+        "no",
+        "opening",
+        "cr",
+        "dr",
+        "balance"
       ]
     },
     "SavingsAccount": {
@@ -331,32 +334,36 @@
       "description": "Represents a savings bank account for a user.",
       "type": "object",
       "properties": {
-        "bankName": {
+        "bank": {
           "type": "string"
         },
-        "accountName": {
+        "name": {
           "type": "string"
         },
-        "accountNumber": {
+        "no": {
           "type": "string"
         },
-        "openingBalance": {
+        "opening": {
           "type": "number"
         },
-        "totalDeposit": {
+        "cr": {
           "type": "number"
         },
-        "totalWithdrawal": {
+        "dr": {
+          "type": "number"
+        },
+        "balance": {
           "type": "number"
         }
       },
       "required": [
-        "bankName",
-        "accountName",
-        "accountNumber",
-        "openingBalance",
-        "totalDeposit",
-        "totalWithdrawal"
+        "bank",
+        "name",
+        "no",
+        "opening",
+        "cr",
+        "dr",
+        "balance"
       ]
     },
     "AssignedAccount": {

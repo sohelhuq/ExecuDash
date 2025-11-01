@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Database } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input';
-import { Label } from "@/components/ui/label';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, writeBatch, doc } from 'firebase/firestore';
@@ -16,42 +16,33 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { initialCcAccounts, initialSavingsAccounts, type CcAccount, type SavingsAccount } from '@/lib/banking-data';
 
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-BD').format(value)}`;
 
 // Schemas for form validation
 const ccAccountSchema = z.object({
-  bankName: z.string().min(1, 'Bank name is required'),
-  accountName: z.string().min(1, 'Account name is required'),
-  accountNumber: z.string().min(1, 'Account number is required'),
-  interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
-  openingBalance: z.coerce.number(),
-  totalDeposit: z.coerce.number(),
-  totalWithdrawal: z.coerce.number(),
+  bank: z.string().min(1, 'Bank name is required'),
+  name: z.string().min(1, 'Account name is required'),
+  no: z.string().min(1, 'Account number is required'),
+  interest: z.coerce.number().min(0, 'Interest rate cannot be negative'),
+  opening: z.coerce.number(),
+  cr: z.coerce.number(),
+  dr: z.coerce.number(),
 });
 
 const savingsAccountSchema = z.object({
-  bankName: z.string().min(1, 'Bank name is required'),
-  accountName: z.string().min(1, 'Account name is required'),
-  accountNumber: z.string().min(1, 'Account number is required'),
-  openingBalance: z.coerce.number(),
-  totalDeposit: z.coerce.number(),
-  totalWithdrawal: z.coerce.number(),
+    bank: z.string().min(1, 'Bank name is required'),
+    name: z.string().min(1, 'Account name is required'),
+    no: z.string().min(1, 'Account number is required'),
+    opening: z.coerce.number(),
+    cr: z.coerce.number(),
+    dr: z.coerce.number(),
 });
 
-type CcAccount = z.infer<typeof ccAccountSchema>;
-type SavingsAccount = z.infer<typeof savingsAccountSchema>;
-
-// Seed data
-const seedCcAccounts: CcAccount[] = [
-    { bankName: "City Bank", accountName: "Main Business CC", accountNumber: "C-12345", interestRate: 9.5, openingBalance: 500000, totalDeposit: 1200000, totalWithdrawal: 1100000 },
-    { bankName: "Brac Bank", accountName: "Project Finance", accountNumber: "C-67890", interestRate: 10.0, openingBalance: 200000, totalDeposit: 800000, totalWithdrawal: 750000 },
-];
-const seedSavingsAccounts: SavingsAccount[] = [
-    { bankName: "EBL", accountName: "Operational Savings", accountNumber: "S-54321", openingBalance: 150000, totalDeposit: 400000, totalWithdrawal: 350000 },
-    { bankName: "Standard Chartered", accountName: "Emergency Fund", accountNumber: "S-09876", openingBalance: 250000, totalDeposit: 100000, totalWithdrawal: 50000 },
-];
+type CcFormData = z.infer<typeof ccAccountSchema>;
+type SavingsFormData = z.infer<typeof savingsAccountSchema>;
 
 export default function BankingPage() {
   const { toast } = useToast();
@@ -61,8 +52,8 @@ export default function BankingPage() {
   const [isCcDialogOpen, setCcDialogOpen] = React.useState(false);
   const [isSavingsDialogOpen, setSavingsDialogOpen] = React.useState(false);
 
-  const ccForm = useForm<CcAccount>({ resolver: zodResolver(ccAccountSchema), defaultValues: { openingBalance: 0, totalDeposit: 0, totalWithdrawal: 0, interestRate: 0 } });
-  const savingsForm = useForm<SavingsAccount>({ resolver: zodResolver(savingsAccountSchema), defaultValues: { openingBalance: 0, totalDeposit: 0, totalWithdrawal: 0 } });
+  const ccForm = useForm<CcFormData>({ resolver: zodResolver(ccAccountSchema), defaultValues: { opening: 0, cr: 0, dr: 0, interest: 0 } });
+  const savingsForm = useForm<SavingsFormData>({ resolver: zodResolver(savingsAccountSchema), defaultValues: { opening: 0, cr: 0, dr: 0 } });
 
   const ccAccountsRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/ccAccounts`) : null, [firestore, user]);
   const { data: ccAccounts, isLoading: ccLoading } = useCollection<CcAccount>(ccAccountsRef);
@@ -74,11 +65,11 @@ export default function BankingPage() {
     if (!firestore || !user) return;
     try {
       const batch = writeBatch(firestore);
-      seedCcAccounts.forEach(acc => {
+      initialCcAccounts.forEach(acc => {
         const ref = doc(collection(firestore, `users/${user.uid}/ccAccounts`));
         batch.set(ref, acc);
       });
-      seedSavingsAccounts.forEach(acc => {
+      initialSavingsAccounts.forEach(acc => {
         const ref = doc(collection(firestore, `users/${user.uid}/savingsAccounts`));
         batch.set(ref, acc);
       });
@@ -90,7 +81,7 @@ export default function BankingPage() {
     }
   };
 
-  const onCcSubmit = async (data: CcAccount) => {
+  const onCcSubmit = async (data: CcFormData) => {
     if (!ccAccountsRef) return;
     try {
       await addDoc(ccAccountsRef, data);
@@ -103,7 +94,7 @@ export default function BankingPage() {
     }
   };
 
-  const onSavingsSubmit = async (data: SavingsAccount) => {
+  const onSavingsSubmit = async (data: SavingsFormData) => {
     if (!savingsAccountsRef) return;
     try {
       await addDoc(savingsAccountsRef, data);
@@ -119,9 +110,9 @@ export default function BankingPage() {
   const calculateTotals = (accounts: (CcAccount[] | SavingsAccount[] | null)) => {
     if (!accounts) return { opening: 0, deposit: 0, withdrawal: 0, balance: 0 };
     return accounts.reduce((acc, curr) => {
-        const opening = curr.openingBalance || 0;
-        const deposit = curr.totalDeposit || 0;
-        const withdrawal = curr.totalWithdrawal || 0;
+        const opening = curr.opening || 0;
+        const deposit = curr.cr || 0;
+        const withdrawal = curr.dr || 0;
         return {
             opening: acc.opening + opening,
             deposit: acc.deposit + deposit,
@@ -160,13 +151,13 @@ export default function BankingPage() {
                   <DialogDescription>Fill in the details for your new CC or loan account.</DialogDescription>
                 </DialogHeader>
                  <Form {...ccForm}><form onSubmit={ccForm.handleSubmit(onCcSubmit)} className="space-y-4">
-                  <FormField control={ccForm.control} name="bankName" render={({field}) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} placeholder="e.g., City Bank"/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={ccForm.control} name="accountName" render={({field}) => (<FormItem><FormLabel>Account Name</FormLabel><FormControl><Input {...field} placeholder="e.g., Main Business CC"/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={ccForm.control} name="accountNumber" render={({field}) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={ccForm.control} name="interestRate" render={({field}) => (<FormItem><FormLabel>Interest Rate (%)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={ccForm.control} name="openingBalance" render={({field}) => (<FormItem><FormLabel>Opening Balance</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={ccForm.control} name="totalDeposit" render={({field}) => (<FormItem><FormLabel>Total Deposit (CR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={ccForm.control} name="totalWithdrawal" render={({field}) => (<FormItem><FormLabel>Total Withdrawal (DR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="bank" render={({field}) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} placeholder="e.g., City Bank"/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Account Name</FormLabel><FormControl><Input {...field} placeholder="e.g., Main Business CC"/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="no" render={({field}) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="interest" render={({field}) => (<FormItem><FormLabel>Interest Rate (%)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="opening" render={({field}) => (<FormItem><FormLabel>Opening Balance</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="cr" render={({field}) => (<FormItem><FormLabel>Total Deposit (CR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={ccForm.control} name="dr" render={({field}) => (<FormItem><FormLabel>Total Withdrawal (DR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
                   <DialogFooter><Button type="submit">Save Account</Button></DialogFooter>
                 </form></Form>
               </DialogContent>
@@ -184,15 +175,15 @@ export default function BankingPage() {
               <TableBody>
                 {ccLoading ? <TableRow><TableCell colSpan={7} className="text-center">Loading...</TableCell></TableRow> :
                  ccAccounts?.map(acc => {
-                     const balance = (acc.openingBalance || 0) + (acc.totalDeposit || 0) - (acc.totalWithdrawal || 0);
+                     const balance = (acc.opening || 0) + (acc.cr || 0) - (acc.dr || 0);
                      return (
                         <TableRow key={acc.id}>
-                            <TableCell className="font-medium">{acc.bankName}</TableCell>
-                            <TableCell>{acc.accountName} <br/><span className="text-xs text-muted-foreground">{acc.accountNumber}</span></TableCell>
-                            <TableCell>{acc.interestRate}%</TableCell>
-                            <TableCell className="text-right">{formatCurrency(acc.openingBalance)}</TableCell>
-                            <TableCell className="text-right text-green-600">{formatCurrency(acc.totalDeposit)}</TableCell>
-                            <TableCell className="text-right text-red-600">{formatCurrency(acc.totalWithdrawal)}</TableCell>
+                            <TableCell className="font-medium">{acc.bank}</TableCell>
+                            <TableCell>{acc.name} <br/><span className="text-xs text-muted-foreground">{acc.no}</span></TableCell>
+                            <TableCell>{acc.interest}%</TableCell>
+                            <TableCell className="text-right">{formatCurrency(acc.opening)}</TableCell>
+                            <TableCell className="text-right text-green-600">{formatCurrency(acc.cr)}</TableCell>
+                            <TableCell className="text-right text-red-600">{formatCurrency(acc.dr)}</TableCell>
                             <TableCell className="text-right font-bold">{formatCurrency(balance)}</TableCell>
                         </TableRow>
                      )
@@ -227,12 +218,12 @@ export default function BankingPage() {
                   <DialogDescription>Fill in the details for your new savings account.</DialogDescription>
                 </DialogHeader>
                 <Form {...savingsForm}><form onSubmit={savingsForm.handleSubmit(onSavingsSubmit)} className="space-y-4">
-                  <FormField control={savingsForm.control} name="bankName" render={({field}) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} placeholder="e.g., EBL"/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={savingsForm.control} name="accountName" render={({field}) => (<FormItem><FormLabel>Account Name</FormLabel><FormControl><Input {...field} placeholder="e.g., Operational Savings"/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={savingsForm.control} name="accountNumber" render={({field}) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={savingsForm.control} name="openingBalance" render={({field}) => (<FormItem><FormLabel>Opening Balance</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={savingsForm.control} name="totalDeposit" render={({field}) => (<FormItem><FormLabel>Total Deposit (CR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                  <FormField control={savingsForm.control} name="totalWithdrawal" render={({field}) => (<FormItem><FormLabel>Total Withdrawal (DR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={savingsForm.control} name="bank" render={({field}) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} placeholder="e.g., EBL"/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={savingsForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Account Name</FormLabel><FormControl><Input {...field} placeholder="e.g., Operational Savings"/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={savingsForm.control} name="no" render={({field}) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={savingsForm.control} name="opening" render={({field}) => (<FormItem><FormLabel>Opening Balance</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={savingsForm.control} name="cr" render={({field}) => (<FormItem><FormLabel>Total Deposit (CR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                  <FormField control={savingsForm.control} name="dr" render={({field}) => (<FormItem><FormLabel>Total Withdrawal (DR)</FormLabel><FormControl><Input type="number" {...field}/></FormControl><FormMessage/></FormItem>)}/>
                   <DialogFooter><Button type="submit">Save Account</Button></DialogFooter>
                 </form></Form>
               </DialogContent>
@@ -250,14 +241,14 @@ export default function BankingPage() {
               <TableBody>
                 {savingsLoading ? <TableRow><TableCell colSpan={6} className="text-center">Loading...</TableCell></TableRow> :
                  savingsAccounts?.map(acc => {
-                     const balance = (acc.openingBalance || 0) + (acc.totalDeposit || 0) - (acc.totalWithdrawal || 0);
+                     const balance = (acc.opening || 0) + (acc.cr || 0) - (acc.dr || 0);
                      return (
                         <TableRow key={acc.id}>
-                            <TableCell className="font-medium">{acc.bankName}</TableCell>
-                            <TableCell>{acc.accountName} <br/><span className="text-xs text-muted-foreground">{acc.accountNumber}</span></TableCell>
-                            <TableCell className="text-right">{formatCurrency(acc.openingBalance)}</TableCell>
-                            <TableCell className="text-right text-green-600">{formatCurrency(acc.totalDeposit)}</TableCell>
-                            <TableCell className="text-right text-red-600">{formatCurrency(acc.totalWithdrawal)}</TableCell>
+                            <TableCell className="font-medium">{acc.bank}</TableCell>
+                            <TableCell>{acc.name} <br/><span className="text-xs text-muted-foreground">{acc.no}</span></TableCell>
+                            <TableCell className="text-right">{formatCurrency(acc.opening)}</TableCell>
+                            <TableCell className="text-right text-green-600">{formatCurrency(acc.cr)}</TableCell>
+                            <TableCell className="text-right text-red-600">{formatCurrency(acc.dr)}</TableCell>
                             <TableCell className="text-right font-bold">{formatCurrency(balance)}</TableCell>
                         </TableRow>
                      )
