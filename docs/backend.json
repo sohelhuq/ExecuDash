@@ -458,6 +458,17 @@
         "sales": { "type": "number" }
       },
       "required": ["productName", "openingStock", "purchase", "sales"]
+    },
+    "DpsAccount": {
+      "title": "DPS Account",
+      "description": "Represents a Deposit Pension Scheme account.",
+      "type": "object",
+      "properties": {
+        "bank": { "type": "string" },
+        "maturityDate": { "type": "string", "format": "date-time" },
+        "dpsBalance": { "type": "number" }
+      },
+      "required": ["bank", "maturityDate", "dpsBalance"]
     }
   },
   "auth": {
@@ -555,6 +566,13 @@
           "schema": {
             "$ref": "#/entities/JobResponsibility"
           }
+        }
+      },
+      {
+        "path": "/users/{userId}/dps/{dpsId}",
+        "definition": {
+          "entityName": "DpsAccount",
+          "schema": { "$ref": "#/entities/DpsAccount" }
         }
       },
       {
