@@ -5,6 +5,12 @@
       "description": "User avatar for the header",
       "imageUrl": "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxidXNpbmVzcyUyMG1hbiUyMHN1aXR8ZW58MHx8fHwxNzYzNTYxOTYwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "business man"
+    },
+    {
+      "id": "shetue-holiday-offer",
+      "description": "A promotional banner for Shetue Filling station with holiday offers.",
+      "imageUrl": "https://images.unsplash.com/photo-1591179535738-0fe38055847b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmdWVsJTIwcHVtcHxlbnwwfHx8fDE3NjIwMTcyMjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fuel pump"
     }
   ]
 }

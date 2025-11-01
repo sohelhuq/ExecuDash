@@ -17,6 +17,9 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const entryFormSchema = z.object({
     date: z.date({ required_error: "A date is required." }),
@@ -69,6 +72,8 @@ export default function FuelStationEntryPage() {
         },
     });
 
+    const holidayOfferImage = PlaceHolderImages.find(p => p.id === 'shetue-holiday-offer');
+
     function onSubmit(data: FuelEntryFormValues) {
         console.log(data);
         toast({
@@ -85,6 +90,20 @@ export default function FuelStationEntryPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Fuel Station Daily Entry / দৈনিক ডেটা এন্ট্রি</h1>
                     <p className="text-muted-foreground">Enter daily operational data for the fuel station.</p>
                 </div>
+                
+                {holidayOfferImage && (
+                    <div className="my-6 rounded-lg overflow-hidden shadow-lg">
+                        <Image
+                            src={holidayOfferImage.imageUrl}
+                            alt={holidayOfferImage.description}
+                            data-ai-hint={holidayOfferImage.imageHint}
+                            width={600}
+                            height={600}
+                            className="w-full h-auto object-cover"
+                        />
+                    </div>
+                )}
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Daily Entry Form</CardTitle>
