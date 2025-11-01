@@ -1,14 +1,12 @@
 'use client';
 import {
   LayoutDashboard,
-  Wallet,
-  Landmark,
-  Goal,
-  FileText,
-  LineChart,
+  Users,
+  UserPlus,
+  Receipt,
+  HandCoins,
+  History,
   Settings,
-  ChevronRight,
-  Dot,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,14 +20,14 @@ import { Logo } from '@/components/icons/logo';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import * as React from 'react';
-import { Input } from '../ui/input';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transactions', icon: Wallet },
-  { href: '/tax-center', label: 'Tax Center', icon: Landmark },
-  { href: '/goals', label: 'Goals', icon: Goal },
-  { href: '/analytics', label: 'Analytics', icon: LineChart },
+  { href: '/agents', label: 'Agents', icon: Users },
+  { href: '/customers', label: 'Customers', icon: UserPlus },
+  { href: '/commissions', label: 'Commission History', icon: Receipt },
+  { href: '/withdrawals', label: 'Withdrawals', icon: HandCoins },
+  { href: '/activity', label: 'Activity Log', icon: History },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -41,7 +39,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-3 p-2">
           <Logo />
-          <span className="text-xl font-bold text-sidebar-foreground">FinTax AI</span>
+          <span className="text-xl font-bold text-sidebar-foreground">ExecuDash</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -50,7 +48,7 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.label}>
               <Link href={item.href}>
                 <SidebarMenuButton
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href)}
                   tooltip={item.label}
                   className="justify-start"
                 >

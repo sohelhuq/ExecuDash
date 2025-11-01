@@ -37,7 +37,7 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "demo@fintax.ai",
+      email: "agent@demo.com",
       password: "password",
     },
   });
@@ -52,18 +52,20 @@ export default function LoginPage() {
     if (!auth) return;
     setIsSubmitting(true);
     try {
+      // First, try to sign in
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
         title: "Signed In",
         description: "Welcome back!",
       });
     } catch (error: any) {
+      // If user does not exist, create a new account
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         try {
           await createUserWithEmailAndPassword(auth, values.email, values.password);
           toast({
             title: "Account Created",
-            description: "Welcome to FinTax AI! Your account has been created.",
+            description: "Welcome to ExecuDash! Your agent account has been created.",
           });
         } catch (signUpError: any) {
           toast({
@@ -73,6 +75,7 @@ export default function LoginPage() {
           });
         }
       } else {
+        // Handle other sign-in errors
         toast({
           variant: "destructive",
           title: "Sign In Failed",
@@ -93,15 +96,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-bold">FinTax AI</CardTitle>
+          <CardTitle className="text-2xl font-bold">ExecuDash</CardTitle>
           <CardDescription>
-            Automated Finance & Tax Management
+            Agent Management System
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -114,7 +117,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="demo@fintax.ai" {...field} />
+                      <Input placeholder="agent@demo.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

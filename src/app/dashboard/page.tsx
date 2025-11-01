@@ -2,32 +2,33 @@
 import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { DollarSign, Users, UserPlus, HandCoins } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const kpiData = [
-  { title: "Total Income", value: "৳550,000", change: "+12% from last month", icon: TrendingUp, color: "text-green-500" },
-  { title: "Total Expenses", value: "৳210,500", change: "+8% from last month", icon: TrendingDown, color: "text-red-500" },
-  { title: "Net Profit", value: "৳339,500", change: "+15% from last month", icon: DollarSign },
-  { title: "Savings Goal", value: "65% Reached", change: "৳65,000 / ৳100,000", icon: Wallet },
+  { title: "Total Commission", value: "৳250,500", change: "+15% this month", icon: DollarSign, color: "text-green-500" },
+  { title: "New Customers", value: "32", change: "+5 this week", icon: UserPlus, color: "text-blue-500" },
+  { title: "Pending Withdrawals", value: "৳45,000", change: "3 requests", icon: HandCoins, color: "text-yellow-500" },
+  { title: "Active Agents", value: "12", change: "+1 this month", icon: Users },
 ];
 
 const chartData = [
-  { month: 'Jan', income: 400000, expense: 240000 },
-  { month: 'Feb', income: 300000, expense: 139800 },
-  { month: 'Mar', income: 200000, expense: 980000 },
-  { month: 'Apr', income: 278000, expense: 390800 },
-  { month: 'May', income: 189000, expense: 480000 },
-  { month: 'Jun', income: 239000, expense: 380000 },
+  { month: 'Jan', commission: 40000, customers: 24 },
+  { month: 'Feb', commission: 30000, customers: 13 },
+  { month: 'Mar', commission: 50000, customers: 38 },
+  { month: 'Apr', commission: 47800, customers: 29 },
+  { month: 'May', commission: 68900, customers: 48 },
+  { month: 'Jun', commission: 53900, customers: 38 },
 ];
 
-const recentTransactions = [
-  { id: 'txn1', description: "Salary Deposit", date: "2024-07-28", amount: 250000, type: "income" },
-  { id: 'txn2', description: "Grocery Shopping", date: "2024-07-27", amount: -8500, type: "expense" },
-  { id: 'txn3', description: "Freelance Project Payment", date: "2024-07-26", amount: 75000, type: "income" },
-  { id: 'txn4', description: "Utility Bill - Electricity", date: "2024-07-25", amount: -4200, type: "expense" },
-  { id: 'txn5', description: "Investment Deposit", date: "2024-07-24", amount: -50000, type: "expense" },
+const recentActivities = [
+  { id: 'act1', description: "Agent Rahim signed up a new customer: 'ABC Corp'", time: "10 minutes ago", type: "customer" },
+  { id: 'act2', description: "Agent Fatima requested a withdrawal of ৳15,000", time: "1 hour ago", type: "withdrawal" },
+  { id: 'act3', description: "Customer 'XYZ Ltd' registration was approved", time: "3 hours ago", type: "approval" },
+  { id: 'act4', description: "You earned ৳5,000 commission from 'DEF Industries' transaction", time: "Yesterday", type: "commission" },
+  { id: 'act5', description: "Agent Karim updated his profile information", time: "Yesterday", type: "profile" },
 ];
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
@@ -37,8 +38,8 @@ export default function DashboardPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Your financial overview and insights.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Agent Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back, here's your performance overview.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -62,45 +63,46 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
             <Card className="lg:col-span-3">
                 <CardHeader>
-                    <CardTitle>Income vs. Expense</CardTitle>
-                    <CardDescription>Last 6 months performance.</CardDescription>
+                    <CardTitle>Monthly Performance</CardTitle>
+                    <CardDescription>Commission earned and new customers acquired in the last 6 months.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
-                            <YAxis tickFormatter={(value) => `৳${Number(value) / 1000}k`} />
-                            <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                            <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" tickFormatter={(value) => `৳${Number(value) / 1000}k`} />
+                            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
+                            <Tooltip formatter={(value: number, name: string) => name === 'commission' ? formatCurrency(value) : value} />
                             <Legend />
-                            <Bar dataKey="income" fill="hsl(var(--primary))" name="Income" />
-                            <Bar dataKey="expense" fill="hsl(var(--destructive))" name="Expense" />
+                            <Bar yAxisId="left" dataKey="commission" fill="hsl(var(--primary))" name="Commission" />
+                            <Bar yAxisId="right" dataKey="customers" fill="hsl(var(--chart-2))" name="New Customers" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
             <Card className="lg:col-span-2">
                 <CardHeader>
-                    <CardTitle>Recent Transactions</CardTitle>
-                    <CardDescription>Your last 5 financial activities.</CardDescription>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>A log of the latest events in your network.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Description</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead>Activity</TableHead>
+                                <TableHead className="text-right">Time</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {recentTransactions.map(txn => (
-                                <TableRow key={txn.id}>
+                            {recentActivities.map(activity => (
+                                <TableRow key={activity.id}>
                                     <TableCell>
-                                        <div className="font-medium">{txn.description}</div>
-                                        <div className="text-sm text-muted-foreground">{txn.date}</div>
+                                        <div className="font-medium">{activity.description}</div>
+                                        <Badge variant="outline" className="mt-1">{activity.type}</Badge>
                                     </TableCell>
-                                    <TableCell className={`text-right font-mono ${txn.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
-                                        {formatCurrency(txn.amount)}
+                                    <TableCell className="text-right text-sm text-muted-foreground">
+                                        {activity.time}
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -4,8 +4,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'FinTax AI',
-  description: 'AI-powered Finance and Tax Management SaaS',
+  title: 'ExecuDash - Agent Management',
+  description: 'Agent Management System by SHETUE TECH',
 };
 
 export default function RootLayout({

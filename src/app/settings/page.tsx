@@ -15,22 +15,30 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your account and application settings.</p>
+          <p className="text-muted-foreground">Manage your agent profile and account settings.</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>This is how others will see you on the site.</CardDescription>
+            <CardTitle>Agent Profile</CardTitle>
+            <CardDescription>This is your public information. Keep it up to date.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" defaultValue="Demo User" />
+              <Label htmlFor="name">Full Name</Label>
+              <Input id="name" defaultValue="Demo Agent" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" defaultValue={user?.email || ''} readOnly />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input id="phone" defaultValue="01700000000" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" defaultValue="123 Road, Gulshan, Dhaka" />
             </div>
              <Button>Update Profile</Button>
           </CardContent>
@@ -41,7 +49,7 @@ export default function SettingsPage() {
         <Card>
             <CardHeader>
                 <CardTitle>Security</CardTitle>
-                <CardDescription>Manage your password and security settings.</CardDescription>
+                <CardDescription>Manage your password.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="space-y-2">

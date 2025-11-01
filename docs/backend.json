@@ -1,156 +1,119 @@
 {
   "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+    "AgentProfile": {
+      "title": "Agent Profile",
+      "description": "Represents an agent in the system.",
       "type": "object",
-      "description": "Represents a user of the finance management system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the user, typically the Firebase Auth UID."
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The user's email address."
-        },
-        "name": {
-          "type": "string",
-          "description": "The user's full name."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the user account was created."
-        }
+        "id": { "type": "string", "description": "Agent's Firebase Auth UID" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "commissionRate": { "type": "number", "description": "Commission rate as a percentage (e.g., 5 for 5%)" },
+        "status": { "type": "string", "enum": ["Active", "Inactive", "Pending"] },
+        "joiningDate": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "email", "createdAt"]
+      "required": ["id", "name", "email", "status", "joiningDate"]
     },
-    "FinancialData": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FinancialData",
+    "Customer": {
+      "title": "Customer",
+      "description": "Represents a customer registered by an agent.",
       "type": "object",
-      "description": "Represents a single financial transaction or record.",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string",
-          "description": "The ID of the user this data belongs to."
-        },
-        "date": {
-          "type": "string",
-          "format": "date",
-          "description": "The date of the transaction."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the transaction."
-        },
-        "amount": {
-          "type": "number",
-          "description": "The transaction amount. Positive for income, negative for expenses."
-        },
-        "category": {
-          "type": "string",
-          "description": "The category of the transaction (e.g., 'Salary', 'Groceries', 'Utilities')."
-        },
-        "type": {
-          "type": "string",
-          "enum": ["income", "expense"],
-          "description": "The type of transaction."
-        }
-      },
-      "required": ["id", "userId", "date", "description", "amount", "category", "type"]
-    },
-    "TaxRecord": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "TaxRecord",
-      "type": "object",
-      "description": "Represents a tax-related record or insight.",
       "properties": {
         "id": { "type": "string" },
-        "userId": { "type": "string" },
-        "period": { "type": "string", "description": "The tax period, e.g., '2024-Q3'." },
-        "taxableIncome": { "type": "number" },
-        "deductions": { "type": "number" },
-        "taxOwed": { "type": "number" },
-        "status": { "type": "string", "enum": ["Pending", "Filed", "Paid"] },
-        "aiInsight": { "type": "string", "description": "AI-generated insight for tax optimization." }
+        "agentId": { "type": "string", "description": "UID of the agent who registered the customer" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "registrationDate": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "userId", "period", "taxableIncome", "status"]
+      "required": ["id", "agentId", "name", "status", "registrationDate"]
     },
-    "Goal": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Goal",
+    "Commission": {
+      "title": "Commission",
+      "description": "Represents a commission earned by an agent.",
       "type": "object",
-      "description": "Represents a user's financial goal.",
       "properties": {
         "id": { "type": "string" },
-        "userId": { "type": "string" },
-        "name": { "type": "string", "description": "The name of the goal." },
-        "targetAmount": { "type": "number" },
-        "currentAmount": { "type": "number" },
-        "targetDate": { "type": "string", "format": "date" }
+        "agentId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "transactionAmount": { "type": "number" },
+        "commissionAmount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "userId", "name", "targetAmount", "currentAmount"]
+      "required": ["id", "agentId", "transactionAmount", "commissionAmount", "date"]
+    },
+    "WithdrawalRequest": {
+      "title": "Withdrawal Request",
+      "description": "Represents a request from an agent to withdraw their earnings.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agentId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "requestDate": { "type": "string", "format": "date-time" },
+        "processedDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "agentId", "amount", "status", "requestDate"]
+    },
+    "ActivityLog": {
+        "title": "Activity Log",
+        "description": "Records significant actions performed by users.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "actorId": { "type": "string", "description": "UID of the user who performed the action" },
+            "action": { "type": "string", "description": "e.g., 'CUSTOMER_APPROVE', 'WITHDRAWAL_REQUEST'" },
+            "targetId": { "type": "string", "description": "ID of the entity being acted upon" },
+            "timestamp": { "type": "string", "format": "date-time" },
+            "details": { "type": "string", "description": "A brief description of the activity." }
+        },
+        "required": ["id", "actorId", "action", "timestamp"]
     }
   },
   "auth": {
-    "providers": [
-      "password"
-    ]
+    "providers": ["password"]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
+        "path": "/agents/{agentId}",
         "definition": {
-          "entityName": "User",
-          "schema": { "$ref": "#/entities/User" },
-          "description": "Stores user profile information.",
-          "params": [{ "name": "userId", "description": "The user's unique ID." }]
+          "entityName": "AgentProfile",
+          "schema": { "$ref": "#/entities/AgentProfile" }
         }
       },
       {
-        "path": "/users/{userId}/financial_data/{dataId}",
+        "path": "/customers/{customerId}",
         "definition": {
-          "entityName": "FinancialData",
-          "schema": { "$ref": "#/entities/FinancialData" },
-          "description": "Stores all financial transactions for a user.",
-          "params": [
-            { "name": "userId", "description": "The user's unique ID." },
-            { "name": "dataId", "description": "The transaction's unique ID." }
-          ]
+          "entityName": "Customer",
+          "schema": { "$ref": "#/entities/Customer" }
         }
       },
       {
-        "path": "/users/{userId}/tax_records/{recordId}",
+        "path": "/agents/{agentId}/commissions/{commissionId}",
         "definition": {
-          "entityName": "TaxRecord",
-          "schema": { "$ref": "#/entities/TaxRecord" },
-          "description": "Stores tax records and AI insights for a user.",
-          "params": [
-            { "name": "userId", "description": "The user's unique ID." },
-            { "name": "recordId", "description": "The tax record's unique ID." }
-          ]
+          "entityName": "Commission",
+          "schema": { "$ref": "#/entities/Commission" }
         }
       },
       {
-        "path": "/users/{userId}/goals/{goalId}",
+        "path": "/agents/{agentId}/withdrawals/{withdrawalId}",
         "definition": {
-          "entityName": "Goal",
-          "schema": { "$ref": "#/entities/Goal" },
-          "description": "Stores financial goals for a user.",
-          "params": [
-            { "name": "userId", "description": "The user's unique ID." },
-            { "name": "goalId", "description": "The goal's unique ID." }
-          ]
+          "entityName": "WithdrawalRequest",
+          "schema": { "$ref": "#/entities/WithdrawalRequest" }
+        }
+      },
+      {
+        "path": "/activity_logs/{logId}",
+        "definition": {
+          "entityName": "ActivityLog",
+          "schema": { "$ref": "#/entities/ActivityLog" }
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed around the user, with sub-collections for their financial data, tax records, and goals. This ensures strong data ownership and security, as rules can be easily applied to a user's entire data tree."
+    ]
   }
 }

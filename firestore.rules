@@ -1,36 +1,44 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper function to check if the requesting user is the owner of the document.
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Users can only read and write their own user document.
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && isOwner(userId);
+    // Admins can read all agent profiles, agents can only read/write their own.
+    match /agents/{agentId} {
+      allow read, write: if isSignedIn() && isOwner(agentId);
+      // allow read: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users can only read and write their own financial data.
-    match /users/{userId}/financial_data/{dataId} {
-      allow read, write: if isSignedIn() && isOwner(userId);
+    // Agents can create customers. Admins can read all customers.
+    match /customers/{customerId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && resource.data.agentId == request.auth.uid;
+      // allow read, update: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Agents can only read their own commissions.
+    match /agents/{agentId}/commissions/{commissionId} {
+      allow read, create: if isSignedIn() && isOwner(agentId);
+    }
+    
+    // Agents can only manage their own withdrawal requests.
+    match /agents/{agentId}/withdrawals/{withdrawalId} {
+       allow read, create: if isSignedIn() && isOwner(agentId);
+       // allow update: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users can only read and write their own tax records.
-    match /users/{userId}/tax_records/{recordId} {
-      allow read, write: if isSignedIn() && isOwner(userId);
-    }
-
-    // Users can only read and write their own goals.
-    match /users/{userId}/goals/{goalId} {
-      allow read, write: if isSignedIn() && isOwner(userId);
+    // Activity logs can be created by any signed in user, but only read by admins.
+    match /activity_logs/{logId} {
+      allow create: if isSignedIn();
+      // allow read: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
