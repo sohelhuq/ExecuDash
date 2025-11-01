@@ -9,6 +9,7 @@ import {
   Users,
   Banknote,
   Landmark,
+  BookOpenCheck,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -27,6 +28,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
+  { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/tax-center', label: 'Tax Center', icon: FileText },
