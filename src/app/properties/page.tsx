@@ -1,3 +1,4 @@
+
 'use client';
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
@@ -24,17 +25,20 @@ type RentEntry = {
   due: number;
 };
 
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN').format(value);
+const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'BDT' }).format(value);
 
 const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[] | null, isLoading: boolean }) => {
-  const totals = data?.reduce((acc, item) => ({
-    opening: acc.opening + item.opening,
-    rent: acc.rent + item.rent,
-    total: acc.total + item.total,
-    collection: acc.collection + item.collection,
-    expense: acc.expense + item.expense,
-    due: acc.due + item.due,
-  }), { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 }) || { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 };
+  const totals = React.useMemo(() => {
+      if (!data) return { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 };
+      return data.reduce((acc, item) => ({
+        opening: acc.opening + item.opening,
+        rent: acc.rent + item.rent,
+        total: acc.total + item.total,
+        collection: acc.collection + item.collection,
+        expense: acc.expense + item.expense,
+        due: acc.due + item.due,
+      }), { opening: 0, rent: 0, total: 0, collection: 0, expense: 0, due: 0 });
+  }, [data]);
 
   return (
     <Card>
@@ -63,12 +67,12 @@ const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[
                 <TableRow key={item.id}>
                     <TableCell>{item.location}</TableCell>
                     <TableCell>{item.tenant}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(item.opening)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(item.rent)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(item.total)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(item.collection)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(item.expense)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(item.due)}</TableCell>
+                    <TableCell className="text-right font-mono">BDT {formatCurrency(item.opening)}</TableCell>
+                    <TableCell className="text-right font-mono">BDT {formatCurrency(item.rent)}</TableCell>
+                    <TableCell className="text-right font-mono">BDT {formatCurrency(item.total)}</TableCell>
+                    <TableCell className="text-right font-mono">BDT {formatCurrency(item.collection)}</TableCell>
+                    <TableCell className="text-right font-mono">BDT {formatCurrency(item.expense)}</TableCell>
+                    <TableCell className="text-right font-mono">BDT {formatCurrency(item.due)}</TableCell>
                 </TableRow>
                 ))
             )}
@@ -76,12 +80,12 @@ const RentTable = ({ title, data, isLoading }: { title: string, data: RentEntry[
           <TableFooter>
             <TableRow className="font-bold">
               <TableCell colSpan={2}>Total</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.opening)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.rent)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.total)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.collection)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.expense)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(totals.due)}</TableCell>
+              <TableCell className="text-right font-mono">BDT {formatCurrency(totals.opening)}</TableCell>
+              <TableCell className="text-right font-mono">BDT {formatCurrency(totals.rent)}</TableCell>
+              <TableCell className="text-right font-mono">BDT {formatCurrency(totals.total)}</TableCell>
+              <TableCell className="text-right font-mono">BDT {formatCurrency(totals.collection)}</TableCell>
+              <TableCell className="text-right font-mono">BDT {formatCurrency(totals.expense)}</TableCell>
+              <TableCell className="text-right font-mono">BDT {formatCurrency(totals.due)}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>
@@ -155,11 +159,17 @@ export default function PropertiesPage() {
         }
     };
 
+    const summaryTotals = React.useMemo(() => {
+        const allData = [...(shetueVangaDokanData || []), ...(jamanTowerData || []), ...(othersData || [])];
+        return allData.reduce((acc, item) => ({
+            opening: acc.opening + item.opening,
+            rent: acc.rent + item.rent,
+            collection: acc.collection + item.collection,
+            due: acc.due + item.due,
+            expense: acc.expense + item.expense,
+        }), { opening: 0, rent: 0, collection: 0, due: 0, expense: 0 });
+    }, [shetueVangaDokanData, jamanTowerData, othersData]);
 
-    const grandTotalOpening = (shetueVangaDokanData?.reduce((a,c) => a+c.opening, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.opening, 0) || 0) + (othersData?.reduce((a,c) => a+c.opening, 0) || 0);
-    const grandTotalRent = (shetueVangaDokanData?.reduce((a,c) => a+c.rent, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.rent, 0) || 0) + (othersData?.reduce((a,c) => a+c.rent, 0) || 0);
-    const grandTotalCollection = (shetueVangaDokanData?.reduce((a,c) => a+c.collection, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.collection, 0) || 0) + (othersData?.reduce((a,c) => a+c.collection, 0) || 0);
-    const grandTotalDue = (shetueVangaDokanData?.reduce((a,c) => a+c.due, 0) || 0) + (jamanTowerData?.reduce((a,c) => a+c.due, 0) || 0) + (othersData?.reduce((a,c) => a+c.due, 0) || 0);
 
   return (
     <AppShell>
@@ -182,10 +192,10 @@ export default function PropertiesPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <SummaryCard title="Grand Total Opening" value={formatCurrency(grandTotalOpening)} />
-            <SummaryCard title="Grand Total Rent" value={formatCurrency(grandTotalRent)} />
-            <SummaryCard title="Grand Total Collection" value={formatCurrency(grandTotalCollection)} />
-            <SummaryCard title="Grand Total Due" value={formatCurrency(grandTotalDue)} />
+            <SummaryCard title="Grand Total Opening" value={`BDT ${formatCurrency(summaryTotals.opening)}`} />
+            <SummaryCard title="Grand Total Rent" value={`BDT ${formatCurrency(summaryTotals.rent)}`} />
+            <SummaryCard title="Grand Total Collection" value={`BDT ${formatCurrency(summaryTotals.collection)}`} />
+            <SummaryCard title="Grand Total Due" value={`BDT ${formatCurrency(summaryTotals.due)}`} />
         </div>
 
         <div className="space-y-6">
@@ -203,10 +213,10 @@ export default function PropertiesPage() {
                     <Table>
                         <TableHeader><TableRow><TableHead>Particular</TableHead><TableHead className="text-right">Taka</TableHead></TableRow></TableHeader>
                         <TableBody>
-                            <TableRow><TableCell>Opening cash</TableCell><TableCell className="text-right font-mono">{formatCurrency(602562)}</TableCell></TableRow>
-                            <TableRow><TableCell>Total Collection</TableCell><TableCell className="text-right font-mono">{formatCurrency(grandTotalCollection)}</TableCell></TableRow>
+                            <TableRow><TableCell>Opening cash</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(602562)}</TableCell></TableRow>
+                            <TableRow><TableCell>Total Collection</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(summaryTotals.collection)}</TableCell></TableRow>
                         </TableBody>
-                        <TableFooter><TableRow className="font-bold"><TableCell>Total</TableCell><TableCell className="text-right font-mono">{formatCurrency(602562 + grandTotalCollection)}</TableCell></TableRow></TableFooter>
+                        <TableFooter><TableRow className="font-bold"><TableCell>Total</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(602562 + summaryTotals.collection)}</TableCell></TableRow></TableFooter>
                     </Table>
                 </CardContent>
             </Card>
@@ -218,19 +228,19 @@ export default function PropertiesPage() {
                      <Table>
                         <TableHeader><TableRow><TableHead>Particular</TableHead><TableHead className="text-right">Taka</TableHead></TableRow></TableHeader>
                         <TableBody>
-                            <TableRow><TableCell>Advance</TableCell><TableCell className="text-right font-mono">{formatCurrency(200000)}</TableCell></TableRow>
-                            <TableRow><TableCell>DBBL bank</TableCell><TableCell className="text-right font-mono">{formatCurrency(1863400)}</TableCell></TableRow>
-                            <TableRow><TableCell>Saiful vai</TableCell><TableCell className="text-right font-mono">{formatCurrency(120000)}</TableCell></TableRow>
-                            <TableRow><TableCell>Exp;</TableCell><TableCell className="text-right font-mono">{formatCurrency(228294)}</TableCell></TableRow>
+                            <TableRow><TableCell>Advance</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(200000)}</TableCell></TableRow>
+                            <TableRow><TableCell>DBBL bank</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(1863400)}</TableCell></TableRow>
+                            <TableRow><TableCell>Saiful vai</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(120000)}</TableCell></TableRow>
+                            <TableRow><TableCell>Exp;</TableCell><TableCell className="text-right font-mono">BDT {formatCurrency(summaryTotals.expense)}</TableCell></TableRow>
                         </TableBody>
                         <TableFooter>
                            <TableRow className="font-bold">
                                 <TableCell>Total</TableCell>
-                                <TableCell className="text-right font-mono">{formatCurrency(2411694)}</TableCell>
+                                <TableCell className="text-right font-mono">BDT {formatCurrency(200000 + 1863400 + 120000 + summaryTotals.expense)}</TableCell>
                             </TableRow>
                              <TableRow className="font-bold text-primary">
                                 <TableCell>Cash in hand</TableCell>
-                                <TableCell className="text-right font-mono">{formatCurrency((602562 + grandTotalCollection) - 2411694)}</TableCell>
+                                <TableCell className="text-right font-mono">BDT {formatCurrency((602562 + summaryTotals.collection) - (200000 + 1863400 + 120000 + summaryTotals.expense))}</TableCell>
                             </TableRow>
                         </TableFooter>
                     </Table>
@@ -242,3 +252,5 @@ export default function PropertiesPage() {
     </AppShell>
   );
 }
+
+    

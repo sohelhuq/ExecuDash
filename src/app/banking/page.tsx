@@ -179,15 +179,25 @@ export default function BankingPage() {
         }
     };
 
-    const totalCCOpening = ccAccounts?.reduce((acc, curr) => acc + curr.opening, 0) || 0;
-    const totalCCCr = ccAccounts?.reduce((acc, curr) => acc + curr.cr, 0) || 0;
-    const totalCCDr = ccAccounts?.reduce((acc, curr) => acc + curr.dr, 0) || 0;
-    const totalCCBalance = ccAccounts?.reduce((acc, curr) => acc + curr.balance, 0) || 0;
+    const ccTotals = React.useMemo(() => {
+        if (!ccAccounts) return { opening: 0, cr: 0, dr: 0, balance: 0 };
+        return ccAccounts.reduce((acc, curr) => ({
+            opening: acc.opening + curr.opening,
+            cr: acc.cr + curr.cr,
+            dr: acc.dr + curr.dr,
+            balance: acc.balance + curr.balance,
+        }), { opening: 0, cr: 0, dr: 0, balance: 0 });
+    }, [ccAccounts]);
 
-    const totalSavingsOpening = savingsAccounts?.reduce((acc, curr) => acc + curr.opening, 0) || 0;
-    const totalSavingsCr = savingsAccounts?.reduce((acc, curr) => acc + curr.cr, 0) || 0;
-    const totalSavingsDr = savingsAccounts?.reduce((acc, curr) => acc + curr.dr, 0) || 0;
-    const totalSavingsBalance = savingsAccounts?.reduce((acc, curr) => acc + curr.balance, 0) || 0;
+    const savingsTotals = React.useMemo(() => {
+        if (!savingsAccounts) return { opening: 0, cr: 0, dr: 0, balance: 0 };
+        return savingsAccounts.reduce((acc, curr) => ({
+            opening: acc.opening + curr.opening,
+            cr: acc.cr + curr.cr,
+            dr: acc.dr + curr.dr,
+            balance: acc.balance + curr.balance,
+        }), { opening: 0, cr: 0, dr: 0, balance: 0 });
+    }, [savingsAccounts]);
 
     const CcAccountForm = () => (
         <DialogContent>
@@ -339,10 +349,10 @@ export default function BankingPage() {
               <TableFooter>
                 <TableRow className="font-bold">
                     <TableCell colSpan={4}>Total CC Account Transaction</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(totalCCOpening)}</TableCell>
-                    <TableCell className="text-right font-mono text-green-600">{formatCurrency(totalCCCr)}</TableCell>
-                    <TableCell className="text-right font-mono text-red-600">{formatCurrency(totalCCDr)}</TableCell>
-                    <TableCell className="text-right font-mono">{formatCurrency(totalCCBalance)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(ccTotals.opening)}</TableCell>
+                    <TableCell className="text-right font-mono text-green-600">{formatCurrency(ccTotals.cr)}</TableCell>
+                    <TableCell className="text-right font-mono text-red-600">{formatCurrency(ccTotals.dr)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(ccTotals.balance)}</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
@@ -396,10 +406,10 @@ export default function BankingPage() {
                 <TableFooter>
                     <TableRow className="font-bold">
                         <TableCell colSpan={3}>Total</TableCell>
-                        <TableCell className="text-right font-mono">{formatCurrency(totalSavingsOpening)}</TableCell>
-                        <TableCell className="text-right font-mono">{formatCurrency(totalSavingsCr)}</TableCell>
-                        <TableCell className="text-right font-mono">{formatCurrency(totalSavingsDr)}</TableCell>
-                        <TableCell className="text-right font-mono">{formatCurrency(totalSavingsBalance)}</TableCell>
+                        <TableCell className="text-right font-mono">{formatCurrency(savingsTotals.opening)}</TableCell>
+                        <TableCell className="text-right font-mono">{formatCurrency(savingsTotals.cr)}</TableCell>
+                        <TableCell className="text-right font-mono">{formatCurrency(savingsTotals.dr)}</TableCell>
+                        <TableCell className="text-right font-mono">{formatCurrency(savingsTotals.balance)}</TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>
@@ -409,3 +419,5 @@ export default function BankingPage() {
     </AppShell>
   );
 }
+
+    
