@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/icons/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +21,6 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address.").min(1, "Email is required."),
@@ -39,7 +37,7 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "user@shetue.com",
+      email: "demo@fintax.ai",
       password: "password",
     },
   });
@@ -50,7 +48,6 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router]);
 
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!auth) return;
     setIsSubmitting(true);
@@ -58,35 +55,32 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
         title: "Signed In",
-        description: "You have successfully signed in.",
+        description: "Welcome back!",
       });
     } catch (error: any) {
-      // If sign-in fails, try to sign up the user with the same credentials
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         try {
           await createUserWithEmailAndPassword(auth, values.email, values.password);
           toast({
             title: "Account Created",
-            description: "New account created and signed in successfully.",
+            description: "Welcome to FinTax AI! Your account has been created.",
           });
         } catch (signUpError: any) {
-          console.error("Sign-up error:", signUpError);
           toast({
             variant: "destructive",
             title: "Sign Up Failed",
-            description: signUpError.message || "Could not create a new account.",
+            description: signUpError.message,
           });
         }
       } else {
-        console.error("Sign-in error:", error);
         toast({
           variant: "destructive",
           title: "Sign In Failed",
-          description: error.message || "An unknown error occurred.",
+          description: error.message,
         });
       }
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -105,9 +99,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-bold">ExecuDash</CardTitle>
+          <CardTitle className="text-2xl font-bold">FinTax AI</CardTitle>
           <CardDescription>
-            Intelligent Command Center for Shetue Group
+            Automated Finance & Tax Management
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -120,7 +114,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="user@shetue.com" {...field} />
+                      <Input placeholder="demo@fintax.ai" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

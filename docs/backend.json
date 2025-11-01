@@ -1,368 +1,156 @@
 {
   "entities": {
-    "BusinessUnit": {
+    "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BusinessUnit",
+      "title": "User",
       "type": "object",
-      "description": "Represents a business unit within the Shetue Group.",
+      "description": "Represents a user of the finance management system.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the BusinessUnit entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The canonical name of the business unit (e.g., 'Setu Filling Station')."
-        },
-        "aliases": {
-          "type": "array",
-          "description": "Alternative names or abbreviations for the business unit (e.g., ['fuel station', 'the pump']).",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ]
-    },
-    "Metric": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Metric",
-      "type": "object",
-      "description": "Represents a measurable quantity or indicator for a specific business unit.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Metric entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the metric (e.g., 'daily_sales')."
-        },
-        "businessUnitId": {
-          "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Metric). Indicates which business unit this metric belongs to."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of what the metric is."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "businessUnitId"
-      ]
-    },
-    "Dashboard": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Dashboard",
-      "type": "object",
-      "description": "Represents a dashboard configuration, including the widgets and layout.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Dashboard entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the dashboard."
-        },
-        "layout": {
-          "type": "string",
-          "description": "The layout configuration of the dashboard (e.g., JSON string)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the dashboard."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "layout"
-      ]
-    },
-    "Widget": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Widget",
-      "type": "object",
-      "description": "Represents a single widget on a dashboard, displaying a specific metric.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Widget entity."
-        },
-        "dashboardId": {
-          "type": "string",
-          "description": "Reference to Dashboard. (Relationship: Dashboard 1:N Widget). Indicates which dashboard this widget belongs to."
-        },
-        "metricId": {
-          "type": "string",
-          "description": "Reference to Metric. (Relationship: Metric 1:N Widget). The metric displayed by this widget."
-        },
-        "visualization": {
-          "type": "string",
-          "description": "The type of visualization used for the widget (e.g., 'line', 'bar')."
-        },
-        "position": {
-          "type": "string",
-          "description": "The position of the widget on the dashboard (e.g., JSON string with coordinates)."
-        },
-        "timeframe": {
-          "type": "string",
-          "description": "The default timeframe for this widget (e.g., 'past_30d')."
-        }
-      },
-      "required": [
-        "id",
-        "dashboardId",
-        "metricId",
-        "visualization",
-        "position"
-      ]
-    },
-    "Alert": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Alert",
-      "type": "object",
-      "description": "Represents an alert rule that triggers when a specific condition is met.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Alert entity."
-        },
-        "businessUnitId": {
-          "type": "string",
-          "description": "Reference to BusinessUnit. (Relationship: BusinessUnit 1:N Alert). The business unit to monitor."
-        },
-        "metricId": {
-          "type": "string",
-          "description": "Reference to Metric. (Relationship: Metric 1:N Alert). The metric to monitor."
-        },
-        "conditionOperator": {
-          "type": "string",
-          "description": "The operator used in the alert condition (e.g., '<', '>')."
-        },
-        "conditionValue": {
-          "type": "number",
-          "description": "The value used in the alert condition."
-        },
-        "durationMinutes": {
-          "type": "number",
-          "description": "The duration (in minutes) for which the condition must be true before the alert is triggered."
-        },
-        "notifyChannels": {
-          "type": "array",
-          "description": "The channels to use for sending notifications (e.g., ['telegram', 'email']).",
-          "items": {
-            "type": "string"
-          }
-        },
-        "severity": {
-          "type": "string",
-          "description": "The severity level of the alert (e.g., 'low', 'medium', 'high')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of what the alert is monitoring."
-        }
-      },
-      "required": [
-        "id",
-        "businessUnitId",
-        "metricId",
-        "conditionOperator",
-        "conditionValue",
-        "durationMinutes",
-        "notifyChannels",
-        "severity"
-      ]
-    },
-    "Employee": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Employee",
-      "type": "object",
-      "description": "Represents an employee with access to the ExecuDash application.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Employee entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The full name of the employee."
+          "description": "Unique identifier for the user, typically the Firebase Auth UID."
         },
         "email": {
           "type": "string",
-          "description": "The email address of the employee.",
-          "format": "email"
+          "format": "email",
+          "description": "The user's email address."
         },
-        "role": {
+        "name": {
           "type": "string",
-          "description": "The role of the employee within the organization (e.g., 'admin', 'manager', 'analyst')."
+          "description": "The user's full name."
         },
-        "businessUnitIds": {
-          "type": "array",
-          "description": "References to BusinessUnits. (Relationship: Employee N:N BusinessUnit). The business units the employee has access to.",
-          "items": {
-            "type": "string"
-          }
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user account was created."
         }
       },
-      "required": [
-        "id",
-        "name",
-        "email",
-        "role"
-      ]
+      "required": ["id", "email", "createdAt"]
     },
-    "RawMaterial": {
+    "FinancialData": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RawMaterial",
+      "title": "FinancialData",
       "type": "object",
-      "description": "Represents a raw material for the bricks business.",
+      "description": "Represents a single financial transaction or record.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user this data belongs to."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date of the transaction."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the transaction."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The transaction amount. Positive for income, negative for expenses."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the transaction (e.g., 'Salary', 'Groceries', 'Utilities')."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense"],
+          "description": "The type of transaction."
+        }
+      },
+      "required": ["id", "userId", "date", "description", "amount", "category", "type"]
+    },
+    "TaxRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TaxRecord",
+      "type": "object",
+      "description": "Represents a tax-related record or insight.",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "name_bn": { "type": "string" },
-        "stockLevel": { "type": "number" },
-        "unit": { "type": "string" },
-        "reorderLevel": { "type": "number" },
-        "unitPrice": { "type": "number" }
+        "userId": { "type": "string" },
+        "period": { "type": "string", "description": "The tax period, e.g., '2024-Q3'." },
+        "taxableIncome": { "type": "number" },
+        "deductions": { "type": "number" },
+        "taxOwed": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Filed", "Paid"] },
+        "aiInsight": { "type": "string", "description": "AI-generated insight for tax optimization." }
       },
-      "required": ["id", "name", "name_bn", "stockLevel", "unit", "reorderLevel", "unitPrice"]
+      "required": ["id", "userId", "period", "taxableIncome", "status"]
     },
-    "ProductionBatch": {
+    "Goal": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ProductionBatch",
+      "title": "Goal",
       "type": "object",
-      "description": "Represents a production batch of bricks.",
+      "description": "Represents a user's financial goal.",
       "properties": {
         "id": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "totalBricks": { "type": "number" },
-        "wastage": { "type": "number" },
-        "status": { "type": "string", "enum": ["In Kiln", "Completed"] }
+        "userId": { "type": "string" },
+        "name": { "type": "string", "description": "The name of the goal." },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "targetDate": { "type": "string", "format": "date" }
       },
-      "required": ["id", "date", "totalBricks", "wastage", "status"]
-    },
-    "FinishedGood": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FinishedGood",
-      "type": "object",
-      "description": "Represents a grade of finished bricks.",
-      "properties": {
-        "id": { "type": "string" },
-        "grade": { "type": "string", "enum": ["No. 1 Brick", "Picket", "Jhama"] },
-        "grade_bn": { "type": "string", "enum": ["নং ১ ইট", "পিকেট", "ঝামা"] },
-        "stock": { "type": "number" },
-        "price": { "type": "number" }
-      },
-      "required": ["id", "grade", "grade_bn", "stock", "price"]
+      "required": ["id", "userId", "name", "targetAmount", "currentAmount"]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/employees/{employeeId}",
+        "path": "/users/{userId}",
         "definition": {
-          "entityName": "Employee",
-          "schema": { "$ref": "#/backend/entities/Employee" },
-          "description": "Stores employee profiles, including their roles and accessible business units. This collection is central to role-based access control and business unit authorization. Includes denormalized 'role' and 'businessUnitIds' fields for authorization independence.",
-          "params": [ { "name": "employeeId", "description": "Unique identifier for the employee." } ]
+          "entityName": "User",
+          "schema": { "$ref": "#/entities/User" },
+          "description": "Stores user profile information.",
+          "params": [{ "name": "userId", "description": "The user's unique ID." }]
         }
       },
       {
-        "path": "/business_units/{businessUnitId}",
+        "path": "/users/{userId}/financial_data/{dataId}",
         "definition": {
-          "entityName": "BusinessUnit",
-          "schema": { "$ref": "#/backend/entities/BusinessUnit" },
-          "description": "Stores business unit information.  No denormalized authorization fields required at this level.",
-          "params": [ { "name": "businessUnitId", "description": "Unique identifier for the business unit." } ]
-        }
-      },
-      {
-        "path": "/business_units/{businessUnitId}/metrics/{metricId}",
-        "definition": {
-          "entityName": "Metric",
-          "schema": { "$ref": "#/backend/entities/Metric" },
-          "description": "Stores metrics associated with a specific business unit. Inherits security context from the parent business_units collection.",
+          "entityName": "FinancialData",
+          "schema": { "$ref": "#/entities/FinancialData" },
+          "description": "Stores all financial transactions for a user.",
           "params": [
-            { "name": "businessUnitId", "description": "Unique identifier for the business unit." },
-            { "name": "metricId", "description": "Unique identifier for the metric." }
+            { "name": "userId", "description": "The user's unique ID." },
+            { "name": "dataId", "description": "The transaction's unique ID." }
           ]
         }
       },
       {
-        "path": "/dashboards/{dashboardId}",
+        "path": "/users/{userId}/tax_records/{recordId}",
         "definition": {
-          "entityName": "Dashboard",
-          "schema": { "$ref": "#/backend/entities/Dashboard" },
-          "description": "Stores dashboard configurations.  No denormalized authorization fields required at this level.",
-          "params": [ { "name": "dashboardId", "description": "Unique identifier for the dashboard." } ]
-        }
-      },
-      {
-        "path": "/dashboards/{dashboardId}/widgets/{widgetId}",
-        "definition": {
-          "entityName": "Widget",
-          "schema": { "$ref": "#/backend/entities/Widget" },
-          "description": "Stores widgets associated with a specific dashboard. Inherits security context from the parent dashboards collection.",
+          "entityName": "TaxRecord",
+          "schema": { "$ref": "#/entities/TaxRecord" },
+          "description": "Stores tax records and AI insights for a user.",
           "params": [
-            { "name": "dashboardId", "description": "Unique identifier for the dashboard." },
-            { "name": "widgetId", "description": "Unique identifier for the widget." }
+            { "name": "userId", "description": "The user's unique ID." },
+            { "name": "recordId", "description": "The tax record's unique ID." }
           ]
         }
       },
       {
-        "path": "/business_units/{businessUnitId}/alerts/{alertId}",
+        "path": "/users/{userId}/goals/{goalId}",
         "definition": {
-          "entityName": "Alert",
-          "schema": { "$ref": "#/backend/entities/Alert" },
-          "description": "Stores alert configurations for a specific business unit. Inherits security context from the parent business_units collection.",
+          "entityName": "Goal",
+          "schema": { "$ref": "#/entities/Goal" },
+          "description": "Stores financial goals for a user.",
           "params": [
-            { "name": "businessUnitId", "description": "Unique identifier for the business unit." },
-            { "name": "alertId", "description": "Unique identifier for the alert." }
+            { "name": "userId", "description": "The user's unique ID." },
+            { "name": "goalId", "description": "The goal's unique ID." }
           ]
-        }
-      },
-      {
-        "path": "/raw_materials/{materialId}",
-        "definition": {
-          "entityName": "RawMaterial",
-          "schema": { "$ref": "#/backend/entities/RawMaterial" },
-          "description": "Stores information about raw materials for the bricks business.",
-          "params": [ { "name": "materialId", "description": "Unique identifier for the raw material." } ]
-        }
-      },
-      {
-        "path": "/production_batches/{batchId}",
-        "definition": {
-          "entityName": "ProductionBatch",
-          "schema": { "$ref": "#/backend/entities/ProductionBatch" },
-          "description": "Stores data for each production batch of bricks.",
-          "params": [ { "name": "batchId", "description": "Unique identifier for the production batch." } ]
-        }
-      },
-      {
-        "path": "/finished_goods/{goodId}",
-        "definition": {
-          "entityName": "FinishedGood",
-          "schema": { "$ref": "#/backend/entities/FinishedGood" },
-          "description": "Stores inventory levels for different grades of finished bricks.",
-          "params": [ { "name": "goodId", "description": "Unique identifier for the finished good." } ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support the new Bricks ERP module. It introduces collections for RawMaterials, ProductionBatches, and FinishedGoods, which are essential for tracking the manufacturing lifecycle. Each collection is structured with a clear schema and path, ensuring that data is organized logically and can be easily queried by the application. This structure aligns with Firestore's best practices for data modeling."
+    "reasoning": "The Firestore structure is designed around the user, with sub-collections for their financial data, tax records, and goals. This ensures strong data ownership and security, as rules can be easily applied to a user's entire data tree."
   }
 }
