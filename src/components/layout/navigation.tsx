@@ -35,6 +35,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/units', label: 'Units', icon: Building },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
+  { href: '/hr', label: 'HR Management', icon: Users },
   { href: '/department', label: 'Department', icon: Briefcase },
   { href: '/employee', label: 'Employee', icon: Contact },
   { href: '/payroll', label: 'Payroll', icon: Banknote },
