@@ -26,6 +26,7 @@ import {
   TrendingUp,
   Factory,
   CircleDollarSign,
+  Shield,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,6 +43,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import * as React from 'react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -91,10 +93,12 @@ const navItems = [
   { href: '/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/finance-tax', label: 'ফিনান্স ও ট্যাক্স', icon: Landmark },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { userProfile } = useUserProfile();
 
   return (
     <Sidebar>
@@ -106,7 +110,11 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navItems.map((item) => (
+          {navItems.map((item) => {
+            if (item.adminOnly && userProfile?.userType !== 'Admin') {
+              return null;
+            }
+            return (
             <SidebarMenuItem key={item.label}>
               {item.subItems ? (
                 <Collapsible>
@@ -147,7 +155,7 @@ export function AppSidebar() {
                 </Link>
               )}
             </SidebarMenuItem>
-          ))}
+          )})}
         </SidebarMenu>
       </SidebarContent>
     </Sidebar>
