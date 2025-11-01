@@ -63,7 +63,7 @@
     },
     "FinancialTransaction": {
       "title": "Financial Transaction",
-      "description": "Represents a single financial transaction, such as income or an expense.",
+      "description": "Represents a single financial transaction, such as an income or an expense.",
       "type": "object",
       "properties": {
         "id": {
@@ -469,6 +469,17 @@
         "dpsBalance": { "type": "number" }
       },
       "required": ["bank", "maturityDate", "dpsBalance"]
+    },
+    "FdrAccount": {
+      "title": "FDR Account",
+      "description": "Represents a Fixed Deposit Receipt account.",
+      "type": "object",
+      "properties": {
+        "bank": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["bank", "category", "amount"]
     }
   },
   "auth": {
@@ -573,6 +584,13 @@
         "definition": {
           "entityName": "DpsAccount",
           "schema": { "$ref": "#/entities/DpsAccount" }
+        }
+      },
+      {
+        "path": "/users/{userId}/fdr/{fdrId}",
+        "definition": {
+          "entityName": "FdrAccount",
+          "schema": { "$ref": "#/entities/FdrAccount" }
         }
       },
       {
