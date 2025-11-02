@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -31,9 +32,9 @@ const employeeSchema = z.object({
 type EmployeeFormData = z.infer<typeof employeeSchema>;
 
 const seedEmployees: Omit<Employee, 'id'>[] = [
-  { name: "Jahirul Haque", department: "Accounts", jobRole: "Manager", salary: 30000 },
-  { name: "Rahim Uddin", department: "Sales", jobRole: "Sales Officer", salary: 25000 },
-  { name: "Selina Begum", department: "HR", jobRole: "HR Executive", salary: 22000 },
+    { name: "Kamrul Islam", department: "Admin", jobRole: "Admin", salary: 28000 },
+    { name: "Popy Akhter", department: "Sales", jobRole: "Sales", salary: 20000 },
+    { name: "Asif Rahman", department: "Accounts", jobRole: "Accounts", salary: 25000 },
 ];
 
 export default function EmployeePage() {
@@ -152,7 +153,7 @@ export default function EmployeePage() {
           <CardHeader>
             <CardTitle>Employee List</CardTitle>
             <CardDescription>The central directory of all active employees.</CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent>
             <Table>
                 <TableHeader>
