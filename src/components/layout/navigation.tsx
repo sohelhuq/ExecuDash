@@ -27,7 +27,8 @@ import {
   Factory,
   CircleDollarSign,
   Shield,
-  HeartPulse
+  HeartPulse,
+  Boxes
 } from 'lucide-react';
 import {
   Sidebar,
@@ -67,6 +68,7 @@ const navItems = [
     icon: HeartPulse,
     subItems: [
       { href: '/pharmacy', label: 'POS Dashboard' },
+      { href: '/pharmacy/products', label: 'Products', icon: Boxes },
     ]
   },
   { href: '/hr', label: 'HR Management', icon: Users },
@@ -207,6 +209,7 @@ export function AppSidebar() {
                         <li key={subItem.label}>
                           <Link href={subItem.href}>
                              <SidebarMenuSubButton isActive={pathname.startsWith(subItem.href)}>
+                                {subItem.icon && <subItem.icon className="h-4 w-4 mr-2"/>}
                                 {subItem.label}
                              </SidebarMenuSubButton>
                           </Link>
@@ -234,3 +237,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    

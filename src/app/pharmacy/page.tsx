@@ -1,8 +1,7 @@
 
 'use client';
 import * as React from 'react';
-import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { 
     Coins, 
@@ -29,7 +28,7 @@ type PosAction = {
 
 const mainActions: PosAction[] = [
     { title: 'Cash Register', icon: Coins, href: '#', variant: 'primary' },
-    { title: 'Product File', icon: Boxes, href: '#', variant: 'primary' },
+    { title: 'Product File', icon: Boxes, href: '/pharmacy/products', variant: 'primary' },
     { title: 'Customer File', icon: Users, href: '#', variant: 'primary' },
     { title: 'Receive Products', icon: PackagePlus, href: '#', variant: 'primary' },
     { title: 'Order Products', icon: ClipboardList, href: '#', variant: 'primary' },
@@ -46,6 +45,7 @@ const ActionButton = ({ action }: { action: PosAction }) => {
     const Icon = action.icon;
     return (
         <Button 
+            asChild
             variant={action.variant === 'primary' ? 'default' : 'ghost'} 
             className={cn(
                 'flex flex-col items-center justify-center h-full w-full aspect-square p-4 rounded-lg shadow-md transition-transform transform hover:scale-105',
@@ -53,10 +53,12 @@ const ActionButton = ({ action }: { action: PosAction }) => {
                 action.variant === 'secondary' && 'text-gray-300 hover:bg-gray-700'
             )}
         >
-            <Icon className={cn('h-10 w-10 mb-2', action.variant === 'secondary' && 'h-6 w-6')} />
-            <span className={cn('text-lg font-semibold text-center', action.variant === 'secondary' && 'text-sm')}>
-                {action.title}
-            </span>
+            <Link href={action.href}>
+                <Icon className={cn('h-10 w-10 mb-2', action.variant === 'secondary' && 'h-6 w-6')} />
+                <span className={cn('text-lg font-semibold text-center', action.variant === 'secondary' && 'text-sm')}>
+                    {action.title}
+                </span>
+            </Link>
         </Button>
     )
 }
