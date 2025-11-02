@@ -569,6 +569,18 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["items", "totalAmount", "paymentMethod", "timestamp"]
+    },
+    "AccountSummary": {
+      "title": "Account Summary",
+      "description": "Represents a KPI card on the accounting dashboard.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "value": { "type": "number" },
+        "color": { "type": "string", "description": "Tailwind CSS color class" },
+        "filtered": { "type": "boolean" }
+      },
+      "required": ["title", "value", "color", "filtered"]
     }
   },
   "auth": {
@@ -750,9 +762,14 @@
           "entityName": "SalesTransaction",
           "schema": { "$ref": "#/entities/SalesTransaction" }
         }
+      },
+      {
+        "path": "/users/{userId}/accountSummaries/{summaryId}",
+        "definition": {
+          "entityName": "AccountSummary",
+          "schema": { "$ref": "#/entities/AccountSummary" }
+        }
       }
     ]
   }
 }
-
-    

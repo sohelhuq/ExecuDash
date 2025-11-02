@@ -6,10 +6,20 @@ import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { cn } from '@/lib/utils';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, writeBatch, doc } from 'firebase/firestore';
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-BD').format(value)}`;
 
-const kpiData = [
+type KpiData = {
+  id: string;
+  title: string;
+  value: number;
+  color: string;
+  filtered: boolean;
+};
+
+const initialKpiData: Omit<KpiData, 'id'>[] = [
     { title: 'Total Income', value: 1250000, color: 'text-green-600', filtered: true },
     { title: 'Total Expense', value: 750000, color: 'text-red-600', filtered: true },
     { title: 'Net Profit', value: 500000, color: 'text-blue-600', filtered: false },
@@ -17,9 +27,9 @@ const kpiData = [
     { title: 'Vendor Payments', value: 650000, color: 'text-orange-600', filtered: true },
     { title: 'Upcoming Payments', value: 150000, color: 'text-amber-600', filtered: false },
     { title: 'Cash On Hand', value: 200000, color: 'text-teal-600', filtered: false },
-    { title: 'Cash', value: 50000, color: 'text-gray-600', filtered: false },
+    { title: 'Cash', value: 120000, color: 'text-gray-600', filtered: false },
     { title: 'bKash', value: 80000, color: 'text-pink-600', filtered: false },
-    { title: 'Bank Balance', value: 70000, color: 'text-indigo-600', filtered: false },
+    { title: 'Bank Balance', value: 540000, color: 'text-indigo-600', filtered: false },
 ];
 
 const incomeData = [
@@ -41,6 +51,24 @@ const expenseData = [
 const EXPENSE_COLORS = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
 
 export default function AccountingDashboardPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  
+  const summariesRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/accountSummaries`) : null, [user, firestore]);
+  const { data: kpiData, isLoading: kpiLoading } = useCollection<KpiData>(summariesRef);
+
+  React.useEffect(() => {
+    if (user && firestore && !kpiLoading && (!kpiData || kpiData.length === 0)) {
+        const batch = writeBatch(firestore);
+        initialKpiData.forEach(kpi => {
+            const docRef = doc(summariesRef!);
+            batch.set(docRef, kpi);
+        });
+        batch.commit().catch(e => console.error("Failed to seed KPI data", e));
+    }
+  }, [user, firestore, kpiData, kpiLoading, summariesRef]);
+
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -56,8 +84,18 @@ export default function AccountingDashboardPage() {
         </div>
         
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {kpiData.map((kpi, index) => (
-                <Card key={index} className="flex flex-col">
+            {kpiLoading && Array.from({ length: 10 }).map((_, index) => (
+                 <Card key={index} className="flex flex-col animate-pulse">
+                    <CardHeader className="pb-2">
+                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="h-7 bg-muted rounded w-1/2"></div>
+                    </CardContent>
+                </Card>
+            ))}
+            {kpiData?.map((kpi) => (
+                <Card key={kpi.id} className="flex flex-col">
                     <CardHeader className="pb-2">
                         <CardDescription className={cn("font-semibold", kpi.color)}>{kpi.title}</CardDescription>
                     </CardHeader>
