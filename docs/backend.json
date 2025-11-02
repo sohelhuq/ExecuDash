@@ -673,6 +673,25 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "The timestamp when the file was uploaded." }
       },
       "required": ["name", "url", "size", "type", "createdAt"]
+    },
+    "BusinessDocument": {
+      "title": "Business Document",
+      "description": "Represents a business-critical document like a license or compliance file.",
+      "type": "object",
+      "properties": {
+        "unit": { "type": "string", "description": "The business unit this document belongs to (e.g., Pharmacy, CNG)." },
+        "docType": { "type": "string", "description": "The type of document (e.g., Trade Licence, TIN)." },
+        "issueDate": { "type": "string", "format": "date-time" },
+        "expiryDate": { "type": "string", "format": "date-time" },
+        "issuer": { "type": "string", "description": "The authority that issued the document." },
+        "fileUrl": { "type": "string", "format": "uri" },
+        "fileName": { "type": "string" },
+        "reminderDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Valid", "Expired", "Renewal Due"] },
+        "notes": { "type": "string" },
+        "uploadedBy": { "type": "string", "description": "UID of the user who uploaded the document." }
+      },
+      "required": ["unit", "docType", "issueDate", "expiryDate", "fileUrl", "fileName", "status", "uploadedBy"]
     }
   },
   "auth": {
@@ -911,6 +930,13 @@
         "definition": {
           "entityName": "File",
           "schema": { "$ref": "#/entities/File" }
+        }
+      },
+      {
+        "path": "/users/{userId}/businessDocuments/{docId}",
+        "definition": {
+          "entityName": "BusinessDocument",
+          "schema": { "$ref": "#/entities/BusinessDocument" }
         }
       }
     ]

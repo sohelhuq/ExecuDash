@@ -34,6 +34,7 @@ import {
   Percent,
   HardHat,
   Archive,
+  BookLock,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -122,6 +123,7 @@ const navItems = [
   { href: '/dps', label: 'DPS', icon: ShieldCheck },
   { href: '/fdr', label: 'FDR', icon: ShieldCheck },
   { href: '/storage', label: 'Storage', icon: Archive },
+  { href: '/vault', label: 'Digital Vault', icon: BookLock },
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/reports', label: 'Reports', icon: FilePieChart },
