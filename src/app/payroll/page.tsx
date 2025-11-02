@@ -44,10 +44,11 @@ export default function PayrollPage() {
         
         const seedData = async () => {
             if (employees.length === 0) {
+                if(!employeesRef) return;
                 try {
                     const batch = writeBatch(firestore);
                     seedEmployees.forEach(emp => {
-                        const docRef = doc(employeesRef!);
+                        const docRef = doc(employeesRef);
                         batch.set(docRef, emp);
                     });
                     await batch.commit();
@@ -189,7 +190,7 @@ export default function PayrollPage() {
                                         <TableCell>{formatCurrency(p.grossSalary)}</TableCell>
                                         <TableCell>{formatCurrency(p.deductions)}</TableCell>
                                         <TableCell className="font-semibold">{formatCurrency(p.netSalary)}</TableCell>
-                                        <TableCell><Badge variant={p.status === 'paid' ? 'default' : 'secondary'} className={p.status === 'paid' ? 'bg-green-600' : ''}>{p.status}</Badge></TableCell>
+                                        <TableCell><Badge variant={p.status === 'paid' ? 'default' : 'secondary'} className={p.status === 'paid' ? 'bg-green-600 text-primary-foreground' : ''}>{p.status}</Badge></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -209,5 +210,3 @@ export default function PayrollPage() {
         </AppShell>
     );
 }
-
-    
