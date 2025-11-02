@@ -602,6 +602,42 @@
         "phone",
         "address"
       ]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Represents a service offered by the business.",
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "slaDays": { "type": "number", "description": "Service Level Agreement in days" },
+        "assignedTo": { "type": "string" }
+      },
+      "required": ["description", "price", "slaDays"]
+    },
+    "ServiceTicket": {
+      "title": "Service Ticket",
+      "description": "Represents a customer's request for a service.",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "In Progress", "Closed", "Cancelled"]},
+        "createdAt": { "type": "string", "format": "date-time" },
+        "closedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerId", "serviceId", "status", "createdAt"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Represents a product or service supplier.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "contact": { "type": "string" },
+        "address": { "type": "string" }
+      },
+      "required": ["name", "contact"]
     }
   },
   "auth": {
@@ -798,6 +834,27 @@
           "schema": {
             "$ref": "#/entities/Customer"
           }
+        }
+      },
+      {
+        "path": "/users/{userId}/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": { "$ref": "#/entities/Service" }
+        }
+      },
+      {
+        "path": "/users/{userId}/serviceTickets/{ticketId}",
+        "definition": {
+          "entityName": "ServiceTicket",
+          "schema": { "$ref": "#/entities/ServiceTicket" }
+        }
+      },
+      {
+        "path": "/users/{userId}/suppliers/{supplierId}",
+        "definition": {
+          "entityName": "Supplier",
+          "schema": { "$ref": "#/entities/Supplier" }
         }
       }
     ]

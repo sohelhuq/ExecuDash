@@ -28,7 +28,9 @@ import {
   CircleDollarSign,
   Shield,
   HeartPulse,
-  Boxes
+  Boxes,
+  Wrench,
+  Truck
 } from 'lucide-react';
 import {
   Sidebar,
@@ -64,6 +66,13 @@ const navItems = [
     ],
   },
   {
+    label: 'Inventory',
+    icon: Boxes,
+    subItems: [
+      { href: '/suppliers', label: 'Suppliers', icon: Truck },
+    ]
+  },
+  {
     label: 'Pharmacy',
     icon: HeartPulse,
     subItems: [
@@ -92,6 +101,7 @@ const navItems = [
   { href: '/project-management', label: 'Project Management', icon: ClipboardCheck },
   { href: '/properties', label: 'Properties', icon: Home },
   { href: '/customers', label: 'Customers', icon: Users },
+  { href: '/service', label: 'Service', icon: Wrench },
   { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
   { href: '/notice-board', label: 'Notice Board', icon: ClipboardList },
@@ -237,5 +247,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
-    
