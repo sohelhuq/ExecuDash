@@ -59,8 +59,6 @@ type BusinessUnit = { id: string; name: string; location: string };
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/construct-ops', label: 'ConstructOps', icon: HardHat },
-  { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   {
     label: 'Sales',
     icon: TrendingUp,
@@ -70,12 +68,56 @@ const navItems = [
       { href: '/sales/debtors', label: 'Debtors' },
     ],
   },
-  {
-    label: 'Inventory',
-    icon: Boxes,
+    {
+    label: 'HR',
+    icon: Users,
     subItems: [
-      { href: '/suppliers', label: 'Suppliers', icon: Truck },
+        { href: '/hr', label: 'HR Hub' },
+        { href: '/employee', label: 'Employees' },
+        { href: '/payroll', label: 'Payroll' },
+        { href: '/attendance', label: 'Attendance' },
+        { href: '/department', label: 'Departments' },
+        { href: '/recruitment', label: 'Recruitment' },
+    ],
+  },
+  {
+    label: 'Finance',
+    icon: CircleDollarSign,
+    subItems: [
+      { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
+      { href: '/banking', label: 'Banking', icon: Landmark },
+      { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
+      { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
+    ],
+  },
+    {
+    label: 'Taxes',
+    icon: Landmark,
+    subItems: [
+      { href: '/taxes', label: 'Tax Rates', icon: Percent },
+      { href: '/tax-center', label: 'AI Tax Center', icon: FileText },
     ]
+  },
+    {
+    label: 'Operations',
+    icon: Briefcase,
+    subItems: [
+      { href: '/units', label: 'Business Units' },
+      { href: '/construct-ops', label: 'ConstructOps', icon: HardHat },
+      { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
+      { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
+      { href: '/project-management', label: 'Projects', icon: ClipboardCheck },
+      { href: '/properties', label: 'Properties', icon: Home },
+      { href: '/service', label: 'Services', icon: Wrench },
+    ],
+  },
+  {
+    label: 'CRM',
+    icon: Contact,
+    subItems: [
+        { href: '/customers', label: 'Customers' },
+        { href: '/collections', label: 'Dues Collection' },
+    ],
   },
   {
     label: 'Pharmacy',
@@ -85,50 +127,42 @@ const navItems = [
       { href: '/pharmacy/products', label: 'Products', icon: Boxes },
     ]
   },
-  { href: '/hr', label: 'HR Management', icon: Users },
-  {
-    label: 'Finance & Tax',
-    icon: Landmark,
+    {
+    label: 'Procurement',
+    icon: ShoppingCart,
     subItems: [
-      { href: '/taxes', label: 'Taxes', icon: Percent },
-      { href: '/tax-center', label: 'AI Tax Center', icon: FileText },
-    ]
-  },
-  { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
-  { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
-  {
-    label: 'Points',
-    icon: Gem,
-    subItems: [
-      { href: '/points/dashboard', label: 'Attendance' },
-      { href: '/points/categories', label: 'Categories' },
-      { href: '/points/management', label: 'Management' },
-      { href: '/points/settings', label: 'Settings' },
+        { href: '/procurement', label: 'Procurement Hub' },
+        { href: '/suppliers', label: 'Suppliers' },
     ],
   },
-  { href: '/department', label: 'Department', icon: Briefcase },
-  { href: '/employee', label: 'Employee', icon: Contact },
-  { href: '/payroll', label: 'Payroll', icon: Banknote },
-  { href: '/recruitment', label: 'Recruitment', icon: UserPlus },
-  { href: '/procurement', label: 'Procurement', icon: ShoppingCart },
-  { href: '/project-management', label: 'Project Management', icon: ClipboardCheck },
-  { href: '/properties', label: 'Properties', icon: Home },
-  { href: '/customers', label: 'Customers', icon: Users },
-  { href: '/service', label: 'Service', icon: Wrench },
-  { href: '/withdrawals', label: 'Withdrawals', icon: Banknote },
-  { href: '/attendance', label: 'Attendance', icon: UserCheck },
-  { href: '/notice-board', label: 'Notice Board', icon: ClipboardList },
-  { href: '/banking', label: 'Banking', icon: Landmark },
-  { href: '/collections', label: 'Collections', icon: BookOpenCheck },
-  { href: '/dps', label: 'DPS', icon: ShieldCheck },
-  { href: '/fdr', label: 'FDR', icon: ShieldCheck },
-  { href: '/storage', label: 'Storage', icon: Archive },
-  { href: '/vault', label: 'Digital Vault', icon: BookLock },
-  { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
-  { href: '/goals', label: 'Goals', icon: Target },
-  { href: '/reports', label: 'Reports', icon: FilePieChart },
-  { href: '/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  {
+    label: 'Investments',
+    icon: Landmark,
+    subItems: [
+        { href: '/dps', label: 'DPS' },
+        { href: '/fdr', label: 'FDR' },
+        { href: '/goals', label: 'Goals' },
+    ],
+  },
+    {
+    label: 'Reports & Vault',
+    icon: Archive,
+    subItems: [
+        { href: '/reports', label: 'Reports Center', icon: FilePieChart },
+        { href: '/analytics', label: 'Analytics', icon: BarChart2 },
+        { href: '/storage', label: 'File Storage', icon: Archive },
+        { href: '/vault', label: 'Digital Vault', icon: BookLock },
+    ],
+  },
+    {
+    label: 'Company',
+    icon: Building,
+    subItems: [
+        { href: '/notice-board', label: 'Notice Board' },
+        { href: '/points/dashboard', label: 'Attendance Points' },
+        { href: '/settings', label: 'Settings' },
+    ],
+  },
   { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
 ];
 
