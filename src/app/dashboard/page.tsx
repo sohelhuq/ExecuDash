@@ -1,9 +1,10 @@
 'use client';
 import * as React from 'react';
+import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Archive, FileText, RefreshCw, AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const kpiData = [
   { title: "Total Sales (Today)", value: "$15,200", icon: DollarSign },
@@ -36,6 +37,18 @@ const lowStockAlerts = [
     { item: 'Diesel Fuel', status: 'Low' },
     { item: 'Red Bricks', status: 'Critical' },
 ];
+
+// Dynamically import chart components with SSR disabled
+const DynamicLineChart = dynamic(() =>
+  import('recharts').then(mod => mod.LineChart),
+  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> }
+);
+const DynamicPieChart = dynamic(() =>
+  import('recharts').then(mod => mod.PieChart),
+  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> }
+);
+
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Pie, Cell, Legend } from 'recharts';
 
 export default function DashboardPage() {
   return (
@@ -70,10 +83,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={revenueData}>
+                <DynamicLineChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
                   <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
+                  <YAxis tickLine={false} axisLine={false} tickFormatter={(value: number) => `$${value/1000}k`} />
                   <Tooltip 
                      contentStyle={{
                         background: 'hsl(var(--background))',
@@ -82,7 +95,7 @@ export default function DashboardPage() {
                      }}
                   />
                   <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 5 }} activeDot={{ r: 8 }} />
-                </LineChart>
+                </DynamicLineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -93,7 +106,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
+                <DynamicPieChart>
                   <Pie
                     data={salesDistributionData}
                     cx="50%"
@@ -117,7 +130,7 @@ export default function DashboardPage() {
                      }}
                   />
                   <Legend iconSize={10} />
-                </PieChart>
+                </DynamicPieChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
