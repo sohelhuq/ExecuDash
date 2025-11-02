@@ -581,6 +581,27 @@
         "filtered": { "type": "boolean" }
       },
       "required": ["title", "value", "color", "filtered"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Represents a business customer.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "phone",
+        "address"
+      ]
     }
   },
   "auth": {
@@ -768,6 +789,15 @@
         "definition": {
           "entityName": "AccountSummary",
           "schema": { "$ref": "#/entities/AccountSummary" }
+        }
+      },
+      {
+        "path": "/users/{userId}/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/entities/Customer"
+          }
         }
       }
     ]

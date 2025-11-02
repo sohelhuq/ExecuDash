@@ -3,47 +3,118 @@ import * as React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, MoreHorizontal, Check, X, Users, UserCheck, UserX } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { PlusCircle, Database, Users, UserCheck, UserX } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { addDoc, collection, writeBatch, doc } from 'firebase/firestore';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-BD').format(value)}`;
-
-const customers = [
-  { id: 'cust1', name: "ABC Corporation", agent: "Rahim Sheikh", email: "contact@abccorp.com", status: "Approved", registrationDate: "2024-02-10" },
-  { id: 'cust2', name: "XYZ Ltd", agent: "Rahim Sheikh", email: "info@xyz.com", status: "Pending", registrationDate: "2024-07-20" },
-  { id: 'cust3', name: "DEF Industries", agent: "Fatima Ahmed", email: "accounts@def.com", status: "Approved", registrationDate: "2024-05-01" },
-  { id: 'cust4', name: "GHI Solutions", agent: "Fatima Ahmed", email: "support@ghi.com", status: "Rejected", registrationDate: "2024-06-15" },
-];
 
 const kpiData = [
-    { title: 'Total Commission', value: formatCurrency(45200), icon: Users, description: 'No remark needed', className: 'bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800' },
+    { title: 'Total Commission', value: '৳45,200', icon: Users, description: 'No remark needed', className: 'bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800' },
     { title: 'Approved Customers', value: '185', icon: UserCheck, description: 'Minimum Increased', className: 'bg-green-100 dark:bg-green-900/50 border-green-200 dark:border-green-800' },
     { title: 'Rejected Customers', value: '12', icon: UserX, description: '10 nos over due', className: 'bg-red-100 dark:bg-red-900/50 border-red-200 dark:border-red-800' },
-]
+];
+
+const customerSchema = z.object({
+  name: z.string().min(1, 'Customer name is required'),
+  phone: z.string().min(1, 'Phone number is required'),
+  address: z.string().min(1, 'Address is required'),
+});
+
+type CustomerFormData = z.infer<typeof customerSchema>;
+type Customer = CustomerFormData & { id: string };
+
+const seedCustomers: Omit<Customer, 'id'>[] = [
+    { name: " মিঠু এন্টারপ্রাইজ", phone: "01811553399", address: "Feni, BD" },
+    { name: "Tipu Traders", phone: "01716652212", address: "Noakhali, BD" },
+];
 
 export default function CustomersPage() {
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
-  const handleAction = (status: 'Approved' | 'Rejected', customerId: string) => {
-    toast({
-        title: `Customer ${status}`,
-        description: `Customer ID ${customerId} has been ${status.toLowerCase()}.`
+  const customersRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/customers`) : null, [firestore, user]);
+  const { data: customers, isLoading } = useCollection<Customer>(customersRef);
+
+  const form = useForm<CustomerFormData>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: { name: '', phone: '', address: '' },
+  });
+
+  const handleSeedData = async () => {
+    if (!customersRef) return;
+    try {
+      const batch = writeBatch(firestore);
+      seedCustomers.forEach(cust => {
+        const docRef = doc(customersRef);
+        batch.set(docRef, cust);
+      });
+      await batch.commit();
+      toast({ title: 'Success', description: 'Demo customers have been added.' });
+    } catch (error) {
+        console.error("Error seeding customers:", error);
+        const contextualError = new FirestorePermissionError({ path: customersRef.path, operation: 'create' });
+        errorEmitter.emit('permission-error', contextualError);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not add demo customers.' });
+    }
+  };
+
+  const onSubmit = (values: CustomerFormData) => {
+    if (!customersRef) return;
+
+    addDoc(customersRef, values).then(() => {
+        toast({ title: 'Success', description: 'Customer registered successfully.' });
+        form.reset();
+        setIsDialogOpen(false);
+    }).catch(error => {
+        console.error("Error adding customer:", error);
+        const contextualError = new FirestorePermissionError({ path: customersRef.path, operation: 'create', requestResourceData: values });
+        errorEmitter.emit('permission-error', contextualError);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not register customer.' });
     });
-    // Here you would update the customer status in your database
-  }
+  };
 
   return (
     <AppShell>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Customer Registration</h1>
-            <p className="text-muted-foreground">Register new customers and view their status.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Customer Management</h1>
+            <p className="text-muted-foreground">Register new customers and view their information.</p>
           </div>
-          <Button><PlusCircle className="mr-2 h-4 w-4" /> Register New Customer</Button>
+          <div className="flex items-center gap-2">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button><PlusCircle className="mr-2 h-4 w-4" /> Register New Customer</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Register New Customer</DialogTitle>
+                  <DialogDescription>Fill in the details for the new customer.</DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Customer Name</FormLabel><FormControl><Input {...field} placeholder="e.g., ABC Corporation" /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} placeholder="e.g., 01..." /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} placeholder="e.g., Dhaka, BD" /></FormControl><FormMessage /></FormItem>)} />
+                    <DialogFooter><Button type="submit">Save Customer</Button></DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" onClick={handleSeedData}><Database className="mr-2 h-4 w-4" /> Seed Data</Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -69,59 +140,29 @@ export default function CustomersPage() {
         <Card>
           <CardHeader>
             <CardTitle>Customer List</CardTitle>
-            <CardDescription>A list of customers you have registered.</CardDescription>
+            <CardDescription>A list of all registered customers.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Customer Name</TableHead>
-                  <TableHead>Contact Email</TableHead>
-                  <TableHead>Registration Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Phone Number</TableHead>
+                  <TableHead>Address</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customers.map((customer) => (
+                {isLoading && <TableRow><TableCell colSpan={3} className="text-center">Loading customers...</TableCell></TableRow>}
+                {customers?.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.registrationDate}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={customer.status === 'Approved' ? 'default' : 'secondary'}
-                        className={
-                            customer.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                            customer.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                        }
-                      >
-                        {customer.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0" disabled={customer.status !== 'Pending'}>
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleAction('Approved', customer.id)}>
-                                    <Check className="mr-2 h-4 w-4 text-green-500" />
-                                    Approve
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleAction('Rejected', customer.id)}>
-                                    <X className="mr-2 h-4 w-4 text-red-500" />
-                                    Reject
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </TableCell>
+                    <TableCell>{customer.phone}</TableCell>
+                    <TableCell>{customer.address}</TableCell>
                   </TableRow>
                 ))}
+                 {!isLoading && customers?.length === 0 && (
+                    <TableRow><TableCell colSpan={3} className="text-center py-10 text-muted-foreground">No customers found. Add one to get started.</TableCell></TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
