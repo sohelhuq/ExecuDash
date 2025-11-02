@@ -4,7 +4,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-BD').format(value)}`;
@@ -29,6 +29,16 @@ const incomeData = [
   { name: 'Discounts Given', value: -50000 },
 ];
 
+const expenseData = [
+    { name: 'Salaries', value: 250000 },
+    { name: 'Office Rent', value: 120000 },
+    { name: 'Marketing', value: 80000 },
+    { name: 'Utilities', value: 55000 },
+    { name: 'Software & Tools', value: 45000 },
+    { name: 'Other', value: 200000 },
+];
+
+const EXPENSE_COLORS = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
 
 export default function AccountingDashboardPage() {
   return (
@@ -89,10 +99,37 @@ export default function AccountingDashboardPage() {
             <Card className="lg:col-span-2">
                 <CardHeader>
                 <CardTitle>Expense by Category</CardTitle>
-                <CardDescription>Future update will show expense visualization here.</CardDescription>
+                <CardDescription>A summary of expenses for the selected period.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center h-[350px]">
-                    <p className="text-muted-foreground">Expense chart coming soon...</p>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                       <PieChart>
+                         <Pie
+                            data={expenseData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                            nameKey="name"
+                            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                         >
+                            {expenseData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={EXPENSE_COLORS[index % EXPENSE_COLORS.length]} />
+                            ))}
+                         </Pie>
+                         <Tooltip
+                            contentStyle={{
+                                background: 'hsl(var(--background))',
+                                borderColor: 'hsl(var(--border))',
+                                borderRadius: 'var(--radius)',
+                            }}
+                            formatter={(value: number) => formatCurrency(value)}
+                         />
+                         <Legend iconSize={12} wrapperStyle={{fontSize: '0.8rem'}}/>
+                       </PieChart>
+                    </ResponsiveContainer>
                 </CardContent>
             </Card>
         </div>
