@@ -649,6 +649,17 @@
         "rate": { "type": "number" }
       },
       "required": ["title", "type", "rate"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Represents a generated report.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "module": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "module", "date"]
     }
   },
   "auth": {
@@ -873,6 +884,13 @@
         "definition": {
           "entityName": "Tax",
           "schema": { "$ref": "#/entities/Tax" }
+        }
+      },
+      {
+        "path": "/users/{userId}/reports/{reportId}",
+        "definition": {
+          "entityName": "Report",
+          "schema": { "$ref": "#/entities/Report" }
         }
       }
     ]
