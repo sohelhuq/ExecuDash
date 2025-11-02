@@ -32,6 +32,7 @@ import {
   Wrench,
   Truck,
   Percent,
+  HardHat,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -56,6 +57,7 @@ type BusinessUnit = { id: string; name: string; location: string };
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/construct-ops', label: 'ConstructOps', icon: HardHat },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   {
     label: 'Sales',
