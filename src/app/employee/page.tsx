@@ -51,6 +51,16 @@ export default function EmployeePage() {
         defaultValues: { name: '', department: '', jobRole: '', salary: 0 },
     });
 
+    const employeeStats = React.useMemo(() => {
+        if (!employees || employees.length === 0) {
+            return { totalEmployees: 0, totalMonthlySalary: 0, averageSalary: 0 };
+        }
+        const totalEmployees = employees.length;
+        const totalMonthlySalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
+        const averageSalary = totalMonthlySalary / totalEmployees;
+        return { totalEmployees, totalMonthlySalary, averageSalary };
+    }, [employees]);
+
     const handleSeedData = async () => {
         if (!employeesRef) return;
         try {
@@ -90,16 +100,6 @@ export default function EmployeePage() {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not add employee.' });
         });
     };
-
-    const employeeStats = React.useMemo(() => {
-        if (!employees || employees.length === 0) {
-            return { totalEmployees: 0, totalMonthlySalary: 0, averageSalary: 0 };
-        }
-        const totalEmployees = employees.length;
-        const totalMonthlySalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
-        const averageSalary = totalMonthlySalary / totalEmployees;
-        return { totalEmployees, totalMonthlySalary, averageSalary };
-    }, [employees]);
 
     return (
         <AppShell>
