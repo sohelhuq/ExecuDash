@@ -208,7 +208,7 @@ export function AppSidebar() {
               return <UnitsNavAccordion key={item.label}/>;
             }
 
-            const isParentActive = item.subItems ? item.subItems.some(si => pathname.startsWith(si.href)) : false;
+            const isParentActive = item.subItems ? item.subItems.some(si => si.href && pathname.startsWith(si.href)) : false;
 
             return (
             <SidebarMenuItem key={item.label}>
@@ -229,7 +229,7 @@ export function AppSidebar() {
                       {item.subItems.map(subItem => (
                         <li key={subItem.label}>
                           <Link href={subItem.href}>
-                             <SidebarMenuSubButton isActive={pathname.startsWith(subItem.href)}>
+                             <SidebarMenuSubButton isActive={subItem.href && pathname.startsWith(subItem.href)}>
                                 {subItem.icon && <subItem.icon className="h-4 w-4 mr-2"/>}
                                 {subItem.label}
                              </SidebarMenuSubButton>
