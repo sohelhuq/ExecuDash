@@ -178,23 +178,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/dashboard">
-              <SidebarMenuButton
-                isActive={pathname === '/dashboard'}
-                tooltip="Dashboard"
-                className="justify-start"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-
-          <UnitsNavAccordion />
-
           {navItems.map((item) => {
-            if (item.href === '/dashboard' || item.href === '/units') return null; // Already handled
             if (item.adminOnly && userProfile?.userType !== 'Admin') {
               return null;
             }
