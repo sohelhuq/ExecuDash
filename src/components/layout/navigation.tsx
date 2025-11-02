@@ -33,6 +33,7 @@ import {
   Truck,
   Percent,
   HardHat,
+  Archive,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -120,6 +121,7 @@ const navItems = [
   { href: '/collections', label: 'Collections', icon: BookOpenCheck },
   { href: '/dps', label: 'DPS', icon: ShieldCheck },
   { href: '/fdr', label: 'FDR', icon: ShieldCheck },
+  { href: '/storage', label: 'Storage', icon: Archive },
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/reports', label: 'Reports', icon: FilePieChart },

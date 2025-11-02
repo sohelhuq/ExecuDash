@@ -660,6 +660,19 @@
         "date": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "module", "date"]
+    },
+    "File": {
+      "title": "File",
+      "description": "Represents an uploaded file in Firebase Storage.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the file." },
+        "url": { "type": "string", "format": "uri", "description": "The download URL of the file." },
+        "size": { "type": "number", "description": "The size of the file in bytes." },
+        "type": { "type": "string", "description": "The MIME type of the file." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "The timestamp when the file was uploaded." }
+      },
+      "required": ["name", "url", "size", "type", "createdAt"]
     }
   },
   "auth": {
@@ -891,6 +904,13 @@
         "definition": {
           "entityName": "Report",
           "schema": { "$ref": "#/entities/Report" }
+        }
+      },
+      {
+        "path": "/users/{userId}/files/{fileId}",
+        "definition": {
+          "entityName": "File",
+          "schema": { "$ref": "#/entities/File" }
         }
       }
     ]
