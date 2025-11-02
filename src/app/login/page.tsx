@@ -125,10 +125,15 @@ export default function LoginPage() {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex flex-col">
+            <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
               </Button>
+              <div className="text-center text-sm text-muted-foreground">
+                <p>
+                  Use <span className="font-semibold text-foreground">demo@example.com</span> and <span className="font-semibold text-foreground">password</span>
+                </p>
+              </div>
             </CardFooter>
           </form>
         </Form>
