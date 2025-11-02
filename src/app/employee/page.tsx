@@ -8,12 +8,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, writeBatch, doc } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { addDoc, collection, writeBatch, doc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, Users, Banknote, DivideCircle, Database } from 'lucide-react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-BD').format(value)}`;
 
@@ -60,16 +62,32 @@ export default function EmployeePage() {
             toast({ title: 'Success', description: 'Demo employees have been added.' });
         } catch (error) {
             console.error("Error seeding employees:", error);
+            const contextualError = new FirestorePermissionError({
+              path: employeesRef.path,
+              operation: 'create',
+            });
+            errorEmitter.emit('permission-error', contextualError);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not add demo employees.' });
         }
     };
 
     const onSubmit = async (values: EmployeeFormData) => {
         if (!employeesRef) return;
-        addDocumentNonBlocking(employeesRef, values);
-        toast({ title: 'Success', description: 'Employee added successfully.' });
-        form.reset();
-        setIsDialogOpen(false);
+        
+        addDoc(employeesRef, values).then(() => {
+          toast({ title: 'Success', description: 'Employee added successfully.' });
+          form.reset();
+          setIsDialogOpen(false);
+        }).catch(error => {
+            console.error("Error adding employee:", error);
+            const contextualError = new FirestorePermissionError({
+              path: employeesRef.path,
+              operation: 'create',
+              requestResourceData: values,
+            });
+            errorEmitter.emit('permission-error', contextualError);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not add employee.' });
+        });
     };
 
     const employeeStats = React.useMemo(() => {

@@ -505,53 +505,6 @@
         "salary"
       ]
     },
-    "Payroll": {
-      "title": "Payroll",
-      "description": "Represents a single payroll record for an employee for a specific period.",
-      "type": "object",
-      "properties": {
-        "employeeId": {
-          "type": "string"
-        },
-        "employeeName": {
-          "type": "string"
-        },
-        "period": {
-          "type": "string",
-          "description": "The payroll period in YYYY-MM format."
-        },
-        "grossSalary": {
-          "type": "number"
-        },
-        "deductions": {
-          "type": "number"
-        },
-        "netSalary": {
-          "type": "number"
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "pending",
-            "paid"
-          ]
-        },
-        "createdAt": {
-            "type": "string",
-            "format": "date-time"
-        }
-      },
-      "required": [
-        "employeeId",
-        "employeeName",
-        "period",
-        "grossSalary",
-        "deductions",
-        "netSalary",
-        "status",
-        "createdAt"
-      ]
-    },
     "RentalEntry": {
       "title": "Rental Entry",
       "description": "Represents a single rental income/expense entry for a property.",
@@ -765,15 +718,6 @@
           "entityName": "Employee",
           "schema": {
             "$ref": "#/entities/Employee"
-          }
-        }
-      },
-      {
-        "path": "/users/{userId}/payrolls/{payrollId}",
-        "definition": {
-          "entityName": "Payroll",
-          "schema": {
-            "$ref": "#/entities/Payroll"
           }
         }
       },

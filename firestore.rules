@@ -21,7 +21,7 @@ service cloud.firestore {
     
     // Users can manage their own financial data and business units
     match /users/{userId}/{collection}/{docId} {
-       allow read, write, delete: if isSignedIn() && (collection in ['transactions', 'taxRecords', 'goals', 'ccAccounts', 'savingsAccounts', 'assignedAccounts', 'jobResponsibilities', 'businessUnits', 'dps', 'fdr', 'employees', 'payrolls', 'rentalEntries', 'attendance_points']) && isOwner(userId);
+       allow read, write, delete: if isSignedIn() && (collection in ['transactions', 'taxRecords', 'goals', 'ccAccounts', 'savingsAccounts', 'assignedAccounts', 'jobResponsibilities', 'businessUnits', 'dps', 'fdr', 'employees', 'rentalEntries', 'attendance_points']) && isOwner(userId);
     }
 
     // Users can manage data within their business units

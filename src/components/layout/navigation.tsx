@@ -52,7 +52,6 @@ type BusinessUnit = { id: string; name: string; location: string };
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  // { href: '/units', label: 'Units', icon: Building },
   { href: '/fuel-entry', label: 'Fuel Entry', icon: Fuel },
   {
     label: 'Sales',
@@ -182,6 +181,10 @@ export function AppSidebar() {
             if (item.adminOnly && userProfile?.userType !== 'Admin') {
               return null;
             }
+             if (item.href === '/units') {
+              return <UnitsNavAccordion key={item.label}/>;
+            }
+
             const isParentActive = item.subItems ? item.subItems.some(si => pathname.startsWith(si.href)) : false;
 
             return (
