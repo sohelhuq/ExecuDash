@@ -638,6 +638,17 @@
         "address": { "type": "string" }
       },
       "required": ["name", "contact"]
+    },
+    "Tax": {
+      "title": "Tax",
+      "description": "Represents a tax rate and type for financial calculations.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "rate": { "type": "number" }
+      },
+      "required": ["title", "type", "rate"]
     }
   },
   "auth": {
@@ -855,6 +866,13 @@
         "definition": {
           "entityName": "Supplier",
           "schema": { "$ref": "#/entities/Supplier" }
+        }
+      },
+      {
+        "path": "/users/{userId}/taxes/{taxId}",
+        "definition": {
+          "entityName": "Tax",
+          "schema": { "$ref": "#/entities/Tax" }
         }
       }
     ]

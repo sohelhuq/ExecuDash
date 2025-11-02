@@ -30,7 +30,8 @@ import {
   HeartPulse,
   Boxes,
   Wrench,
-  Truck
+  Truck,
+  Percent,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -81,6 +82,14 @@ const navItems = [
     ]
   },
   { href: '/hr', label: 'HR Management', icon: Users },
+  {
+    label: 'Finance & Tax',
+    icon: Landmark,
+    subItems: [
+      { href: '/taxes', label: 'Taxes', icon: Percent },
+      { href: '/tax-center', label: 'AI Tax Center', icon: FileText },
+    ]
+  },
   { href: '/accounting', label: 'Accounting', icon: BookOpenCheck },
   { href: '/manufacturing', label: 'Manufacturing', icon: Factory },
   {
@@ -112,9 +121,7 @@ const navItems = [
   { href: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/reports', label: 'Reports', icon: FilePieChart },
-  { href: '/tax-center', label: 'Tax Center', icon: FileText },
   { href: '/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/finance-tax', label: 'ফিনান্স ও ট্যাক্স', icon: Landmark },
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
 ];
