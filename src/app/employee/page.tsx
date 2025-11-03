@@ -57,7 +57,7 @@ export default function EmployeePage() {
         }
         const totalEmployees = employees.length;
         const totalMonthlySalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
-        const averageSalary = totalMonthlySalary / totalEmployees;
+        const averageSalary = totalEmployees > 0 ? totalMonthlySalary / totalEmployees : 0;
         return { totalEmployees, totalMonthlySalary, averageSalary };
     }, [employees]);
 
