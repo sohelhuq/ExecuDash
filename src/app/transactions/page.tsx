@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { categorizeTransaction } from '@/ai/categorize-flow';
+import { exportToExcel } from '@/lib/exporters';
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-IN').format(value)}`;
 
@@ -124,6 +125,24 @@ export default function TransactionsPage() {
     }
   };
 
+  const handleExport = () => {
+    if (transactions) {
+      // Re-format data for a cleaner export
+      const exportData = transactions.map(t => ({
+        Date: format(t.date.toDate(), 'yyyy-MM-dd'),
+        Description: t.description,
+        Category: t.category,
+        Type: t.type,
+        Source: t.source,
+        Amount: t.amount,
+      }));
+      exportToExcel(exportData, 'transactions.xlsx');
+      toast({ title: 'Export successful', description: 'The transaction data has been exported to Excel.' });
+    } else {
+      toast({ variant: 'destructive', title: 'Export failed', description: 'No transaction data available to export.' });
+    }
+  };
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -176,7 +195,7 @@ export default function TransactionsPage() {
               </DialogContent>
             </Dialog>
             <Button variant="outline" onClick={handleSeedData}><Database className="mr-2 h-4 w-4" /> Seed Data</Button>
-            <Button variant="outline"><FileDown className="mr-2 h-4 w-4" /> Export</Button>
+            <Button variant="outline" onClick={handleExport}><FileDown className="mr-2 h-4 w-4" /> Export</Button>
           </div>
         </div>
 
