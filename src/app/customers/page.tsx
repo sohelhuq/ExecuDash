@@ -16,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const kpiData = [
     { title: 'Total Commission', value: '৳45,200', icon: Users, description: 'No remark needed', className: 'bg-blue-100 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800' },
@@ -28,14 +28,17 @@ const customerSchema = z.object({
   name: z.string().min(1, 'Customer name is required'),
   phone: z.string().min(1, 'Phone number is required'),
   address: z.string().min(1, 'Address is required'),
+  package: z.string().min(1, 'Package is required'),
+  status: z.enum(['Active', 'Suspended', 'Inactive']),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
-type Customer = CustomerFormData & { id: string };
+type Customer = CustomerFormData & { id: string; joinDate: string; balance: number };
 
-const seedCustomers: Omit<Customer, 'id'>[] = [
-    { name: " মিঠু এন্টারপ্রাইজ", phone: "01811553399", address: "Feni, BD" },
-    { name: "Tipu Traders", phone: "01716652212", address: "Noakhali, BD" },
+const seedCustomers: Omit<Customer, 'id' | 'joinDate' | 'balance'>[] = [
+    { name: "মিঠু এন্টারপ্রাইজ", phone: "01811553399", address: "Feni, BD", package: "Home 20 Mbps", status: "Active" },
+    { name: "Tipu Traders", phone: "01716652212", address: "Noakhali, BD", package: "Business 50 Mbps", status: "Active" },
+    { name: "Global Net", phone: "01998877665", address: "Dhaka, BD", package: "Home 20 Mbps", status: "Suspended" },
 ];
 
 export default function CustomersPage() {
@@ -49,7 +52,7 @@ export default function CustomersPage() {
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
-    defaultValues: { name: '', phone: '', address: '' },
+    defaultValues: { name: '', phone: '', address: '', package: 'Home 20 Mbps', status: 'Active' },
   });
 
   const handleSeedData = async () => {
@@ -58,7 +61,7 @@ export default function CustomersPage() {
       const batch = writeBatch(firestore);
       seedCustomers.forEach(cust => {
         const docRef = doc(customersRef);
-        batch.set(docRef, cust);
+        batch.set(docRef, { ...cust, joinDate: new Date().toISOString(), balance: 0 });
       });
       await batch.commit();
       toast({ title: 'Success', description: 'Demo customers have been added.' });
@@ -73,7 +76,7 @@ export default function CustomersPage() {
   const onSubmit = (values: CustomerFormData) => {
     if (!customersRef) return;
 
-    addDoc(customersRef, values).then(() => {
+    addDoc(customersRef, { ...values, joinDate: new Date().toISOString(), balance: 0 }).then(() => {
         toast({ title: 'Success', description: 'Customer registered successfully.' });
         form.reset();
         setIsDialogOpen(false);
@@ -90,8 +93,8 @@ export default function CustomersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Customer Management</h1>
-            <p className="text-muted-foreground">Register new customers and view their information.</p>
+            <h1 className="text-3xl font-bold tracking-tight">ISP Customer Management</h1>
+            <p className="text-muted-foreground">Register new customers, assign packages, and view their information.</p>
           </div>
           <div className="flex items-center gap-2">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -100,7 +103,7 @@ export default function CustomersPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Register New Customer</DialogTitle>
+                  <DialogTitle>Register New ISP Customer</DialogTitle>
                   <DialogDescription>Fill in the details for the new customer.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -108,6 +111,8 @@ export default function CustomersPage() {
                     <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Customer Name</FormLabel><FormControl><Input {...field} placeholder="e.g., ABC Corporation" /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} placeholder="e.g., 01..." /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} placeholder="e.g., Dhaka, BD" /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="package" render={({ field }) => (<FormItem><FormLabel>Package</FormLabel><FormControl><Input {...field} placeholder="e.g., Home 20 Mbps" /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Suspended">Suspended</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
                     <DialogFooter><Button type="submit">Save Customer</Button></DialogFooter>
                   </form>
                 </Form>
@@ -140,7 +145,7 @@ export default function CustomersPage() {
         <Card>
           <CardHeader>
             <CardTitle>Customer List</CardTitle>
-            <CardDescription>A list of all registered customers.</CardDescription>
+            <CardDescription>A list of all registered ISP customers.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -149,19 +154,23 @@ export default function CustomersPage() {
                   <TableHead>Customer Name</TableHead>
                   <TableHead>Phone Number</TableHead>
                   <TableHead>Address</TableHead>
+                  <TableHead>Package</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading && <TableRow><TableCell colSpan={3} className="text-center">Loading customers...</TableCell></TableRow>}
+                {isLoading && <TableRow><TableCell colSpan={5} className="text-center">Loading customers...</TableCell></TableRow>}
                 {customers?.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell className="font-medium">{customer.name}</TableCell>
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell>{customer.address}</TableCell>
+                    <TableCell>{customer.package}</TableCell>
+                    <TableCell>{customer.status}</TableCell>
                   </TableRow>
                 ))}
                  {!isLoading && customers?.length === 0 && (
-                    <TableRow><TableCell colSpan={3} className="text-center py-10 text-muted-foreground">No customers found. Add one to get started.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">No customers found. Add one to get started.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

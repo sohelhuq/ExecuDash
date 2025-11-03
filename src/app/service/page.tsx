@@ -30,6 +30,8 @@ type ServiceFormData = z.infer<typeof serviceSchema>;
 type Service = ServiceFormData & { id: string };
 
 const seedServices: Omit<Service, 'id'>[] = [
+    { description: "Home 20 Mbps", price: 900, slaDays: 1, assignedTo: "Popy Akhter" },
+    { description: "Business 50 Mbps", price: 2000, slaDays: 1, assignedTo: "Kamrul Islam" },
     { description: "Warranty repair", price: 300, slaDays: 3, assignedTo: "Popy Akhter" },
     { description: "Delivery setup", price: 600, slaDays: 1, assignedTo: "Kamrul Islam" },
 ];
@@ -70,7 +72,7 @@ export default function ServicePage() {
     if (!servicesRef) return;
 
     addDoc(servicesRef, values).then(() => {
-        toast({ title: 'Success', description: 'Service added successfully.' });
+        toast({ title: 'Success', description: 'Service/Package added successfully.' });
         form.reset();
         setIsDialogOpen(false);
     }).catch(error => {
@@ -86,22 +88,22 @@ export default function ServicePage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Service Management</h1>
-            <p className="text-muted-foreground">Define and manage the services your business offers.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Service & Package Management</h1>
+            <p className="text-muted-foreground">Define and manage ISP packages and other services.</p>
           </div>
           <div className="flex items-center gap-2">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button><PlusCircle className="mr-2 h-4 w-4" /> Add New Service</Button>
+                <Button><PlusCircle className="mr-2 h-4 w-4" /> Add New Service/Package</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add New Service</DialogTitle>
+                  <DialogTitle>Add New Service or Package</DialogTitle>
                   <DialogDescription>Fill in the details for the new service offering.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} placeholder="e.g., On-site Consultation" /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description / Package Name</FormLabel><FormControl><Input {...field} placeholder="e.g., Home 20 Mbps" /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Price (BDT)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="slaDays" render={({ field }) => (<FormItem><FormLabel>SLA (Days)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="assignedTo" render={({ field }) => (<FormItem><FormLabel>Assigned To</FormLabel><FormControl><Input {...field} placeholder="e.g., Popy Akhter" /></FormControl><FormMessage /></FormItem>)} />
@@ -116,8 +118,8 @@ export default function ServicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Service List</CardTitle>
-            <CardDescription>A list of all available services.</CardDescription>
+            <CardTitle>Service & Package List</CardTitle>
+            <CardDescription>A list of all available services and packages.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
