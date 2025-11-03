@@ -2,6 +2,11 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    // This allows the Next.js dev server to accept requests from any origin.
+    // This is required for the cloud-based development environment.
+    allowedDevOrigins: ["**"],
+  },
   typescript: {
     // ignoreBuildErrors: true, // This is removed to enforce type safety
   },
