@@ -4,7 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const FinancialDataInputSchema = z.object({
   totalIncome: z.number().describe('Total income over a period.'),
@@ -51,6 +51,9 @@ const generateTaxInsightFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await insightPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('The AI model did not return a valid output.');
+    }
+    return output;
   }
 );
