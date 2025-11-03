@@ -35,6 +35,7 @@ import {
   HardHat,
   Archive,
   BookLock,
+  Warehouse,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -109,6 +110,7 @@ const navItems = [
       { href: '/project-management', label: 'Projects', icon: ClipboardCheck },
       { href: '/properties', label: 'Properties', icon: Home },
       { href: '/service', label: 'Services', icon: Wrench },
+      { href: '/inventory', label: 'Inventory', icon: Warehouse },
     ],
   },
   {

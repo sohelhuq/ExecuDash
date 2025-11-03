@@ -9,12 +9,34 @@
           "type": "string",
           "description": "User's Firebase Auth UID (UserID)"
         },
-        "name": {
+        "fullName": {
           "type": "string"
         },
         "email": {
           "type": "string",
           "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "Owner",
+            "Manager",
+            "Staff",
+            "Technician"
+          ]
+        },
+        "unitId": {
+          "type": "string"
+        },
+        "siteId": {
+          "type": "string"
+        },
+        "joinDate": {
+          "type": "string",
+          "format": "date-time"
         },
         "userType": {
           "type": "string",
@@ -424,6 +446,12 @@
         "name": {
           "type": "string"
         },
+        "code": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
         "location": {
           "type": "string"
         },
@@ -595,12 +623,28 @@
         },
         "address": {
           "type": "string"
+        },
+        "package": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Suspended", "Inactive"]
+        },
+        "joinDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "balance": {
+          "type": "number"
         }
       },
       "required": [
         "name",
         "phone",
-        "address"
+        "address",
+        "package",
+        "status"
       ]
     },
     "Service": {
@@ -723,6 +767,17 @@
         }
       },
       "required": ["employeeId", "employeeName", "period", "grossSalary", "netSalary", "status"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "Represents an item in the inventory/stock for an ISP.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the item (e.g., Router, Fiber Cable)." },
+        "quantity": { "type": "number", "description": "Current stock quantity." },
+        "warningLevel": { "type": "number", "description": "The quantity at which to trigger a low stock warning." }
+      },
+      "required": ["name", "quantity", "warningLevel"]
     }
   },
   "auth": {
@@ -977,6 +1032,13 @@
         "definition": {
           "entityName": "BusinessDocument",
           "schema": { "$ref": "#/entities/BusinessDocument" }
+        }
+      },
+      {
+        "path": "/users/{userId}/inventory/{itemId}",
+        "definition": {
+          "entityName": "InventoryItem",
+          "schema": { "$ref": "#/entities/InventoryItem" }
         }
       }
     ]
