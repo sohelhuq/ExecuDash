@@ -1,9 +1,10 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 export function Logo({ className }: { className?: string }) {
   return (
     <svg
-      className={className}
+      className={cn("h-8 w-8", className)}
       width="32"
       height="32"
       viewBox="0 0 100 100"

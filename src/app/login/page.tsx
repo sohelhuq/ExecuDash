@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, AuthError } from "firebase/auth";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address.").min(1, "Email is required."),
@@ -58,13 +58,24 @@ export default function LoginPage() {
         description: "Welcome back!",
       });
       // On success, the useEffect will handle the redirect
-    } catch (error: any) {
+    } catch (error) {
+        const authError = error as AuthError;
         let errorMessage = "An unknown error occurred.";
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-            errorMessage = "Invalid email or password. Please try again.";
-        } else {
-            errorMessage = error.message;
+        if (authError.code) {
+            switch(authError.code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    errorMessage = "Invalid email or password. Please try again.";
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = "Too many sign-in attempts. Please try again later.";
+                    break;
+                default:
+                    errorMessage = "An unexpected error occurred during sign-in.";
+            }
         }
+        
         toast({
             variant: "destructive",
             title: "Sign In Failed",
