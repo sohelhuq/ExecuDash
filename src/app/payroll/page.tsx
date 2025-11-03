@@ -73,7 +73,8 @@ export default function PayrollPage() {
         const period = `${selectedPeriod.year}-${selectedPeriod.month}`;
         
         try {
-            const existingPayrollQuery = query(payrollsRef!, where('period', '==', period));
+            if (!payrollsRef) throw new Error("Payrolls collection reference is not available.");
+            const existingPayrollQuery = query(payrollsRef, where('period', '==', period));
             const existingPayrollSnap = await getDocs(existingPayrollQuery);
             if (!existingPayrollSnap.empty) {
                 toast({ variant: 'destructive', title: 'Payroll Exists', description: `Payroll for ${period} has already been processed.` });
@@ -84,7 +85,7 @@ export default function PayrollPage() {
 
             const batch = writeBatch(firestore);
             employees.forEach(emp => {
-                const payrollDocRef = doc(payrollsRef!);
+                const payrollDocRef = doc(payrollsRef);
                 const deductions = 0; // Future deduction logic can go here
                 const netSalary = emp.salary - deductions;
                 const newPayroll: Omit<Payroll, 'id' | 'createdAt'> = {

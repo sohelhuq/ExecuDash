@@ -692,6 +692,37 @@
         "uploadedBy": { "type": "string", "description": "UID of the user who uploaded the document." }
       },
       "required": ["unit", "docType", "issueDate", "expiryDate", "fileUrl", "fileName", "status", "uploadedBy"]
+    },
+    "Payroll": {
+      "title": "Payroll",
+      "description": "Represents a payroll record for an employee for a specific period.",
+      "type": "object",
+      "properties": {
+        "employeeId": {
+          "type": "string"
+        },
+        "employeeName": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string",
+          "description": "The period for the payroll, e.g., '2024-07'"
+        },
+        "grossSalary": {
+          "type": "number"
+        },
+        "deductions": {
+          "type": "number"
+        },
+        "netSalary": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "paid"]
+        }
+      },
+      "required": ["employeeId", "employeeName", "period", "grossSalary", "netSalary", "status"]
     }
   },
   "auth": {
@@ -841,6 +872,15 @@
           "entityName": "Employee",
           "schema": {
             "$ref": "#/entities/Employee"
+          }
+        }
+      },
+      {
+        "path": "/users/{userId}/payrolls/{payrollId}",
+        "definition": {
+          "entityName": "Payroll",
+          "schema": {
+            "$ref": "#/entities/Payroll"
           }
         }
       },
