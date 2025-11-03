@@ -119,6 +119,7 @@ const navItems = [
     subItems: [
         { href: '/customers', label: 'Customers' },
         { href: '/collections', label: 'Dues Collection' },
+        { href: '/service-tickets', label: 'Service Tickets'},
     ],
   },
   {
