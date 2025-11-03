@@ -20,13 +20,23 @@ const TaxInsightOutputSchema = z.object({
 });
 export type TaxInsightOutput = z.infer<typeof TaxInsightOutputSchema>;
 
+// Internal schema for the prompt, which requires an array
+const PromptInputSchema = z.object({
+    totalIncome: z.number(),
+    totalExpenses: z.number(),
+    expenses: z.array(z.object({
+        category: z.string(),
+        amount: z.number(),
+    })),
+});
+
 export async function generateTaxInsight(input: FinancialDataInput): Promise<TaxInsightOutput> {
   return generateTaxInsightFlow(input);
 }
 
 const insightPrompt = ai.definePrompt({
   name: 'generateTaxInsightPrompt',
-  input: { schema: FinancialDataInputSchema },
+  input: { schema: PromptInputSchema },
   output: { schema: TaxInsightOutputSchema },
   prompt: `You are an expert financial advisor for businesses in Bangladesh.
 Analyze the following financial data and provide one actionable tax-saving insight.
@@ -37,8 +47,8 @@ Financial Summary:
 - Total Expenses: {{{totalExpenses}}} BDT
 
 Top Expense Categories:
-{{#each expenseCategories}}
-- {{@key}}: {{this}} BDT
+{{#each expenses}}
+- {{this.category}}: {{this.amount}} BDT
 {{/each}}
 `,
 });
@@ -50,7 +60,20 @@ const generateTaxInsightFlow = ai.defineFlow(
     outputSchema: TaxInsightOutputSchema,
   },
   async (input) => {
-    const { output } = await insightPrompt(input);
+    // Transform the input from an object to an array for the prompt
+    const expensesArray = Object.entries(input.expenseCategories).map(([category, amount]) => ({
+        category,
+        amount
+    }));
+
+    const promptInput = {
+        totalIncome: input.totalIncome,
+        totalExpenses: input.totalExpenses,
+        expenses: expensesArray,
+    };
+
+    const { output } = await insightPrompt(promptInput);
+
     if (!output) {
       throw new Error('The AI model did not return a valid output.');
     }

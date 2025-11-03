@@ -85,6 +85,11 @@ export default function TaxCenterPage() {
                         <p className="text-sm text-foreground">{insight.insight}</p>
                     </div>
                 )}
+                 {!isLoadingInsight && !insight && (
+                    <div className="flex items-center gap-4 p-3 bg-destructive/10 rounded-lg">
+                        <p className="text-sm text-destructive-foreground">Could not load AI insight.</p>
+                    </div>
+                )}
             </CardContent>
           </Card>
           <Card>
