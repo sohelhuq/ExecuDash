@@ -11,6 +11,7 @@ import { collection, addDoc, writeBatch, doc, Timestamp, query, where } from 'fi
 import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { format } from 'date-fns';
 
 const formatCurrency = (value: number) => `৳${new Intl.NumberFormat('en-BD').format(value)}`;
 
@@ -50,9 +51,9 @@ export default function CollectionsPage() {
         return query(accountsRef, where('unit', '==', activeTab));
     }, [accountsRef, activeTab]);
 
-    const { data: accounts, isLoading: accountsLoading } = useCollection<Omit<AssignedAccount, 'id'>>(filteredQuery);
+    const { data: accounts, isLoading: accountsLoading } = useCollection<AssignedAccount>(filteredQuery);
     
-    const { data: allAccounts } = useCollection<Omit<AssignedAccount, 'id'>>(accountsRef);
+    const { data: allAccounts } = useCollection<AssignedAccount>(accountsRef);
 
     React.useEffect(() => {
         if (user && firestore && allAccounts && allAccounts.length === 0) {
