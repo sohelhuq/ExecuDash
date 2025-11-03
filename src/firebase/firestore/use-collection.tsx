@@ -37,6 +37,11 @@ export interface InternalQuery extends Query<DocumentData> {
   }
 }
 
+type MemoizedFirestoreQuery<T> = (CollectionReference<T> | Query<T>) & {
+  __memo?: boolean;
+};
+
+
 /**
  * React hook to subscribe to a Firestore collection or query in real-time.
  * Handles nullable references/queries.
@@ -52,7 +57,7 @@ export interface InternalQuery extends Query<DocumentData> {
  * @returns {UseCollectionResult<T>} Object with data, isLoading, error.
  */
 export function useCollection<T = any>(
-    memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
+    memoizedTargetRefOrQuery: MemoizedFirestoreQuery<DocumentData> | null | undefined,
 ): UseCollectionResult<T> {
   type ResultItemType = WithId<T>;
   type StateDataType = ResultItemType[] | null;

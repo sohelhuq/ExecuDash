@@ -32,18 +32,25 @@ export default function AttendancePointDashboard() {
     const firestore = useFirestore();
 
     const attendancePointsRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/attendance_points`) : null, [user, firestore]);
-    const { data: attendancePoints, isLoading } = useCollection<Omit<AttendancePoint, 'id'>>(attendancePointsRef);
+    const { data: attendancePoints, isLoading, error } = useCollection<AttendancePoint>(attendancePointsRef);
     
     React.useEffect(() => {
-        if (user && firestore && attendancePoints?.length === 0) {
+        if (user && firestore && !isLoading && attendancePoints && attendancePoints.length === 0) {
+            const pointsRef = collection(firestore, `users/${user.uid}/attendance_points`);
             const batch = writeBatch(firestore);
             seedData.forEach(item => {
-                const newDocRef = doc(attendancePointsRef!);
+                const newDocRef = doc(pointsRef);
                 batch.set(newDocRef, { ...item, date: Timestamp.now() });
             });
             batch.commit().catch(console.error);
         }
-    }, [user, firestore, attendancePoints, attendancePointsRef]);
+    }, [user, firestore, attendancePoints, isLoading]);
+
+    if (error) {
+        // You can render a more user-friendly error message here
+        // For now, just logging it
+        console.error("Error fetching attendance points:", error);
+    }
 
     return (
         <AppShell>
@@ -77,6 +84,7 @@ export default function AttendancePointDashboard() {
                             </TableHeader>
                             <TableBody>
                                 {isLoading && <TableRow><TableCell colSpan={4} className="text-center">Loading data...</TableCell></TableRow>}
+                                {error && <TableRow><TableCell colSpan={4} className="text-center text-red-500">Error loading data.</TableCell></TableRow>}
                                 {attendancePoints?.map((item) => (
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium">{item.employeeName}</TableCell>
@@ -85,7 +93,7 @@ export default function AttendancePointDashboard() {
                                         <TableCell className="text-right font-bold">{item.points}</TableCell>
                                     </TableRow>
                                 ))}
-                                {!isLoading && attendancePoints?.length === 0 && <TableRow><TableCell colSpan={4} className="text-center">No attendance data found.</TableCell></TableRow>}
+                                {!isLoading && !error && attendancePoints?.length === 0 && <TableRow><TableCell colSpan={4} className="text-center">No attendance data found.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                         <div className="flex items-center justify-between mt-4">

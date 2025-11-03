@@ -24,7 +24,7 @@ const accountSchema = z.object({
   status: z.enum(['Pending', 'Overdue', 'Paid']),
 });
 
-type AssignedAccount = z.infer<typeof accountSchema> & { id: string };
+type AssignedAccount = z.infer<typeof accountSchema> & { id: string; dueDate: Timestamp };
 
 const seedData: Omit<AssignedAccount, 'id' | 'dueDate'>[] = [
   { unit: 'Fuel', customer: 'New Haq Enterprise', invoice: 'INV-001', amountDue: 25000, status: 'Overdue' },
@@ -53,18 +53,19 @@ export default function CollectionsPage() {
 
     const { data: accounts, isLoading: accountsLoading } = useCollection<AssignedAccount>(filteredQuery);
     
-    const { data: allAccounts } = useCollection<AssignedAccount>(accountsRef);
+    const { data: allAccounts, isLoading: allAccountsLoading } = useCollection<AssignedAccount>(accountsRef);
 
     React.useEffect(() => {
-        if (user && firestore && allAccounts && allAccounts.length === 0) {
+        if (user && firestore && !allAccountsLoading && allAccounts && allAccounts.length === 0) {
+            const accountsRefForWrite = collection(firestore, `users/${user.uid}/assignedAccounts`);
             const batch = writeBatch(firestore);
             seedData.forEach(acc => {
-                const newDocRef = doc(collection(firestore, `users/${user.uid}/assignedAccounts`));
+                const newDocRef = doc(accountsRefForWrite);
                 batch.set(newDocRef, { ...acc, dueDate: Timestamp.fromDate(new Date()) });
             });
             batch.commit().catch(e => console.error("Failed to seed accounts", e));
         }
-    }, [user, firestore, allAccounts]);
+    }, [user, firestore, allAccounts, allAccountsLoading]);
 
     const calculateOverdue = (unit: string) => {
         if (!allAccounts) return 0;
@@ -116,7 +117,7 @@ export default function CollectionsPage() {
                                         <TableCell>{acc.unit}</TableCell>
                                         <TableCell className="font-medium">{acc.customer}</TableCell>
                                         <TableCell>{acc.invoice}</TableCell>
-                                        <TableCell>{format((acc.dueDate as any).toDate(), "PPP")}</TableCell>
+                                        <TableCell>{format(acc.dueDate.toDate(), "PPP")}</TableCell>
                                         <TableCell>{formatCurrency(acc.amountDue)}</TableCell>
                                         <TableCell>
                                              <Badge variant={acc.status === 'Paid' ? 'default' : 'secondary'} className={cn(

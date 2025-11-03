@@ -59,14 +59,15 @@ export default function AccountingDashboardPage() {
 
   React.useEffect(() => {
     if (user && firestore && !kpiLoading && (!kpiData || kpiData.length === 0)) {
+        const summariesRefForWrite = collection(firestore, `users/${user.uid}/accountSummaries`);
         const batch = writeBatch(firestore);
         initialKpiData.forEach(kpi => {
-            const docRef = doc(summariesRef!);
+            const docRef = doc(summariesRefForWrite);
             batch.set(docRef, kpi);
         });
         batch.commit().catch(e => console.error("Failed to seed KPI data", e));
     }
-  }, [user, firestore, kpiData, kpiLoading, summariesRef]);
+  }, [user, firestore, kpiData, kpiLoading]);
 
 
   return (
