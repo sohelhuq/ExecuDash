@@ -268,7 +268,7 @@ export function AppSidebar() {
                       {item.subItems.map(subItem => (
                         <li key={subItem.label}>
                           <Link href={subItem.href}>
-                             <SidebarMenuSubButton isActive={subItem.href && pathname.startsWith(subItem.href)}>
+                             <SidebarMenuSubButton isActive={subItem.href === pathname}>
                                 {subItem.icon && <subItem.icon className="h-4 w-4 mr-2"/>}
                                 {subItem.label}
                              </SidebarMenuSubButton>
