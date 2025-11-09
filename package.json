@@ -1,33 +1,15 @@
-﻿
 {
   "name": "execudash-firebase",
-  ...
-}
-
-    "version":  "1.0.0",
-    "description":  "",
-    "main":  "index.js",
-    "scripts":  {
-                    "build":  "next build \u0026\u0026 next export",
-                    "dev":  "next dev",
-                    "start":  "next start"
-                },
-    "repository":  {
-                       "type":  "git",
-                       "url":  "git+https://github.com/sohelhuq/ExecuDash.git"
-                   },
-    "keywords":  [
-
-                 ],
-    "author":  "",
-    "license":  "ISC",
-    "bugs":  {
-                 "url":  "https://github.com/sohelhuq/ExecuDash/issues"
-             },
-    "homepage":  "https://github.com/sohelhuq/ExecuDash#readme",
-    "dependencies":  {
-                         "next":  "^14.2.33",
-                         "react":  "^18.3.1",
-                         "react-dom":  "^18.3.1"
-                     }
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^14.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
 }
