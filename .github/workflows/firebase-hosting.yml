@@ -1,8 +1,7 @@
-powershell -Command "@'
 name: Deploy ExecuDash to Firebase Hosting
 on:
   push:
-    branches: [ \"main\" ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -11,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: \"20\"
+          node-version: "20"
 
       - name: Install dependencies
         run: |
@@ -30,6 +29,3 @@ jobs:
 
       - name: Deploy to Firebase Hosting
         run: firebase deploy --project studio-9169148148-e27da --only hosting
-'@ | Set-Content -Path .\.github\workflows\firebase-hosting.yml -Encoding utf8"
-
-
