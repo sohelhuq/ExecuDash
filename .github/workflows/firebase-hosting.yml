@@ -1,4 +1,4 @@
-name: Deploy ExecuDash to Firebase Hosting
+name: Deploy ExecuDash (Static) to Firebase Hosting
 on:
   push:
     branches: [ "main" ]
@@ -16,16 +16,13 @@ jobs:
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-      - name: Build Next.js
+      - name: Build Next.js (Static Export)
         run: npm run build
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO_9169148148_E27DA }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Deploy to Firebase Hosting
-        run: firebase deploy --project studio-9169148148-e27da --only hosting
+      - name: Deploy to Firebase Hosting (static only)
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --only hosting --project studio-9169148148-e27da
