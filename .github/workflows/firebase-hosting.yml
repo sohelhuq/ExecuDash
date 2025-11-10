@@ -16,13 +16,24 @@ jobs:
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
+      - name: Safety check (static-only)
+        run: |
+          if git ls-files | grep -E '^pages/api/|^app/api/|^middleware\.(js|ts)$|^server/'; then
+            echo "❌ Found server/SSR files. Static-only deploy blocked."; exit 1; fi
+          if ! grep -q "output: *[\"']export[\"']" next.config.mjs; then
+            echo "❌ next.config.mjs must set output: 'export'"; exit 1; fi
+
       - name: Build Next.js (Static Export)
         run: npm run build
+
+      # ✅ Service Account দিয়ে auth (এই স্টেপ টোকেনের কাজ করবে)
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO_9169148148_E27DA }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
       - name: Deploy to Firebase Hosting (static only)
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: firebase deploy --only hosting --project studio-9169148148-e27da
