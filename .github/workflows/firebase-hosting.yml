@@ -1,4 +1,5 @@
 name: Deploy ExecuDash (Static) to Firebase Hosting
+
 on:
   push:
     branches: [ "main" ]
@@ -28,15 +29,23 @@ jobs:
       - name: Build Next.js (Static Export)
         run: npm run build
 
-      - name: Authenticate to Google Cloud (Service Account)
-
+      # Authenticate with Service Account and export ADC path
+      - id: auth
+        name: Authenticate to Google Cloud (Service Account)
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO_9169148148_E27DA }}
-          export_default_credentials: true   # 👈 গুরুত্বপূর্ণ
+            credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO_9169148148_E27DA }}
+
+      - name: Export GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Smoke test auth
+        run: firebase projects:list --project studio-9169148148-e27da || (echo "Auth failed" && exit 1)
+
       - name: Deploy to Firebase Hosting (static only)
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
         run: firebase deploy --only hosting --project studio-9169148148-e27da --non-interactive
