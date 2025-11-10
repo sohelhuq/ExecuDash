@@ -6,6 +6,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,14 +28,14 @@ jobs:
       - name: Build Next.js (Static Export)
         run: npm run build
 
-      # ✅ Service Account দিয়ে auth (এই স্টেপ টোকেনের কাজ করবে)
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (Service Account)
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDIO_9169148148_E27DA }}
+          export_default_credentials: true   # 👈 গুরুত্বপূর্ণ
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
       - name: Deploy to Firebase Hosting (static only)
-        run: firebase deploy --only hosting --project studio-9169148148-e27da
+        run: firebase deploy --only hosting --project studio-9169148148-e27da --non-interactive
